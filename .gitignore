@@ -77,3 +77,6 @@ dist-ssr
 *.sln
 *.sw?
 
+
+*storybook.log
+storybook-static
