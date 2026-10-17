@@ -22,7 +22,7 @@ export const App: React.FC = () => {
         {currentView === 'calendar' ? (
           <main className="flex-1 flex flex-col lg:flex-row gap-5 p-3 sm:p-4 md:p-5 overflow-hidden max-w-[2000px] w-full mx-auto min-h-0">
             {/* Left Month Sidebar: Pessoas do Mês */}
-            <div className="w-full lg:w-80 shrink-0 h-full overflow-hidden flex flex-col">
+            <div className="w-full lg:w-[21rem] shrink-0 h-full overflow-hidden flex flex-col">
               <Sidebar />
             </div>
 
