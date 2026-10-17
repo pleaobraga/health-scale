@@ -55,5 +55,22 @@ describe('HoverSidebar Component', () => {
     expect(useScheduleStore.getState().isDarkMode).toBe(false);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
+
+  it('deve alternar a tela para "import" ao clicar em Importar Dados', () => {
+    render(<HoverSidebar />);
+
+    const importBtn = screen.getByRole('button', { name: /importar dados/i });
+    fireEvent.click(importBtn);
+
+    expect(useScheduleStore.getState().currentView).toBe('import');
+  });
+
+  it('deve exibir o botão de Exportar Dados e permitir o clique', () => {
+    render(<HoverSidebar />);
+
+    const exportBtn = screen.getByRole('button', { name: /exportar dados/i });
+    expect(exportBtn).toBeInTheDocument();
+    fireEvent.click(exportBtn);
+  });
 });
 

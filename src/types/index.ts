@@ -37,5 +37,14 @@ export interface ValidationError {
 }
 
 export type MonthParticipants = Record<string, string[]>; // 'YYYY-MM' -> personId[]
-export type NavigationTab = 'calendar' | 'people';
+export type NavigationTab = 'calendar' | 'people' | 'import';
 
+export interface AppDataSnapshot {
+  exportedAt: string; // ISO timestamp do momento da exportação
+  people: Array<Person | (Person & { [key: string]: unknown })>;
+  monthParticipants: Record<string, string[]>; // 'YYYY-MM' -> array de personId
+  availabilities: Record<string, unknown> | MonthlyAvailability[]; // Mapeamento de disponibilidade mensal de cada pessoa
+  assignments: Record<string, unknown>; // Mapeamento das escalas e alocações diárias/turnos
+  events: Array<CalendarEvent | (CalendarEvent & { [key: string]: unknown })>;
+  [key: string]: unknown; // Aberto para configurações globais, temas ou futuros campos
+}

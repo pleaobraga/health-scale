@@ -1,16 +1,41 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { CalendarGrid } from './components/Calendar/CalendarGrid'
 import { DayEventsModal } from './components/Modals/DayEventsModal'
 import { FullScreenCalendarModal } from './components/Modals/FullScreenCalendarModal'
 import { UnsavedChangesModal } from './components/Modals/UnsavedChangesModal'
 import { HoverSidebar } from './components/Navigation/HoverSidebar'
 import { PeopleManagementView } from './components/PeopleManagement/PeopleManagementView'
+import { ImportView } from './components/Import/ImportView'
 import { Sidebar } from './components/Sidebar/Sidebar'
 import { ValidationPanel } from './components/Validation/ValidationPanel'
 import { useScheduleStore } from './store/useScheduleStore'
+import { hasExistingLocalData } from './services/backupService'
 
 export const App: React.FC = () => {
   const currentView = useScheduleStore((state) => state.currentView)
+  const setCurrentView = useScheduleStore((state) => state.setCurrentView)
+
+  // Initial check / onboarding redirection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname
+      const hash = window.location.hash
+      if (path.includes('importar') || hash.includes('importar')) {
+        setCurrentView('import')
+        return
+      }
+    }
+
+    let mounted = true
+    hasExistingLocalData().then((hasData) => {
+      if (mounted && !hasData) {
+        setCurrentView('import')
+      }
+    })
+    return () => {
+      mounted = false
+    }
+  }, [setCurrentView])
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans transition-colors">
@@ -32,9 +57,12 @@ export const App: React.FC = () => {
               <ValidationPanel />
             </div>
           </main>
-        ) : (
-          /* 2. New Screen: Global Master Management of People */
+        ) : currentView === 'people' ? (
+          /* 2. Global Master Management of People */
           <PeopleManagementView />
+        ) : (
+          /* 3. Dedicated Import Screen */
+          <ImportView />
         )}
       </div>
 

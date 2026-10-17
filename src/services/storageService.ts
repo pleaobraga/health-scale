@@ -111,7 +111,6 @@ export class StorageService {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.PERSONS);
       if (!data) {
-        this.savePersons(INITIAL_PERSONS);
         return INITIAL_PERSONS;
       }
       return JSON.parse(data);
@@ -136,9 +135,7 @@ export class StorageService {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.AVAILABILITIES);
       if (!data) {
-        const initial = getInitialAvailabilities();
-        this.saveAvailabilities(initial);
-        return initial;
+        return getInitialAvailabilities();
       }
       return JSON.parse(data);
     } catch (err) {
@@ -162,7 +159,6 @@ export class StorageService {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS);
       if (!data) {
-        this.saveAssignments(INITIAL_ASSIGNMENTS);
         return INITIAL_ASSIGNMENTS;
       }
       return JSON.parse(data);
@@ -187,7 +183,6 @@ export class StorageService {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.EVENTS);
       if (!data) {
-        this.saveEvents(INITIAL_EVENTS);
         return INITIAL_EVENTS;
       }
       return JSON.parse(data);
@@ -212,7 +207,6 @@ export class StorageService {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.MONTH_PARTICIPANTS);
       if (!data) {
-        this.saveMonthParticipants(INITIAL_MONTH_PARTICIPANTS);
         return INITIAL_MONTH_PARTICIPANTS;
       }
       return JSON.parse(data);
