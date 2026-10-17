@@ -16,8 +16,10 @@ describe('PersonCard Component', () => {
         person={mockPerson}
         availableDaysCount={12}
         isHighlighted={false}
+        isEditMode={false}
         onToggleHighlight={vi.fn()}
         onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
       />
     );
 
@@ -32,8 +34,10 @@ describe('PersonCard Component', () => {
         person={mockPerson}
         availableDaysCount={5}
         isHighlighted={false}
+        isEditMode={false}
         onToggleHighlight={handleToggle}
         onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
       />
     );
 
@@ -49,8 +53,10 @@ describe('PersonCard Component', () => {
         person={mockPerson}
         availableDaysCount={5}
         isHighlighted={false}
+        isEditMode={false}
         onToggleHighlight={vi.fn()}
         onEdit={handleEdit}
+        onInsertAllDays={vi.fn()}
       />
     );
 
@@ -58,5 +64,61 @@ describe('PersonCard Component', () => {
     fireEvent.click(editBtn);
     expect(handleEdit).toHaveBeenCalledTimes(1);
   });
-});
 
+  it('NÃO deve exibir o botão de inserir dias se não estiver no modo de edição', () => {
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={5}
+        isHighlighted={false}
+        isEditMode={false}
+        onToggleHighlight={vi.fn()}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.queryByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it('NÃO deve exibir o botão se estiver no modo de edição mas availableDaysCount for 0', () => {
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={0}
+        isHighlighted={false}
+        isEditMode={true}
+        onToggleHighlight={vi.fn()}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.queryByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it('DEVE exibir e chamar onInsertAllDays quando isEditMode for true E availableDaysCount > 0', () => {
+    const handleInsert = vi.fn();
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={5}
+        isHighlighted={false}
+        isEditMode={true}
+        onToggleHighlight={vi.fn()}
+        onEdit={vi.fn()}
+        onInsertAllDays={handleInsert}
+      />
+    );
+
+    const insertBtn = screen.getByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i);
+    expect(insertBtn).toBeInTheDocument();
+
+    fireEvent.click(insertBtn);
+    expect(handleInsert).toHaveBeenCalledTimes(1);
+  });
+});

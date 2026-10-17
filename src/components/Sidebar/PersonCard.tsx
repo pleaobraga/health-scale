@@ -1,22 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Person } from '../../types';
-import { Edit2, Eye, EyeOff } from 'lucide-react';
+import { Edit2, Eye, EyeOff, CalendarPlus, Check } from 'lucide-react';
 
 interface PersonCardProps {
   person: Person;
   availableDaysCount: number;
   isHighlighted: boolean;
+  isEditMode?: boolean;
   onToggleHighlight: () => void;
   onEdit: () => void;
+  onInsertAllDays: () => void;
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({
   person,
   availableDaysCount,
   isHighlighted,
+  isEditMode = false,
   onToggleHighlight,
   onEdit,
+  onInsertAllDays,
 }) => {
+  const [justInserted, setJustInserted] = useState(false);
+
+  const canInsertAllDays = isEditMode && availableDaysCount > 0;
+
+  const handleInsert = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onInsertAllDays();
+    setJustInserted(true);
+    setTimeout(() => setJustInserted(false), 1500);
+  };
   return (
     <div
       className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all ${
@@ -43,6 +57,31 @@ export const PersonCard: React.FC<PersonCardProps> = ({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1 shrink-0">
+        {/* Insert all days into calendar - Only visible in Edit Mode and if person has available days */}
+        {canInsertAllDays && (
+          <button
+            type="button"
+            onClick={handleInsert}
+            title={
+              justInserted
+                ? 'Dias inseridos no calendário!'
+                : `Inserir todos os ${availableDaysCount} dias disponíveis de ${person.name} no calendário deste mês`
+            }
+            aria-label={`Inserir todos os dias de ${person.name} no calendário`}
+            className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
+              justInserted
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
+            }`}
+          >
+            {justInserted ? (
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+            ) : (
+              <CalendarPlus className="w-3.5 h-3.5" />
+            )}
+          </button>
+        )}
+
         {/* Toggle View Availability */}
         <button
           type="button"

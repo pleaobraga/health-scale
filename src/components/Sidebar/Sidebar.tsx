@@ -10,12 +10,14 @@ export const Sidebar: React.FC = () => {
     persons,
     availabilities,
     currentMonth,
+    isEditMode,
     highlightedPersonId,
     setHighlightedPersonId,
     addPerson,
     updatePerson,
     deletePerson,
     setPersonAvailability,
+    insertAllPersonDaysToMonth,
   } = useScheduleStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -109,8 +111,10 @@ export const Sidebar: React.FC = () => {
                 person={person}
                 availableDaysCount={availDays.length}
                 isHighlighted={highlightedPersonId === person.id}
+                isEditMode={isEditMode}
                 onToggleHighlight={() => setHighlightedPersonId(person.id)}
                 onEdit={() => handleOpenEdit(person)}
+                onInsertAllDays={() => insertAllPersonDaysToMonth(person.id, currentMonth)}
               />
             );
           })
@@ -121,7 +125,7 @@ export const Sidebar: React.FC = () => {
       <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2 shrink-0">
         <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
         <span>
-          Clique no ícone de <strong>olho</strong> para iluminar no calendário os dias disponíveis do profissional.
+          Clique no ícone de <strong>calendário</strong> para escalar a pessoa em todos os seus dias, e no <strong>olho</strong> para iluminar disponibilidades.
         </span>
       </div>
 

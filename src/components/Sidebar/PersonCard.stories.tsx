@@ -29,8 +29,10 @@ export const Default: Story = {
     },
     availableDaysCount: 16,
     isHighlighted: false,
+    isEditMode: true,
     onToggleHighlight: () => {},
     onEdit: () => {},
+    onInsertAllDays: () => {},
   },
 };
 

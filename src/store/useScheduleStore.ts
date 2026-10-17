@@ -49,6 +49,7 @@ interface ScheduleStore {
   // Schedule Assignments
   populateMonthWithAvailableCandidates: (month: string) => void;
   clearMonthAssignments: (month: string) => void;
+  insertAllPersonDaysToMonth: (personId: string, month: string) => void;
   removePersonFromDay: (dateStr: string, personId: string) => void;
   addPersonToDay: (dateStr: string, personId: string) => void;
   setDayAssignments: (dateStr: string, personIds: string[]) => void;
@@ -276,6 +277,37 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     Object.keys(currentAssignments).forEach((dateStr) => {
       if (dateStr.startsWith(month)) {
         delete currentAssignments[dateStr];
+        hasChanges = true;
+      }
+    });
+
+    if (hasChanges) {
+      set({
+        assignments: currentAssignments,
+        hasValidated: false,
+        validationErrors: [],
+      });
+      StorageService.saveAssignments(currentAssignments);
+    }
+  },
+
+  insertAllPersonDaysToMonth: (personId, month) => {
+    const avail = get().availabilities.find(
+      (a) => a.personId === personId && a.month === month
+    );
+    const totalMonthDays = getMonthDaysArray(month);
+    const daysToAssign =
+      avail && avail.availableDays.length > 0 ? avail.availableDays : totalMonthDays;
+
+    const currentAssignments = { ...get().assignments };
+    let hasChanges = false;
+
+    daysToAssign.forEach((dayNum) => {
+      const dayStr = dayNum.toString().padStart(2, '0');
+      const dateStr = `${month}-${dayStr}`;
+      const dayList = currentAssignments[dateStr] || [];
+      if (!dayList.includes(personId)) {
+        currentAssignments[dateStr] = [...dayList, personId];
         hasChanges = true;
       }
     });

@@ -169,5 +169,25 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     // Mês seguinte deve ser preservado
     expect(assignmentsAfter['2026-11-01']).toBeDefined();
   });
+
+  it('deve inserir todos os dias de uma pessoa no calendário com insertAllPersonDaysToMonth', () => {
+    const store = useScheduleStore.getState();
+    const month = '2026-10';
+    const personId = store.persons[0].id;
+
+    // Configura disponibilidade específica (dias 5 e 12)
+    store.setPersonAvailability(personId, month, [5, 12]);
+
+    // Limpa o mês antes
+    store.clearMonthAssignments(month);
+
+    // Insere todos os dias da pessoa no mês
+    store.insertAllPersonDaysToMonth(personId, month);
+
+    const assignments = useScheduleStore.getState().assignments;
+    expect(assignments['2026-10-05']).toContain(personId);
+    expect(assignments['2026-10-12']).toContain(personId);
+    expect(assignments['2026-10-06']).toBeUndefined();
+  });
 });
 
