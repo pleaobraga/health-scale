@@ -44,17 +44,17 @@ export const CalendarGrid: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden shadow-xs border border-slate-200 rounded-2xl">
+    <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors">
       {/* Calendar Top Toolbar */}
-      <div className="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-white">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 transition-colors">
         {/* Month Navigation */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200/80">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200/80 dark:border-slate-700">
             <button
               type="button"
               onClick={goToPreviousMonth}
               title="Mês anterior"
-              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition shadow-2xs"
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -62,18 +62,18 @@ export const CalendarGrid: React.FC = () => {
               type="button"
               onClick={goToNextMonth}
               title="Próximo mês"
-              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition shadow-2xs"
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
 
           <div>
-            <h2 className="text-lg md:text-xl font-bold text-slate-900 flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-indigo-600" />
+            <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               {formatMonthYear(currentMonth)}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Escala de plantões e distribuição de turnos
             </p>
           </div>
@@ -86,7 +86,7 @@ export const CalendarGrid: React.FC = () => {
               type="button"
               onClick={() => populateMonthWithAvailableCandidates(currentMonth)}
               title="Preenche dias vagos com as pessoas disponíveis"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition"
             >
               <Wand2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Povoar com Disponíveis</span>
@@ -94,7 +94,7 @@ export const CalendarGrid: React.FC = () => {
           )}
 
           {/* Mode Switch Toggle Button */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={() => {
@@ -102,8 +102,8 @@ export const CalendarGrid: React.FC = () => {
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                 !isEditMode
-                  ? 'bg-white text-slate-800 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               <Eye className="w-3.5 h-3.5" />
@@ -117,7 +117,7 @@ export const CalendarGrid: React.FC = () => {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                 isEditMode
                   ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -129,7 +129,7 @@ export const CalendarGrid: React.FC = () => {
 
       {/* Notice bar when editing or highlighting */}
       {isEditMode && (
-        <div className="bg-amber-50 px-4 py-2 text-xs text-amber-800 border-b border-amber-200 flex items-center justify-between">
+        <div className="bg-amber-50 dark:bg-amber-950/40 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 border-b border-amber-200 dark:border-amber-800 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span>
@@ -140,7 +140,7 @@ export const CalendarGrid: React.FC = () => {
       )}
 
       {highlightedPerson && (
-        <div className="bg-indigo-50/80 px-4 py-1.5 text-xs text-indigo-800 border-b border-indigo-200 flex items-center justify-between">
+        <div className="bg-indigo-50/80 dark:bg-indigo-950/40 px-4 py-1.5 text-xs text-indigo-800 dark:text-indigo-200 border-b border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span
               className="w-2.5 h-2.5 rounded-full"
@@ -156,7 +156,7 @@ export const CalendarGrid: React.FC = () => {
       {/* Main 7-Column Grid (Domingo a Sábado) */}
       <div className="flex-1 overflow-auto flex flex-col">
         <CalendarHeader />
-        <div className="grid grid-cols-7 border-l border-slate-200 flex-1 auto-rows-fr">
+        <div className="grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 flex-1 auto-rows-fr">
           {daysGrid.map((dayInfo) => {
             const assigned = assignments[dayInfo.dateStr] || [];
             const dayEvents = events.filter((e) => e.date === dayInfo.dateStr);
@@ -187,4 +187,3 @@ export const CalendarGrid: React.FC = () => {
     </div>
   );
 };
-

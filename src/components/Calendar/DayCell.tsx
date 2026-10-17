@@ -42,12 +42,12 @@ export const DayCell: React.FC<DayCellProps> = ({
 
   return (
     <div
-      className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 p-2 flex flex-col justify-between transition-all relative ${
+      className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 dark:border-slate-800 p-2 flex flex-col justify-between transition-all relative ${
         !isCurrentMonth
-          ? 'bg-slate-50/70 text-slate-400'
+          ? 'bg-slate-50/70 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600'
           : isTargetOfHighlight
-          ? 'bg-amber-50/50 ring-2 ring-inset ring-amber-400/50'
-          : 'bg-white hover:bg-slate-50/30'
+          ? 'bg-amber-50/50 dark:bg-amber-950/30 ring-2 ring-inset ring-amber-400/50 dark:ring-amber-500/40'
+          : 'bg-white dark:bg-slate-900 hover:bg-slate-50/30 dark:hover:bg-slate-800/30'
       }`}
     >
       {/* Top Header of the Cell */}
@@ -57,12 +57,12 @@ export const DayCell: React.FC<DayCellProps> = ({
           <span
             className={`text-sm font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full transition-colors ${
               hasEvents
-                ? 'text-red-600 font-extrabold bg-red-50'
+                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60'
                 : isToday
                 ? 'bg-indigo-600 text-white font-bold'
                 : isCurrentMonth
-                ? 'text-slate-800'
-                : 'text-slate-400'
+                ? 'text-slate-800 dark:text-slate-200'
+                : 'text-slate-400 dark:text-slate-600'
             }`}
           >
             {dayNumber}
@@ -71,7 +71,7 @@ export const DayCell: React.FC<DayCellProps> = ({
           {/* Highlight indicator */}
           {isTargetOfHighlight && (
             <span
-              className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-full"
+              className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.2 rounded-full"
               title={`${highlightedPerson.name} marcou disponibilidade`}
             >
               <Sparkles className="w-2.5 h-2.5" />
@@ -91,8 +91,8 @@ export const DayCell: React.FC<DayCellProps> = ({
           }
           className={`p-1 rounded-md text-xs transition flex items-center gap-0.5 ${
             hasEvents
-              ? 'text-red-600 hover:bg-red-50 font-semibold'
-              : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
+              ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 font-semibold'
+              : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <CalendarIcon className="w-3.5 h-3.5" />
@@ -111,7 +111,7 @@ export const DayCell: React.FC<DayCellProps> = ({
           <div className="space-y-1">
             {assignedPersonIds.length === 0 ? (
               <div className="text-center py-1">
-                <span className="text-[11px] text-slate-300 italic">Vago</span>
+                <span className="text-[11px] text-slate-300 dark:text-slate-600 italic">Vago</span>
               </div>
             ) : (
               assignedPersonIds.map((personId) => {
@@ -133,7 +133,7 @@ export const DayCell: React.FC<DayCellProps> = ({
 
             {/* Warning if multiple people are assigned in reading mode */}
             {assignedPersonIds.length > 1 && (
-              <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200 block text-center">
+              <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center">
                 Conflito: {assignedPersonIds.length} escalados
               </span>
             )}
@@ -193,4 +193,3 @@ export const DayCell: React.FC<DayCellProps> = ({
     </div>
   );
 };
-

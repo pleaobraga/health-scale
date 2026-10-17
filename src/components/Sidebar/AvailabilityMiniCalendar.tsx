@@ -43,13 +43,13 @@ export const AvailabilityMiniCalendar: React.FC<AvailabilityMiniCalendarProps> =
   };
 
   return (
-    <div className="space-y-3 bg-slate-50 border border-slate-200 rounded-xl p-3.5">
-      <div className="flex items-center justify-between text-xs text-slate-600 font-medium pb-2 border-b border-slate-200">
-        <span className="flex items-center gap-1.5 font-semibold text-slate-800">
-          <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+    <div className="space-y-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 transition-colors">
+      <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium pb-2 border-b border-slate-200 dark:border-slate-700">
+        <span className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-100">
+          <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           Disponibilidade ({formatMonthYear(month)})
         </span>
-        <span className="bg-white px-2 py-0.5 rounded-full border border-slate-200 text-slate-700 font-medium">
+        <span className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium">
           {selectedDays.length} / {totalDays} dias
         </span>
       </div>
@@ -59,31 +59,31 @@ export const AvailabilityMiniCalendar: React.FC<AvailabilityMiniCalendarProps> =
         <button
           type="button"
           onClick={selectEven}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 transition"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
-          <CheckSquare className="w-3 h-3 text-emerald-600" />
+          <CheckSquare className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           Dias Pares
         </button>
         <button
           type="button"
           onClick={selectOdd}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 transition"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
-          <CheckSquare className="w-3 h-3 text-amber-600" />
+          <CheckSquare className="w-3 h-3 text-amber-600 dark:text-amber-400" />
           Dias Ímpares
         </button>
         <button
           type="button"
           onClick={selectAll}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 transition"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
-          <Sparkles className="w-3 h-3 text-indigo-600" />
+          <Sparkles className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
           Todos
         </button>
         <button
           type="button"
           onClick={clearAll}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white hover:bg-rose-50 border border-slate-200 text-rose-600 transition ml-auto"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 text-rose-600 dark:text-rose-400 transition ml-auto"
         >
           <Eraser className="w-3 h-3 text-rose-500" />
           Limpar
@@ -107,7 +107,7 @@ export const AvailabilityMiniCalendar: React.FC<AvailabilityMiniCalendarProps> =
               className={`h-8 text-xs font-medium rounded-lg flex items-center justify-center transition-all ${
                 isSelected
                   ? 'shadow-sm font-semibold'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-100'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
               {day}
@@ -118,4 +118,3 @@ export const AvailabilityMiniCalendar: React.FC<AvailabilityMiniCalendarProps> =
     </div>
   );
 };
-

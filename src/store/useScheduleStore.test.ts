@@ -147,5 +147,16 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.hasValidated).toBe(true);
     expect(state.validationErrors).toEqual(errors);
   });
+
+  it('deve alternar modo escuro e claro corretamente', () => {
+    const store = useScheduleStore.getState();
+    const initialMode = store.isDarkMode;
+
+    store.toggleDarkMode();
+    expect(useScheduleStore.getState().isDarkMode).toBe(!initialMode);
+
+    store.toggleDarkMode();
+    expect(useScheduleStore.getState().isDarkMode).toBe(initialMode);
+  });
 });
 

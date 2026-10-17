@@ -21,8 +21,8 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     <div
       className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all ${
         isHighlighted
-          ? 'bg-indigo-50/70 border-indigo-300 ring-2 ring-indigo-500/20 shadow-sm'
-          : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xs'
+          ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-500/20 shadow-sm'
+          : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xs'
       }`}
     >
       {/* Left: Color dot & Name & Available count */}
@@ -32,10 +32,10 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           style={{ backgroundColor: person.color }}
         />
         <div className="truncate">
-          <p className="text-xs font-semibold text-slate-800 truncate" title={person.name}>
+          <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate" title={person.name}>
             {person.name}
           </p>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
             {availableDaysCount} {availableDaysCount === 1 ? 'dia disp.' : 'dias disp.'}
           </p>
         </div>
@@ -51,7 +51,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
             isHighlighted
               ? 'bg-indigo-600 text-white shadow-xs'
-              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60'
           }`}
         >
           {isHighlighted ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -62,7 +62,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           type="button"
           onClick={onEdit}
           title="Editar nome, cor ou disponibilidade"
-          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
+          className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition"
         >
           <Edit2 className="w-3.5 h-3.5" />
         </button>
@@ -70,4 +70,3 @@ export const PersonCard: React.FC<PersonCardProps> = ({
     </div>
   );
 };
-

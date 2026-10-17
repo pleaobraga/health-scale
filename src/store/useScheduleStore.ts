@@ -58,6 +58,29 @@ interface ScheduleStore {
   validateCurrentSchedule: () => ValidationError[];
   saveSchedule: () => void;
   dismissValidation: () => void;
+
+  // Theme
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+}
+
+const getInitialDarkMode = (): boolean => {
+  try {
+    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('theme') : null;
+    if (saved) return saved === 'dark';
+    return Boolean(
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-color-scheme: dark)')?.matches
+    );
+  } catch {
+    return false;
+  }
+};
+
+const initialDarkMode = getInitialDarkMode();
+if (typeof document !== 'undefined' && initialDarkMode) {
+  document.documentElement.classList.add('dark');
 }
 
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
@@ -65,6 +88,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   isEditMode: false,
   highlightedPersonId: null,
   selectedDateForEvents: null,
+  isDarkMode: initialDarkMode,
 
   persons: StorageService.getPersons(),
   availabilities: StorageService.getAvailabilities(),
@@ -327,6 +351,20 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   dismissValidation: () => {
     set({ hasValidated: false, validationErrors: [] });
+  },
+
+  toggleDarkMode: () => {
+    const nextDark = !get().isDarkMode;
+    if (typeof document !== 'undefined') {
+      if (nextDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+    set({ isDarkMode: nextDark });
   },
 }));
 
