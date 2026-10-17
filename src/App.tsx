@@ -5,6 +5,7 @@ import { CalendarGrid } from './components/Calendar/CalendarGrid';
 import { ValidationPanel } from './components/Validation/ValidationPanel';
 import { DayEventsModal } from './components/Modals/DayEventsModal';
 import { FullScreenCalendarModal } from './components/Modals/FullScreenCalendarModal';
+import { UnsavedChangesModal } from './components/Modals/UnsavedChangesModal';
 
 export const App: React.FC = () => {
   return (
@@ -27,6 +28,7 @@ export const App: React.FC = () => {
       {/* Global Modals */}
       <DayEventsModal />
       <FullScreenCalendarModal />
+      <UnsavedChangesModal />
     </div>
   );
 };

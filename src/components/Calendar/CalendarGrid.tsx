@@ -13,6 +13,8 @@ import {
   Maximize2,
   Trash2,
   FileSpreadsheet,
+  Save,
+  RotateCcw,
 } from 'lucide-react';
 import { exportScheduleToExcel } from '../../utils/exportToExcel';
 
@@ -34,6 +36,9 @@ export const CalendarGrid: React.FC = () => {
     populateMonthWithAvailableCandidates,
     clearMonthAssignments,
     setFullScreenModalOpen,
+    saveSchedule,
+    discardChanges,
+    hasUnsavedChanges,
   } = useScheduleStore();
 
   const daysGrid = getMonthCalendarGrid(currentMonth);
@@ -116,6 +121,29 @@ export const CalendarGrid: React.FC = () => {
                 <Trash2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Limpar Mês</span>
               </button>
+
+              {/* Save & Discard Buttons in Edit Toolbar */}
+              <button
+                type="button"
+                onClick={saveSchedule}
+                title="Salvar alterações na escala"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs transition"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Salvar</span>
+              </button>
+
+              {hasUnsavedChanges && (
+                <button
+                  type="button"
+                  onClick={discardChanges}
+                  title="Descartar alterações e reverter ao último estado salvo"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 transition shadow-2xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Descartar</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -186,13 +214,27 @@ export const CalendarGrid: React.FC = () => {
 
       {/* Notice bar when editing or highlighting */}
       {isEditMode && (
-        <div className="bg-amber-50 dark:bg-amber-950/40 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 border-b border-amber-200 dark:border-amber-800 flex items-center justify-between">
+        <div className="bg-amber-50 dark:bg-amber-950/40 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 border-b border-amber-200 dark:border-amber-800 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span>
-              <strong>Modo Edição Ativo:</strong> Remova as tags excedentes clicando no <strong>✕</strong> até definir o responsável final do dia, ou adicione outros pelo <strong>+</strong>.
+              <strong>Modo Edição Ativo:</strong> As alterações só são gravadas ao clicar em <strong>Salvar</strong>. Se sair do modo de edição sem salvar, o calendário reverte ao estado original.
             </span>
           </div>
+          {hasUnsavedChanges && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                ● Alterações não salvas
+              </span>
+              <button
+                type="button"
+                onClick={saveSchedule}
+                className="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition"
+              >
+                Salvar Agora
+              </button>
+            </div>
+          )}
         </div>
       )}
 

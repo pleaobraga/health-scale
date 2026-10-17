@@ -16,15 +16,18 @@ interface ScheduleStore {
   persons: Person[];
   availabilities: MonthlyAvailability[];
   assignments: Record<string, string[]>;
+  savedAssignments: Record<string, string[]>;
   events: CalendarEvent[];
 
-  // Validation state
+  // Validation & Save state
   validationErrors: ValidationError[];
   hasValidated: boolean;
   isSaving: boolean;
   saveFeedback: string | null;
+  hasUnsavedChanges: boolean;
 
   // Actions
+  discardChanges: () => void;
   setCurrentMonth: (month: string) => void;
   goToPreviousMonth: () => void;
   goToNextMonth: () => void;
@@ -33,6 +36,8 @@ interface ScheduleStore {
   setHighlightedPersonId: (id: string | null) => void;
   setSelectedDateForEvents: (dateStr: string | null) => void;
   setFullScreenModalOpen: (open: boolean) => void;
+  isUnsavedModalOpen: boolean;
+  setUnsavedModalOpen: (open: boolean) => void;
 
   // Person & Availability management
   addPerson: (name: string, color: string, availableDays?: number[]) => void;
@@ -93,17 +98,33 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   highlightedPersonId: null,
   selectedDateForEvents: null,
   isFullScreenModalOpen: false,
+  isUnsavedModalOpen: false,
   isDarkMode: initialDarkMode,
 
   persons: StorageService.getPersons(),
   availabilities: StorageService.getAvailabilities(),
   assignments: StorageService.getAssignments(),
+  savedAssignments: StorageService.getAssignments(),
   events: StorageService.getEvents(),
 
   validationErrors: [],
   hasValidated: false,
   isSaving: false,
   saveFeedback: null,
+  hasUnsavedChanges: false,
+
+  setUnsavedModalOpen: (open) => set({ isUnsavedModalOpen: open }),
+
+  discardChanges: () => {
+    const { savedAssignments } = get();
+    set({
+      assignments: { ...savedAssignments },
+      hasUnsavedChanges: false,
+      hasValidated: false,
+      validationErrors: [],
+      isUnsavedModalOpen: false,
+    });
+  },
 
   setCurrentMonth: (month) => {
     set({ currentMonth: month, hasValidated: false, validationErrors: [] });
@@ -120,19 +141,46 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   },
 
   toggleEditMode: () => {
-    const nextMode = !get().isEditMode;
-    // When activating edit mode, if days of the month have no assignments, prefill with candidates
-    if (nextMode) {
-      get().populateMonthWithAvailableCandidates(get().currentMonth);
+    const currentMode = get().isEditMode;
+    if (!currentMode) {
+      // Entering edit mode: snapshot current saved assignments
+      set({
+        isEditMode: true,
+        savedAssignments: { ...get().assignments },
+        hasUnsavedChanges: false,
+      });
+    } else {
+      // Trying to switch back to visualization: check for unsaved changes
+      if (get().hasUnsavedChanges) {
+        set({ isUnsavedModalOpen: true });
+      } else {
+        set({
+          isEditMode: false,
+          hasValidated: false,
+          validationErrors: [],
+        });
+      }
     }
-    set({ isEditMode: nextMode });
   },
 
   setEditMode: (val) => {
     if (val) {
-      get().populateMonthWithAvailableCandidates(get().currentMonth);
+      set({
+        isEditMode: true,
+        savedAssignments: { ...get().assignments },
+        hasUnsavedChanges: false,
+      });
+    } else {
+      if (get().hasUnsavedChanges) {
+        set({ isUnsavedModalOpen: true });
+      } else {
+        set({
+          isEditMode: false,
+          hasValidated: false,
+          validationErrors: [],
+        });
+      }
     }
-    set({ isEditMode: val });
   },
 
   setHighlightedPersonId: (id) => {
@@ -199,6 +247,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       persons: updatedPersons,
       availabilities: updatedAvails,
       assignments: currentAssignments,
+      savedAssignments: { ...currentAssignments },
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
     });
   },
@@ -249,6 +298,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const days = getMonthDaysArray(month);
     const currentAssignments = { ...get().assignments };
     const { availabilities } = get();
+    let hasChanges = false;
 
     days.forEach((dayNum) => {
       const dayStr = dayNum.toString().padStart(2, '0');
@@ -263,12 +313,14 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
         if (candidates.length > 0) {
           currentAssignments[dateStr] = candidates;
+          hasChanges = true;
         }
       }
     });
 
-    set({ assignments: currentAssignments });
-    StorageService.saveAssignments(currentAssignments);
+    if (hasChanges) {
+      set({ assignments: currentAssignments, hasUnsavedChanges: true });
+    }
   },
 
   clearMonthAssignments: (month) => {
@@ -284,10 +336,10 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     if (hasChanges) {
       set({
         assignments: currentAssignments,
+        hasUnsavedChanges: true,
         hasValidated: false,
         validationErrors: [],
       });
-      StorageService.saveAssignments(currentAssignments);
     }
   },
 
@@ -315,10 +367,10 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     if (hasChanges) {
       set({
         assignments: currentAssignments,
+        hasUnsavedChanges: true,
         hasValidated: false,
         validationErrors: [],
       });
-      StorageService.saveAssignments(currentAssignments);
     }
   },
 
@@ -329,8 +381,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       ...get().assignments,
       [dateStr]: updatedForDay,
     };
-    set({ assignments: updated });
-    StorageService.saveAssignments(updated);
+    set({ assignments: updated, hasUnsavedChanges: true });
   },
 
   addPersonToDay: (dateStr, personId) => {
@@ -340,8 +391,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       ...get().assignments,
       [dateStr]: [...current, personId],
     };
-    set({ assignments: updated });
-    StorageService.saveAssignments(updated);
+    set({ assignments: updated, hasUnsavedChanges: true });
   },
 
   setDayAssignments: (dateStr, personIds) => {
@@ -349,8 +399,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       ...get().assignments,
       [dateStr]: personIds,
     };
-    set({ assignments: updated });
-    StorageService.saveAssignments(updated);
+    set({ assignments: updated, hasUnsavedChanges: true });
   },
 
   addEvent: (eventData) => {
@@ -385,6 +434,12 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveAvailabilities(get().availabilities);
     StorageService.saveAssignments(get().assignments);
     StorageService.saveEvents(get().events);
+
+    // Commit draft into savedAssignments
+    set({
+      savedAssignments: { ...get().assignments },
+      hasUnsavedChanges: false,
+    });
 
     // Execute audit validation
     const errors = get().validateCurrentSchedule();

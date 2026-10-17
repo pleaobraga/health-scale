@@ -189,5 +189,67 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(assignments['2026-10-12']).toContain(personId);
     expect(assignments['2026-10-06']).toBeUndefined();
   });
+
+  it('deve reverter alterações no calendário ao sair do modo de edição sem salvar', () => {
+    const store = useScheduleStore.getState();
+    const month = '2026-10';
+
+    // Salva estado inicial limpo
+    store.clearMonthAssignments(month);
+    store.saveSchedule();
+
+    const savedState = { ...useScheduleStore.getState().assignments };
+    expect(savedState['2026-10-20']).toBeUndefined();
+
+    // Entra no modo de edição
+    store.setEditMode(true);
+    expect(useScheduleStore.getState().isEditMode).toBe(true);
+
+    // Faz alterações na escala
+    store.addPersonToDay('2026-10-20', 'p1');
+    expect(useScheduleStore.getState().assignments['2026-10-20']).toEqual(['p1']);
+    expect(useScheduleStore.getState().hasUnsavedChanges).toBe(true);
+
+    // Tenta sair do modo de edição SEM salvar
+    store.setEditMode(false);
+
+    // Deve abrir o modal de aviso e manter o modo de edição ativo para decisão do usuário
+    expect(useScheduleStore.getState().isUnsavedModalOpen).toBe(true);
+    expect(useScheduleStore.getState().isEditMode).toBe(true);
+
+    // Ao descartar as alterações pelo modal
+    store.discardChanges();
+    useScheduleStore.setState({ isEditMode: false });
+
+    // Deve ter revertido ao estado salvo e saído do modo de edição
+    expect(useScheduleStore.getState().isEditMode).toBe(false);
+    expect(useScheduleStore.getState().assignments['2026-10-20']).toBeUndefined();
+    expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false);
+  });
+
+  it('deve reverter alterações ao chamar discardChanges', () => {
+    const store = useScheduleStore.getState();
+    store.setEditMode(true);
+    store.addPersonToDay('2026-10-25', 'p1');
+    expect(useScheduleStore.getState().assignments['2026-10-25']).toEqual(['p1']);
+
+    store.discardChanges();
+    expect(useScheduleStore.getState().assignments['2026-10-25']).toBeUndefined();
+    expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false);
+  });
+
+  it('deve efetivar e persistir alterações quando saveSchedule for acionado', () => {
+    const store = useScheduleStore.getState();
+    store.setEditMode(true);
+    store.addPersonToDay('2026-10-28', 'p1');
+
+    store.saveSchedule();
+    expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false);
+    expect(useScheduleStore.getState().savedAssignments['2026-10-28']).toEqual(['p1']);
+
+    // Ao sair do modo de edição agora, a alteração permanece
+    store.setEditMode(false);
+    expect(useScheduleStore.getState().assignments['2026-10-28']).toEqual(['p1']);
+  });
 });
 
