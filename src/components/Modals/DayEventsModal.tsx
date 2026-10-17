@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useScheduleStore } from '../../store/useScheduleStore';
 import { formatDisplayDate } from '../../utils/dateUtils';
 import { X, Plus, Trash2, Clock, Calendar, AlertCircle } from 'lucide-react';
@@ -41,8 +42,8 @@ export const DayEventsModal: React.FC = () => {
     setError(null);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
@@ -197,7 +198,8 @@ export const DayEventsModal: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
