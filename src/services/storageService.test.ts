@@ -66,5 +66,13 @@ describe('StorageService - Persistência Local-First', () => {
     const reloaded = StorageService.getPersons();
     expect(reloaded[0].name).toBe('Dra. Camila Santos');
   });
+
+  it('deve persistir e recuperar participantes mensais', () => {
+    const participants = { '2026-10': ['p1', 'p2'] };
+    StorageService.saveMonthParticipants(participants);
+
+    const loaded = StorageService.getMonthParticipants();
+    expect(loaded).toEqual(participants);
+  });
 });
 

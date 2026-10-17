@@ -108,4 +108,27 @@ describe('CandidatePicker Component', () => {
 
     expect(screen.queryByRole('button', { name: /adicionar/i })).not.toBeInTheDocument();
   });
+
+  it('considera APENAS pessoas participantes do mês fornecidas para a seleção', () => {
+    // Apenas p1 e p2 são participantes do mês corrente; p3 está no cadastro geral mas não no mês
+    const monthOnlyPersons = [mockPersons[0], mockPersons[1]];
+
+    render(
+      <CandidatePicker
+        dateStr="2026-10-15"
+        dayNumber={15}
+        month="2026-10"
+        assignedPersonIds={[]}
+        allPersons={monthOnlyPersons}
+        isPersonAvailable={() => true}
+        onSelectPerson={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /adicionar/i }));
+
+    expect(screen.getByText('Dra. Camila')).toBeInTheDocument();
+    expect(screen.getByText('Dr. Lucas')).toBeInTheDocument();
+    expect(screen.queryByText('Enf. Beatriz')).not.toBeInTheDocument();
+  });
 });

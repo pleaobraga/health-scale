@@ -36,3 +36,6 @@ export interface ValidationError {
   message: string;
 }
 
+export type MonthParticipants = Record<string, string[]>; // 'YYYY-MM' -> personId[]
+export type NavigationTab = 'calendar' | 'people';
+

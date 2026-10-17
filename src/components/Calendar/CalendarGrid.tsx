@@ -27,6 +27,7 @@ export const CalendarGrid: React.FC = () => {
     toggleEditMode,
     highlightedPersonId,
     persons,
+    monthParticipants,
     availabilities,
     assignments,
     events,
@@ -42,6 +43,9 @@ export const CalendarGrid: React.FC = () => {
   } = useScheduleStore();
 
   const daysGrid = getMonthCalendarGrid(currentMonth);
+
+  const currentMonthParticipantIds = monthParticipants[currentMonth] || [];
+  const monthPersons = persons.filter((p) => currentMonthParticipantIds.includes(p.id));
 
   const highlightedPerson = highlightedPersonId
     ? persons.find((p) => p.id === highlightedPersonId) || null
@@ -271,6 +275,7 @@ export const CalendarGrid: React.FC = () => {
                 isEditMode={isEditMode}
                 assignedPersonIds={assigned}
                 allPersons={persons}
+                monthPersons={monthPersons}
                 events={dayEvents}
                 highlightedPerson={highlightedPerson}
                 isHighlightedPersonAvailable={isHighlightedAvail}

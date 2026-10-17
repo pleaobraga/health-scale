@@ -10,6 +10,7 @@ interface DayCellProps {
   isEditMode: boolean;
   assignedPersonIds: string[];
   allPersons: Person[];
+  monthPersons?: Person[];
   events: CalendarEvent[];
   highlightedPerson: Person | null;
   isHighlightedPersonAvailable: boolean;
@@ -25,6 +26,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   isEditMode,
   assignedPersonIds,
   allPersons,
+  monthPersons,
   events,
   highlightedPerson,
   isHighlightedPersonAvailable,
@@ -177,7 +179,7 @@ export const DayCell: React.FC<DayCellProps> = ({
                 dayNumber={dayNumber}
                 month={currentMonth}
                 assignedPersonIds={assignedPersonIds}
-                allPersons={allPersons}
+                allPersons={monthPersons || allPersons}
                 isPersonAvailable={isPersonAvailable}
                 onSelectPerson={(personId) => {
                   if (isPersonAvailable(personId, dayNumber)) {

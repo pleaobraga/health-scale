@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Person } from '../../types';
-import { Edit2, Eye, EyeOff, CalendarPlus, Check } from 'lucide-react';
+import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react';
 
 interface PersonCardProps {
   person: Person;
@@ -11,6 +11,7 @@ interface PersonCardProps {
   onToggleHighlight: () => void;
   onEdit: () => void;
   onInsertAllDays: () => void;
+  onRemoveFromMonth?: () => void;
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({
@@ -22,6 +23,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   onToggleHighlight,
   onEdit,
   onInsertAllDays,
+  onRemoveFromMonth,
 }) => {
   const [justInserted, setJustInserted] = useState(false);
 
@@ -107,15 +109,32 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           {isHighlighted ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
         </button>
 
-        {/* Edit Button */}
+        {/* Edit Availability Button */}
         <button
           type="button"
           onClick={onEdit}
-          title="Editar nome, cor ou disponibilidade"
-          className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition"
+          title="Configurar disponibilidade do mês / Editar nome, cor ou disponibilidade"
+          aria-label={`Configurar disponibilidade de ${person.name}`}
+          className="p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition"
         >
           <Edit2 className="w-3.5 h-3.5" />
         </button>
+
+        {/* Remove from Month Button */}
+        {onRemoveFromMonth && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemoveFromMonth();
+            }}
+            title={`Remover ${person.name} deste mês`}
+            aria-label={`Remover ${person.name} deste mês`}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+          >
+            <UserMinus className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );

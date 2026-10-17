@@ -1,11 +1,13 @@
 import { create } from 'zustand';
-import { Person, MonthlyAvailability, CalendarEvent, ValidationError } from '../types';
+import { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types';
 import { StorageService } from '../services/storageService';
 import { validateSchedule } from '../utils/validateSchedule';
 import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/dateUtils';
 
 interface ScheduleStore {
   // Navigation & UI state
+  currentView: NavigationTab; // 'calendar' | 'people'
+  setCurrentView: (view: NavigationTab) => void;
   currentMonth: string; // 'YYYY-MM'
   isEditMode: boolean;
   highlightedPersonId: string | null;
@@ -14,6 +16,7 @@ interface ScheduleStore {
 
   // Data entities
   persons: Person[];
+  monthParticipants: Record<string, string[]>;
   availabilities: MonthlyAvailability[];
   assignments: Record<string, string[]>;
   savedAssignments: Record<string, string[]>;
@@ -38,6 +41,11 @@ interface ScheduleStore {
   setFullScreenModalOpen: (open: boolean) => void;
   isUnsavedModalOpen: boolean;
   setUnsavedModalOpen: (open: boolean) => void;
+
+  // Month Participants Management
+  addPersonToMonth: (personId: string, month: string) => void;
+  addPersonsToMonth: (personIds: string[], month: string) => void;
+  removePersonFromMonth: (personId: string, month: string) => void;
 
   // Person & Availability management
   addPerson: (name: string, color: string, availableDays?: number[]) => void;
@@ -93,6 +101,8 @@ if (typeof document !== 'undefined' && initialDarkMode) {
 }
 
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
+  currentView: 'calendar',
+  setCurrentView: (view) => set({ currentView: view }),
   currentMonth: '2026-10',
   isEditMode: false,
   highlightedPersonId: null,
@@ -102,6 +112,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   isDarkMode: initialDarkMode,
 
   persons: StorageService.getPersons(),
+  monthParticipants: StorageService.getMonthParticipants(),
   availabilities: StorageService.getAvailabilities(),
   assignments: StorageService.getAssignments(),
   savedAssignments: StorageService.getAssignments(),
@@ -197,6 +208,60 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     set({ isFullScreenModalOpen: open });
   },
 
+  addPersonToMonth: (personId, month) => {
+    const current = get().monthParticipants[month] || [];
+    if (current.includes(personId)) return;
+    const updated = {
+      ...get().monthParticipants,
+      [month]: [...current, personId],
+    };
+    StorageService.saveMonthParticipants(updated);
+    set({ monthParticipants: updated });
+  },
+
+  addPersonsToMonth: (personIds, month) => {
+    const current = get().monthParticipants[month] || [];
+    const newIds = personIds.filter((id) => !current.includes(id));
+    if (newIds.length === 0) return;
+    const updated = {
+      ...get().monthParticipants,
+      [month]: [...current, ...newIds],
+    };
+    StorageService.saveMonthParticipants(updated);
+    set({ monthParticipants: updated });
+  },
+
+  removePersonFromMonth: (personId, month) => {
+    const current = get().monthParticipants[month] || [];
+    const updatedForMonth = current.filter((id) => id !== personId);
+    const updatedParticipants = {
+      ...get().monthParticipants,
+      [month]: updatedForMonth,
+    };
+
+    // Also remove from assignments of this month
+    const currentAssignments = { ...get().assignments };
+    let hasAssignmentChanges = false;
+    Object.keys(currentAssignments).forEach((dateStr) => {
+      if (dateStr.startsWith(month) && currentAssignments[dateStr].includes(personId)) {
+        currentAssignments[dateStr] = currentAssignments[dateStr].filter((id) => id !== personId);
+        hasAssignmentChanges = true;
+      }
+    });
+
+    StorageService.saveMonthParticipants(updatedParticipants);
+    if (hasAssignmentChanges) {
+      StorageService.saveAssignments(currentAssignments);
+    }
+
+    set({
+      monthParticipants: updatedParticipants,
+      assignments: currentAssignments,
+      hasUnsavedChanges: get().isEditMode && hasAssignmentChanges ? true : get().hasUnsavedChanges,
+      highlightedPersonId: get().highlightedPersonId === personId ? null : get().highlightedPersonId,
+    });
+  },
+
   addPerson: (name, color, availableDays = []) => {
     const id = `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const newPerson: Person = { id, name, color };
@@ -233,6 +298,12 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updatedPersons = get().persons.filter((p) => p.id !== id);
     const updatedAvails = get().availabilities.filter((a) => a.personId !== id);
 
+    // Also remove from all monthParticipants
+    const updatedMonthParticipants = { ...get().monthParticipants };
+    Object.keys(updatedMonthParticipants).forEach((m) => {
+      updatedMonthParticipants[m] = updatedMonthParticipants[m].filter((pId) => pId !== id);
+    });
+
     // Also remove person from assignments
     const currentAssignments = { ...get().assignments };
     Object.keys(currentAssignments).forEach((dateStr) => {
@@ -242,12 +313,14 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.savePersons(updatedPersons);
     StorageService.saveAvailabilities(updatedAvails);
     StorageService.saveAssignments(currentAssignments);
+    StorageService.saveMonthParticipants(updatedMonthParticipants);
 
     set({
       persons: updatedPersons,
       availabilities: updatedAvails,
       assignments: currentAssignments,
       savedAssignments: { ...currentAssignments },
+      monthParticipants: updatedMonthParticipants,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
     });
   },
@@ -306,9 +379,15 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
       // If the day already has assignments, we do not overwrite them completely unless empty
       if (!currentAssignments[dateStr] || currentAssignments[dateStr].length === 0) {
-        // Find everyone who has marked availability for this day
+        // Find everyone registered in this month who has marked availability for this day
+        const monthParticipantIds = get().monthParticipants[month] || [];
         const candidates = availabilities
-          .filter((a) => a.month === month && a.availableDays.includes(dayNum))
+          .filter(
+            (a) =>
+              a.month === month &&
+              monthParticipantIds.includes(a.personId) &&
+              a.availableDays.includes(dayNum)
+          )
           .map((a) => a.personId);
 
         if (candidates.length > 0) {
@@ -434,6 +513,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveAvailabilities(get().availabilities);
     StorageService.saveAssignments(get().assignments);
     StorageService.saveEvents(get().events);
+    StorageService.saveMonthParticipants(get().monthParticipants);
 
     // Commit draft into savedAssignments
     set({

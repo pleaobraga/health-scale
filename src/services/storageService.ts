@@ -5,6 +5,11 @@ const STORAGE_KEYS = {
   AVAILABILITIES: 'scale_manager_availabilities_v1',
   ASSIGNMENTS: 'scale_manager_assignments_v1',
   EVENTS: 'scale_manager_events_v1',
+  MONTH_PARTICIPANTS: 'scale_manager_month_participants_v1',
+};
+
+const INITIAL_MONTH_PARTICIPANTS: Record<string, string[]> = {
+  '2026-10': ['p1', 'p2', 'p3', 'p4', 'p5'],
 };
 
 // Seed initial realistic data for an immediate great user experience
@@ -201,6 +206,31 @@ export class StorageService {
   }
 
   /**
+   * Load month participants ('YYYY-MM' -> personId[])
+   */
+  static getMonthParticipants(): Record<string, string[]> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MONTH_PARTICIPANTS);
+      if (!data) {
+        this.saveMonthParticipants(INITIAL_MONTH_PARTICIPANTS);
+        return INITIAL_MONTH_PARTICIPANTS;
+      }
+      return JSON.parse(data);
+    } catch (err) {
+      console.error('Failed to load month participants from localStorage:', err);
+      return INITIAL_MONTH_PARTICIPANTS;
+    }
+  }
+
+  static saveMonthParticipants(data: Record<string, string[]>): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MONTH_PARTICIPANTS, JSON.stringify(data));
+    } catch (err) {
+      console.error('Failed to save month participants to localStorage:', err);
+    }
+  }
+
+  /**
    * Reset to initial seed state
    */
   static resetToDefault(): void {
@@ -208,6 +238,7 @@ export class StorageService {
     localStorage.removeItem(STORAGE_KEYS.AVAILABILITIES);
     localStorage.removeItem(STORAGE_KEYS.ASSIGNMENTS);
     localStorage.removeItem(STORAGE_KEYS.EVENTS);
+    localStorage.removeItem(STORAGE_KEYS.MONTH_PARTICIPANTS);
   }
 }
 
