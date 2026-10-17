@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Person } from '../../types';
-import { Plus, Check, AlertCircle } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 
 interface CandidatePickerProps {
   dateStr: string;
@@ -22,8 +22,16 @@ export const CandidatePicker: React.FC<CandidatePickerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const availableCandidates = allPersons.filter(
+  const unassignedPersons = allPersons.filter(
     (p) => !assignedPersonIds.includes(p.id)
+  );
+
+  const availablePersons = unassignedPersons.filter((p) =>
+    isPersonAvailable(p.id, dayNumber)
+  );
+
+  const unavailablePersons = unassignedPersons.filter(
+    (p) => !isPersonAvailable(p.id, dayNumber)
   );
 
   useEffect(() => {
@@ -40,7 +48,7 @@ export const CandidatePicker: React.FC<CandidatePickerProps> = ({
     };
   }, [isOpen]);
 
-  if (availableCandidates.length === 0) return null;
+  if (unassignedPersons.length === 0) return null;
 
   return (
     <div className="relative inline-block" ref={containerRef}>
@@ -55,45 +63,77 @@ export const CandidatePicker: React.FC<CandidatePickerProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 bottom-full mb-1 z-30 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 animate-fadeIn">
+        <div className="absolute left-0 bottom-full mb-1 z-30 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 animate-fadeIn">
           <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
             Escalar pessoa
           </div>
-          <div className="max-h-48 overflow-y-auto py-1">
-            {availableCandidates.map((person) => {
-              const available = isPersonAvailable(person.id, dayNumber);
-              return (
-                <button
-                  key={person.id}
-                  type="button"
-                  onClick={() => {
-                    onSelectPerson(person.id);
-                    setIsOpen(false);
-                  }}
-                  className="w-full text-left px-2.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-700/60 flex items-center justify-between text-xs transition"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
+
+          <div className="max-h-52 overflow-y-auto py-1">
+            {availablePersons.length === 0 && (
+              <div className="px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-lg m-1.5 border border-amber-200/80 dark:border-amber-800/80 text-center font-medium">
+                Nenhum profissional com disponibilidade para o dia {dayNumber}
+              </div>
+            )}
+
+            {availablePersons.map((person) => (
+              <button
+                key={person.id}
+                type="button"
+                onClick={() => {
+                  onSelectPerson(person.id);
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-2.5 py-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between text-xs transition cursor-pointer"
+                title={`Adicionar ${person.name}`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: person.color }}
+                  />
+                  <span className="truncate text-slate-700 dark:text-slate-200 font-medium">
+                    {person.name}
+                  </span>
+                </div>
+                <span title="Marcou disponibilidade" className="text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <Check className="w-3.5 h-3.5" />
+                </span>
+              </button>
+            ))}
+
+            {unavailablePersons.length > 0 && (
+              <>
+                <div className="px-2.5 pt-2 pb-1 text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-t border-slate-100 dark:border-slate-700 mt-1">
+                  Sem disponibilidade ({unavailablePersons.length})
+                </div>
+                {unavailablePersons.map((person) => (
+                  <button
+                    key={person.id}
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    className="w-full text-left px-2.5 py-1.5 opacity-40 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between text-xs transition"
+                    title={`${person.name} não possui disponibilidade no dia ${dayNumber} e não pode ser adicionado(a)`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: person.color }}
+                      />
+                      <span className="truncate text-slate-500 dark:text-slate-400 font-medium">
+                        {person.name}
+                      </span>
+                    </div>
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: person.color }}
-                    />
-                    <span className="truncate text-slate-700 dark:text-slate-200 font-medium">{person.name}</span>
-                  </div>
-                  {available ? (
-                    <span title="Marcou disponibilidade" className="text-emerald-600 dark:text-emerald-400 shrink-0">
-                      <Check className="w-3.5 h-3.5" />
-                    </span>
-                  ) : (
-                    <span
-                      title="Não marcou disponibilidade para esta data"
-                      className="text-amber-500 dark:text-amber-400 shrink-0"
+                      title="Sem disponibilidade para esta data"
+                      className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-950/60 px-1.5 py-0.5 rounded shrink-0"
                     >
-                      <AlertCircle className="w-3.5 h-3.5" />
+                      Indisponível
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </div>
       )}

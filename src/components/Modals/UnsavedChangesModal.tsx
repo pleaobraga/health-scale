@@ -45,7 +45,7 @@ export const UnsavedChangesModal: React.FC = () => {
       aria-labelledby="unsaved-modal-title"
       className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-950/30">
           <div className="flex items-center gap-3">
@@ -88,11 +88,11 @@ export const UnsavedChangesModal: React.FC = () => {
         </div>
 
         {/* Actions Footer */}
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-2 justify-end">
+        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-2 justify-end sm:items-center">
           <button
             type="button"
             onClick={handleCancel}
-            className="w-full sm:w-auto px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+            className="w-full sm:w-auto h-9 px-3.5 flex items-center justify-center text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition whitespace-nowrap shrink-0"
           >
             Continuar Editando
           </button>
@@ -100,18 +100,18 @@ export const UnsavedChangesModal: React.FC = () => {
           <button
             type="button"
             onClick={handleDiscardAndExit}
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs"
+            className="w-full sm:w-auto h-9 flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold rounded-xl text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs whitespace-nowrap shrink-0"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5 shrink-0" />
             <span>Descartar Alterações</span>
           </button>
 
           <button
             type="button"
             onClick={handleSaveAndExit}
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-xs"
+            className="w-full sm:w-auto h-9 flex items-center justify-center gap-1.5 px-4 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-xs whitespace-nowrap shrink-0"
           >
-            <Save className="w-3.5 h-3.5" />
+            <Save className="w-3.5 h-3.5 shrink-0" />
             <span>Salvar e Sair</span>
           </button>
         </div>

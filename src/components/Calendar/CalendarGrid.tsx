@@ -277,7 +277,11 @@ export const CalendarGrid: React.FC = () => {
                 isPersonAvailable={isPersonAvailable}
                 onOpenEvents={() => setSelectedDateForEvents(dayInfo.dateStr)}
                 onRemovePerson={(personId) => removePersonFromDay(dayInfo.dateStr, personId)}
-                onAddPerson={(personId) => addPersonToDay(dayInfo.dateStr, personId)}
+                onAddPerson={(personId) => {
+                  if (isPersonAvailable(personId, dayInfo.dayNumber)) {
+                    addPersonToDay(dayInfo.dateStr, personId);
+                  }
+                }}
               />
             );
           })}

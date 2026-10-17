@@ -179,7 +179,11 @@ export const DayCell: React.FC<DayCellProps> = ({
                 assignedPersonIds={assignedPersonIds}
                 allPersons={allPersons}
                 isPersonAvailable={isPersonAvailable}
-                onSelectPerson={onAddPerson}
+                onSelectPerson={(personId) => {
+                  if (isPersonAvailable(personId, dayNumber)) {
+                    onAddPerson(personId);
+                  }
+                }}
               />
             </div>
           </div>
