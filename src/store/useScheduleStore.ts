@@ -48,6 +48,7 @@ interface ScheduleStore {
 
   // Schedule Assignments
   populateMonthWithAvailableCandidates: (month: string) => void;
+  clearMonthAssignments: (month: string) => void;
   removePersonFromDay: (dateStr: string, personId: string) => void;
   addPersonToDay: (dateStr: string, personId: string) => void;
   setDayAssignments: (dateStr: string, personIds: string[]) => void;
@@ -267,6 +268,26 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     set({ assignments: currentAssignments });
     StorageService.saveAssignments(currentAssignments);
+  },
+
+  clearMonthAssignments: (month) => {
+    const currentAssignments = { ...get().assignments };
+    let hasChanges = false;
+    Object.keys(currentAssignments).forEach((dateStr) => {
+      if (dateStr.startsWith(month)) {
+        delete currentAssignments[dateStr];
+        hasChanges = true;
+      }
+    });
+
+    if (hasChanges) {
+      set({
+        assignments: currentAssignments,
+        hasValidated: false,
+        validationErrors: [],
+      });
+      StorageService.saveAssignments(currentAssignments);
+    }
   },
 
   removePersonFromDay: (dateStr, personId) => {

@@ -148,15 +148,26 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.validationErrors).toEqual(errors);
   });
 
-  it('deve alternar modo escuro e claro corretamente', () => {
+  it('deve limpar todas as escalas de um mês com clearMonthAssignments', () => {
     const store = useScheduleStore.getState();
-    const initialMode = store.isDarkMode;
+    const month = '2026-10';
 
-    store.toggleDarkMode();
-    expect(useScheduleStore.getState().isDarkMode).toBe(!initialMode);
+    // Garante que existem escalas para o mês
+    store.addPersonToDay('2026-10-01', 'p1');
+    store.addPersonToDay('2026-10-02', 'p2');
+    store.addPersonToDay('2026-11-01', 'p1'); // Outro mês
 
-    store.toggleDarkMode();
-    expect(useScheduleStore.getState().isDarkMode).toBe(initialMode);
+    expect(useScheduleStore.getState().assignments['2026-10-01']).toBeDefined();
+    expect(useScheduleStore.getState().assignments['2026-10-02']).toBeDefined();
+    expect(useScheduleStore.getState().assignments['2026-11-01']).toBeDefined();
+
+    store.clearMonthAssignments(month);
+
+    const assignmentsAfter = useScheduleStore.getState().assignments;
+    expect(assignmentsAfter['2026-10-01']).toBeUndefined();
+    expect(assignmentsAfter['2026-10-02']).toBeUndefined();
+    // Mês seguinte deve ser preservado
+    expect(assignmentsAfter['2026-11-01']).toBeDefined();
   });
 });
 

@@ -11,7 +11,10 @@ import {
   Wand2,
   CalendarDays,
   Maximize2,
+  Trash2,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportScheduleToExcel } from '../../utils/exportToExcel';
 
 export const CalendarGrid: React.FC = () => {
   const {
@@ -29,6 +32,7 @@ export const CalendarGrid: React.FC = () => {
     removePersonFromDay,
     addPersonToDay,
     populateMonthWithAvailableCandidates,
+    clearMonthAssignments,
     setFullScreenModalOpen,
   } = useScheduleStore();
 
@@ -82,17 +86,37 @@ export const CalendarGrid: React.FC = () => {
         </div>
 
         {/* View / Edit Mode Switch & Tools */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center flex-wrap gap-2.5">
           {isEditMode && (
-            <button
-              type="button"
-              onClick={() => populateMonthWithAvailableCandidates(currentMonth)}
-              title="Preenche dias vagos com as pessoas disponíveis"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition"
-            >
-              <Wand2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Povoar com Disponíveis</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => populateMonthWithAvailableCandidates(currentMonth)}
+                title="Preenche dias vagos com as pessoas disponíveis"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition shadow-2xs"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Povoar com Disponíveis</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    `Deseja realmente limpar todas as escalas de ${formatMonthYear(currentMonth)}?`
+                  );
+                  if (confirmed) {
+                    clearMonthAssignments(currentMonth);
+                  }
+                }}
+                title="Limpar todas as escalas do mês atual"
+                aria-label="Limpar escalas do mês"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Limpar Mês</span>
+              </button>
+            </div>
           )}
 
           {/* Mode Switch Toggle Button */}
@@ -126,6 +150,25 @@ export const CalendarGrid: React.FC = () => {
               <span>Edição</span>
             </button>
           </div>
+
+          {/* Export to Excel Button */}
+          <button
+            type="button"
+            onClick={() =>
+              exportScheduleToExcel({
+                month: currentMonth,
+                persons,
+                assignments,
+                events,
+              })
+            }
+            title="Exportar escala do mês para planilha Excel (.xlsx)"
+            aria-label="Exportar para Excel"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition shadow-2xs"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">Exportar Excel</span>
+          </button>
 
           {/* Full Screen Modal Button */}
           <button

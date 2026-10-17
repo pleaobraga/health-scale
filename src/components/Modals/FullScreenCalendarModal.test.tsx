@@ -54,5 +54,13 @@ describe('FullScreenCalendarModal', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(useScheduleStore.getState().isFullScreenModalOpen).toBe(false);
   });
+
+  it('renders print and excel export buttons', () => {
+    useScheduleStore.setState({ isFullScreenModalOpen: true });
+    render(<FullScreenCalendarModal />);
+
+    expect(screen.getByTitle(/imprimir escala do mês/i)).toBeInTheDocument();
+    expect(screen.getByTitle(/exportar para excel/i)).toBeInTheDocument();
+  });
 });
 
