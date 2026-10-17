@@ -44,7 +44,7 @@ export const CalendarGrid: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors">
+    <div className="w-full bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors shrink-0">
       {/* Calendar Top Toolbar */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-slate-900 transition-colors">
         {/* Month Navigation */}
@@ -154,7 +154,7 @@ export const CalendarGrid: React.FC = () => {
       )}
 
       {/* Main 7-Column Grid (Domingo a Sábado) */}
-      <div className="flex-1 overflow-auto flex flex-col">
+      <div className="flex flex-col">
         <CalendarHeader />
         <div className="grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 flex-1 auto-rows-fr">
           {daysGrid.map((dayInfo) => {
