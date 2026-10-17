@@ -10,11 +10,12 @@ describe('PersonCard Component', () => {
     color: '#3b82f6',
   };
 
-  it('deve renderizar nome, contagem de dias disponíveis e cor do profissional', () => {
+  it('deve renderizar nome, dias em que está trabalhando e contagem de dias disponíveis', () => {
     render(
       <PersonCard
         person={mockPerson}
         availableDaysCount={12}
+        workingDaysCount={3}
         isHighlighted={false}
         isEditMode={false}
         onToggleHighlight={vi.fn()}
@@ -24,6 +25,7 @@ describe('PersonCard Component', () => {
     );
 
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
+    expect(screen.getByText('3 dias trab.')).toBeInTheDocument();
     expect(screen.getByText('12 dias disp.')).toBeInTheDocument();
   });
 

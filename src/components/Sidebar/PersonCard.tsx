@@ -5,6 +5,7 @@ import { Edit2, Eye, EyeOff, CalendarPlus, Check } from 'lucide-react';
 interface PersonCardProps {
   person: Person;
   availableDaysCount: number;
+  workingDaysCount?: number;
   isHighlighted: boolean;
   isEditMode?: boolean;
   onToggleHighlight: () => void;
@@ -15,6 +16,7 @@ interface PersonCardProps {
 export const PersonCard: React.FC<PersonCardProps> = ({
   person,
   availableDaysCount,
+  workingDaysCount = 0,
   isHighlighted,
   isEditMode = false,
   onToggleHighlight,
@@ -39,7 +41,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xs'
       }`}
     >
-      {/* Left: Color dot & Name & Available count */}
+      {/* Left: Color dot & Name & Days info */}
       <div className="flex items-center gap-2.5 min-w-0">
         <span
           className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs"
@@ -49,9 +51,18 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate" title={person.name}>
             {person.name}
           </p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            {availableDaysCount} {availableDaysCount === 1 ? 'dia disp.' : 'dias disp.'}
-          </p>
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <span
+              className="font-semibold text-indigo-600 dark:text-indigo-400"
+              title={`Trabalhando em ${workingDaysCount} ${workingDaysCount === 1 ? 'dia' : 'dias'} neste mês`}
+            >
+              {workingDaysCount} {workingDaysCount === 1 ? 'dia trab.' : 'dias trab.'}
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">•</span>
+            <span title={`Disponível em ${availableDaysCount} ${availableDaysCount === 1 ? 'dia' : 'dias'} neste mês`}>
+              {availableDaysCount} {availableDaysCount === 1 ? 'dia disp.' : 'dias disp.'}
+            </span>
+          </div>
         </div>
       </div>
 

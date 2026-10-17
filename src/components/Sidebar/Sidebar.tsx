@@ -9,6 +9,7 @@ export const Sidebar: React.FC = () => {
   const {
     persons,
     availabilities,
+    assignments,
     currentMonth,
     isEditMode,
     highlightedPersonId,
@@ -52,6 +53,16 @@ export const Sidebar: React.FC = () => {
       (a) => a.personId === personId && a.month === currentMonth
     );
     return avail ? avail.availableDays : [];
+  };
+
+  const getPersonWorkingDaysCount = (personId: string): number => {
+    let count = 0;
+    Object.entries(assignments).forEach(([dateStr, personIds]) => {
+      if (dateStr.startsWith(currentMonth) && personIds.includes(personId)) {
+        count++;
+      }
+    });
+    return count;
   };
 
   return (
@@ -105,11 +116,13 @@ export const Sidebar: React.FC = () => {
         ) : (
           filteredPersons.map((person) => {
             const availDays = getPersonAvailableDays(person.id);
+            const workingDays = getPersonWorkingDaysCount(person.id);
             return (
               <PersonCard
                 key={person.id}
                 person={person}
                 availableDaysCount={availDays.length}
+                workingDaysCount={workingDays}
                 isHighlighted={highlightedPersonId === person.id}
                 isEditMode={isEditMode}
                 onToggleHighlight={() => setHighlightedPersonId(person.id)}

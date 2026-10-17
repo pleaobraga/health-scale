@@ -28,6 +28,7 @@ export const Default: Story = {
       color: '#3b82f6',
     },
     availableDaysCount: 16,
+    workingDaysCount: 4,
     isHighlighted: false,
     isEditMode: true,
     onToggleHighlight: () => {},
