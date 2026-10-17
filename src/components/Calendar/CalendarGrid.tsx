@@ -10,6 +10,7 @@ import {
   Eye,
   Wand2,
   CalendarDays,
+  Maximize2,
 } from 'lucide-react';
 
 export const CalendarGrid: React.FC = () => {
@@ -28,6 +29,7 @@ export const CalendarGrid: React.FC = () => {
     removePersonFromDay,
     addPersonToDay,
     populateMonthWithAvailableCandidates,
+    setFullScreenModalOpen,
   } = useScheduleStore();
 
   const daysGrid = getMonthCalendarGrid(currentMonth);
@@ -124,6 +126,18 @@ export const CalendarGrid: React.FC = () => {
               <span>Edição</span>
             </button>
           </div>
+
+          {/* Full Screen Modal Button */}
+          <button
+            type="button"
+            onClick={() => setFullScreenModalOpen(true)}
+            title="Abrir calendário em tela cheia"
+            aria-label="Abrir calendário em tela cheia"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold transition shadow-2xs"
+          >
+            <Maximize2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <span className="hidden sm:inline">Tela Cheia</span>
+          </button>
         </div>
       </div>
 

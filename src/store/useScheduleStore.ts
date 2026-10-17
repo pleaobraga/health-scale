@@ -10,6 +10,7 @@ interface ScheduleStore {
   isEditMode: boolean;
   highlightedPersonId: string | null;
   selectedDateForEvents: string | null;
+  isFullScreenModalOpen: boolean;
 
   // Data entities
   persons: Person[];
@@ -31,6 +32,7 @@ interface ScheduleStore {
   setEditMode: (val: boolean) => void;
   setHighlightedPersonId: (id: string | null) => void;
   setSelectedDateForEvents: (dateStr: string | null) => void;
+  setFullScreenModalOpen: (open: boolean) => void;
 
   // Person & Availability management
   addPerson: (name: string, color: string, availableDays?: number[]) => void;
@@ -88,6 +90,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   isEditMode: false,
   highlightedPersonId: null,
   selectedDateForEvents: null,
+  isFullScreenModalOpen: false,
   isDarkMode: initialDarkMode,
 
   persons: StorageService.getPersons(),
@@ -138,6 +141,10 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   setSelectedDateForEvents: (dateStr) => {
     set({ selectedDateForEvents: dateStr });
+  },
+
+  setFullScreenModalOpen: (open) => {
+    set({ isFullScreenModalOpen: open });
   },
 
   addPerson: (name, color, availableDays = []) => {
