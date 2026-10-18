@@ -4,7 +4,7 @@
 [![Live Demo](https://img.shields.io/badge/Demo-GitHub%20Pages-indigo?style=flat&logo=github)](https://pleaobraga.github.io/health-scale/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> A modern, 100% client-side Monthly Shift and On-Call Schedule Manager designed for medical teams, clinics, emergency departments, and healthcare professionals. Built with **React 18**, **TypeScript**, **Tailwind CSS**, and **Zustand**.
+> A modern, 100% client-side Monthly Shift and On-Call Schedule Manager designed for medical teams, clinics, emergency departments, and healthcare professionals. Built with **React 19**, **TypeScript**, **Tailwind CSS**, and **Zustand**.
 
 🔗 **Live Application**: [https://pleaobraga.github.io/health-scale/](https://pleaobraga.github.io/health-scale/)
 
@@ -154,14 +154,14 @@ graph TD
 ### Core Technologies
 | Area | Library / Technology | Purpose |
 | :--- | :--- | :--- |
-| **Framework** | [React 18](https://react.dev/) + [TypeScript 5](https://www.typescriptlang.org/) | Component-based UI with strict end-to-end typing |
-| **Build Tool** | [Vite 5](https://vitejs.dev/) | Sub-second HMR and optimized production bundles |
+| **Framework** | [React 19](https://react.dev/) + [TypeScript 5](https://www.typescriptlang.org/) | Component-based UI with strict end-to-end typing |
+| **Build Tool** | [Vite 8](https://vitejs.dev/) | Sub-second HMR and optimized production bundles |
 | **Styling** | [Tailwind CSS 3](https://tailwindcss.com/) | Modern utility-first CSS with dark theme support |
 | **State** | [Zustand 5](https://zustand.docs.pmnd.rs/) | Minimalist, reactive, decoupled global state management |
 | **Routing** | [React Router 7](https://reactrouter.com/) | Declarative client-side Hash routing (`createHashRouter`) |
 | **Icons** | [Lucide React](https://lucide.dev/) | Lightweight, customizable SVG icons |
 | **Spreadsheets** | [SheetJS (xlsx)](https://sheetjs.com/) | Client-side Excel workbook and sheet generation |
-| **Testing** | [Vitest](https://vitest.dev/) + Testing Library | Blazing fast unit and integration test runner |
+| **Testing** | [Vitest 5](https://vitest.dev/) + Testing Library | Blazing fast unit and integration test runner |
 | **Component Workshop** | [Storybook 8](https://storybook.js.org/) | Isolated UI development and component catalog |
 | **Git Hooks** | [Husky](https://typicode.github.io/husky/) | Automated local pre-push validation gate |
 | **CI/CD** | [GitHub Actions](https://github.com/features/actions) | Automatic test validation and GitHub Pages deployment |
