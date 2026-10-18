@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import { useScheduleStore } from '../../store/useScheduleStore'
 import { HoverSidebar } from './HoverSidebar'
+import * as backupService from '../../services/backupService'
 
 const renderWithRouter = (initialPath = '/') => {
   return render(
@@ -86,12 +87,17 @@ describe('HoverSidebar Component', () => {
     expect(useScheduleStore.getState().currentView).toBe('import')
   })
 
-  it('deve exibir o botão de Exportar Dados e permitir o clique', () => {
+  it('deve exibir o botão de Exportar Dados e permitir o clique', async () => {
+    vi.spyOn(backupService, 'exportAppData').mockResolvedValue()
     renderWithRouter()
 
     const exportBtn = screen.getByRole('button', { name: /exportar dados/i })
     expect(exportBtn).toBeInTheDocument()
     fireEvent.click(exportBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText('Exportado!')).toBeInTheDocument()
+    })
   })
 
   it('deve exibir o cabeçalho mobile e abrir o menu em tela cheia ao clicar no botão de menu', () => {

@@ -42,6 +42,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
 
     render(<TestAppRouter initialEntries={['/importar']} />);
 
+    expect(await screen.findByText('Restauração de Backup')).toBeInTheDocument();
     expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument();
     expect(useScheduleStore.getState().currentView).toBe('import');
   });
@@ -87,6 +88,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument();
+      expect(screen.getByText('Restauração de Backup')).toBeInTheDocument();
     });
 
     // Click on settings link

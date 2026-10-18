@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useScheduleStore } from './useScheduleStore';
 
 describe('useScheduleStore - Gerenciamento de Estado Global', () => {
@@ -89,9 +89,14 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     store.addPersonToDay(dateStr, personId);
     expect(store.canDeletePerson(personId)).toBe(false);
 
-    // Attempting to delete must fail and return false
+    // Attempting to delete must fail and return false (warns about referential integrity)
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const deleteSuccess = store.deletePerson(personId);
     expect(deleteSuccess).toBe(false);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Não é possível excluir o profissional')
+    );
+    warnSpy.mockRestore();
     expect(useScheduleStore.getState().persons.some((p) => p.id === personId)).toBe(true);
 
     // Deactivate person

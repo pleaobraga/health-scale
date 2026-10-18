@@ -20,18 +20,20 @@ describe('ImportView Component', () => {
     useScheduleStore.setState({ currentView: 'import' });
   });
 
-  it('deve renderizar o banner de boas-vindas e a área de dropzone', () => {
+  it('deve renderizar o banner de boas-vindas e a área de dropzone', async () => {
     renderWithRouter();
 
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
     expect(screen.getByText(/Gerenciador de Escalas Mensais/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /começar do zero/i })).toBeInTheDocument();
     expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument();
     expect(screen.getByText(/Clique para selecionar/i)).toBeInTheDocument();
   });
 
-  it('deve permitir começar do zero limpando dados e navegando para a tela de pessoas', () => {
+  it('deve permitir começar do zero limpando dados e navegando para a tela de pessoas', async () => {
     renderWithRouter();
 
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
     const startZeroBtn = screen.getByRole('button', { name: /começar do zero/i });
     fireEvent.click(startZeroBtn);
 
@@ -41,6 +43,8 @@ describe('ImportView Component', () => {
 
   it('deve exibir mensagem de erro quando arquivo inválido for selecionado', async () => {
     renderWithRouter();
+
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
 
     const invalidFile = new File(['corrupt-data'], 'bad.json', { type: 'application/json' });
     const input = screen.getByTestId('backup-file-input');
