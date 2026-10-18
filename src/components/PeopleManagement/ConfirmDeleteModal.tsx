@@ -72,7 +72,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             Tem certeza que deseja excluir o cadastro de <strong>{person.name}</strong>?
           </p>
           <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 text-xs text-rose-900 dark:text-rose-200">
-            Esta ação removerá definitivamente o profissional do cadastro global, de todas as vinculações mensais e de quaisquer plantões já escalados.
+            Este profissional não possui escalas vinculadas. Esta ação removerá definitivamente o cadastro do sistema de forma irreversível.
           </div>
         </div>
 

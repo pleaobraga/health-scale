@@ -18,7 +18,11 @@ export class StorageService {
       if (!data) {
         return [];
       }
-      return JSON.parse(data);
+      const parsed: Person[] = JSON.parse(data);
+      return parsed.map((p) => ({
+        ...p,
+        active: p.active !== false,
+      }));
     } catch (err) {
       console.error('Failed to load persons from localStorage:', err);
       return [];

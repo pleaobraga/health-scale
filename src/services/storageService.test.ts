@@ -13,14 +13,15 @@ describe('StorageService - Persistência Local-First', () => {
   });
 
 
-  it('deve salvar e recuperar pessoas atualizadas', () => {
+  it('deve salvar e recuperar pessoas atualizadas garantindo active padrão true', () => {
     const newPersons: Person[] = [
-      { id: 'custom-1', name: 'Dr. Teste Silva', color: '#ef4444' },
+      { id: 'custom-1', name: 'Dr. Teste Silva', color: '#ef4444', active: true },
     ];
     StorageService.savePersons(newPersons);
 
     const loaded = StorageService.getPersons();
     expect(loaded).toEqual(newPersons);
+    expect(loaded[0].active).toBe(true);
   });
 
   it('deve persistir e recuperar disponibilidades mensais', () => {

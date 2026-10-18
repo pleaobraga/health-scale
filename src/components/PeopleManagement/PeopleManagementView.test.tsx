@@ -7,11 +7,14 @@ describe('PeopleManagementView Component', () => {
   beforeEach(() => {
     useScheduleStore.setState({
       persons: [
-        { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6' },
-        { id: 'p2', name: 'Dr. Lucas Oliveira', color: '#10b981' },
+        { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6', active: true },
+        { id: 'p2', name: 'Dr. Lucas Oliveira', color: '#10b981', active: true },
       ],
       monthParticipants: {
         '2026-10': ['p1'],
+      },
+      assignments: {
+        '2026-10-05': ['p1'], // p1 possui histórico em escalas
       },
       currentMonth: '2026-10',
     });
@@ -23,7 +26,7 @@ describe('PeopleManagementView Component', () => {
     expect(screen.getByText('Cadastro Geral de Funcionários')).toBeInTheDocument();
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
     expect(screen.getByText('Dr. Lucas Oliveira')).toBeInTheDocument();
-    expect(screen.getByText(/2 pessoas/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 ativos/i)).toBeInTheDocument();
   });
 
   it('deve filtrar funcionários pelo campo de busca', () => {
@@ -36,7 +39,7 @@ describe('PeopleManagementView Component', () => {
     expect(screen.queryByText('Dr. Lucas Oliveira')).not.toBeInTheDocument();
   });
 
-  it('deve abrir o modal e cadastrar um novo funcionário global', () => {
+  it('deve abrir o modal e cadastrar um novo funcionário global com active: true', () => {
     render(<PeopleManagementView />);
 
     const newBtn = screen.getByRole('button', { name: /novo funcionário/i });
@@ -50,9 +53,9 @@ describe('PeopleManagementView Component', () => {
     const submitBtn = screen.getByRole('button', { name: /cadastrar funcionário/i });
     fireEvent.click(submitBtn);
 
-    expect(useScheduleStore.getState().persons.some((p) => p.name === 'Enf. Juliana Silva')).toBe(
-      true
-    );
+    const created = useScheduleStore.getState().persons.find((p) => p.name === 'Enf. Juliana Silva');
+    expect(created).toBeDefined();
+    expect(created?.active).toBe(true);
   });
 
   it('deve permitir editar um funcionário existente', () => {
@@ -74,9 +77,58 @@ describe('PeopleManagementView Component', () => {
     );
   });
 
-  it('deve abrir diálogo de confirmação e excluir funcionário definitivamente', () => {
+  it('deve interceptar exclusão de pessoa com histórico em escala e exibir modal de desativação', () => {
     render(<PeopleManagementView />);
 
+    // Dra. Camila (p1) possui histórico em assignments ('2026-10-05')
+    const deleteBtn = screen.getByRole('button', {
+      name: /excluir cadastro de dra\. camila santos/i,
+    });
+    fireEvent.click(deleteBtn);
+
+    // Deve abrir o modal de interceptação e aviso de integridade
+    expect(screen.getByText('Histórico em Escala Detectado')).toBeInTheDocument();
+    expect(
+      screen.getByText(/este profissional já possui histórico em escalas e não pode ser excluído/i)
+    ).toBeInTheDocument();
+
+    // Confirmar desativação
+    const confirmDeactivateBtn = screen.getByRole('button', {
+      name: /sim, desativar profissional/i,
+    });
+    fireEvent.click(confirmDeactivateBtn);
+
+    // O status do profissional deve mudar para active: false
+    const camila = useScheduleStore.getState().persons.find((p) => p.id === 'p1');
+    expect(camila?.active).toBe(false);
+
+    // O histórico na escala ('2026-10-05') permanece preservado
+    expect(useScheduleStore.getState().assignments['2026-10-05']).toContain('p1');
+  });
+
+  it('deve exibir badge "Inativo" e permitir reativar um funcionário inativo', () => {
+    useScheduleStore.setState({
+      persons: [
+        { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6', active: false },
+      ],
+    });
+
+    render(<PeopleManagementView />);
+
+    expect(screen.getByText('Inativo')).toBeInTheDocument();
+    const reactivateBtn = screen.getByRole('button', { name: /reativar/i });
+    expect(reactivateBtn).toBeInTheDocument();
+
+    fireEvent.click(reactivateBtn);
+
+    const camila = useScheduleStore.getState().persons.find((p) => p.id === 'p1');
+    expect(camila?.active).toBe(true);
+  });
+
+  it('deve abrir diálogo de confirmação tradicional e excluir funcionário definitivamente quando ele NÃO tiver histórico de escala', () => {
+    render(<PeopleManagementView />);
+
+    // Dr. Lucas (p2) não possui nenhuma escala em assignments
     const deleteBtn = screen.getByRole('button', {
       name: /excluir cadastro de dr\. lucas oliveira/i,
     });

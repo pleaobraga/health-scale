@@ -1,7 +1,9 @@
 export interface Person {
   id: string;
   name: string;
-  color: string; // Tailwind 500/600 hex code
+  color: string; // Tailwind hex code
+  active?: boolean; // true por padrão
+  [key: string]: unknown;
 }
 
 export interface MonthlyAvailability {

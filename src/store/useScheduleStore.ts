@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types';
 import { StorageService } from '../services/storageService';
+import { PersonService } from '../services/personService';
 import { validateSchedule } from '../utils/validateSchedule';
 import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/dateUtils';
 
@@ -50,7 +51,10 @@ interface ScheduleStore {
   // Person & Availability management
   addPerson: (name: string, color: string, availableDays?: number[]) => void;
   updatePerson: (id: string, name: string, color: string) => void;
-  deletePerson: (id: string) => void;
+  deletePerson: (id: string, force?: boolean) => boolean;
+  canDeletePerson: (id: string) => boolean;
+  deactivatePerson: (id: string) => void;
+  reactivatePerson: (id: string) => void;
   setPersonAvailability: (personId: string, month: string, availableDays: number[]) => void;
   togglePersonDayAvailability: (personId: string, month: string, day: number) => void;
   setQuickAvailability: (
@@ -266,7 +270,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   addPerson: (name, color, availableDays = []) => {
     const id = `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const newPerson: Person = { id, name, color };
+    const newPerson: Person = { id, name, color, active: true };
     const updatedPersons = [...get().persons, newPerson];
 
     let updatedAvails = [...get().availabilities];
@@ -296,7 +300,35 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     set({ persons: updated });
   },
 
-  deletePerson: (id) => {
+  canDeletePerson: (id) => {
+    return PersonService.canDeletePerson(id, get().assignments);
+  },
+
+  deactivatePerson: (id) => {
+    const updatedPersons = get().persons.map((p) =>
+      p.id === id ? { ...p, active: false } : p
+    );
+    StorageService.savePersons(updatedPersons);
+    set({
+      persons: updatedPersons,
+      highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
+    });
+  },
+
+  reactivatePerson: (id) => {
+    const updatedPersons = get().persons.map((p) =>
+      p.id === id ? { ...p, active: true } : p
+    );
+    StorageService.savePersons(updatedPersons);
+    set({ persons: updatedPersons });
+  },
+
+  deletePerson: (id, force = false) => {
+    if (!force && !get().canDeletePerson(id)) {
+      console.warn(`Não é possível excluir o profissional ${id} permanentemente: possui histórico em escalas.`);
+      return false;
+    }
+
     const updatedPersons = get().persons.filter((p) => p.id !== id);
     const updatedAvails = get().availabilities.filter((a) => a.personId !== id);
 
@@ -325,6 +357,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       monthParticipants: updatedMonthParticipants,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
     });
+    return true;
   },
 
   setPersonAvailability: (personId, month, availableDays) => {

@@ -3,7 +3,9 @@ import { useScheduleStore } from '../../store/useScheduleStore';
 import { Person } from '../../types';
 import { GlobalPersonModal } from './GlobalPersonModal';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
-import { Users, UserPlus, Search, Edit2, Trash2, CalendarCheck2, ShieldCheck } from 'lucide-react';
+import { DeactivatePersonModal } from './DeactivatePersonModal';
+import { PersonManagementCard } from './PersonManagementCard';
+import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react';
 
 export const PeopleManagementView: React.FC = () => {
   const {
@@ -13,16 +15,23 @@ export const PeopleManagementView: React.FC = () => {
     addPerson,
     updatePerson,
     deletePerson,
+    canDeletePerson,
+    deactivatePerson,
+    reactivatePerson,
   } = useScheduleStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [personToEdit, setPersonToEdit] = useState<Person | null>(null);
   const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
+  const [personToDeactivate, setPersonToDeactivate] = useState<Person | null>(null);
 
   const filteredPersons = persons.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
   );
+
+  const activeCount = persons.filter((p) => p.active !== false).length;
+  const inactiveCount = persons.filter((p) => p.active === false).length;
 
   const handleOpenAdd = () => {
     setPersonToEdit(null);
@@ -34,8 +43,12 @@ export const PeopleManagementView: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenDelete = (person: Person) => {
-    setPersonToDelete(person);
+  const handleDeleteRequest = (person: Person) => {
+    if (canDeletePerson(person.id)) {
+      setPersonToDelete(person);
+    } else {
+      setPersonToDeactivate(person);
+    }
   };
 
   const handleSavePerson = (name: string, color: string) => {
@@ -113,9 +126,16 @@ export const PeopleManagementView: React.FC = () => {
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Total Cadastrado:</span>
           </div>
-          <span className="text-sm font-extrabold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
-            {persons.length} {persons.length === 1 ? 'pessoa' : 'pessoas'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
+              {activeCount} ativo{activeCount !== 1 ? 's' : ''}
+            </span>
+            {inactiveCount > 0 && (
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800">
+                {inactiveCount} inativo{inactiveCount > 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -157,79 +177,19 @@ export const PeopleManagementView: React.FC = () => {
           {filteredPersons.map((person) => {
             const monthsCount = getParticipatingMonthsCount(person.id);
             const isInCurrentMonth = currentMonthParticipants.includes(person.id);
+            const canDelete = canDeletePerson(person.id);
 
             return (
-              <div
+              <PersonManagementCard
                 key={person.id}
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between gap-4 shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition group"
-              >
-                {/* Person Card Top: Avatar & Info */}
-                <div className="flex items-start gap-3.5">
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0"
-                    style={{ backgroundColor: person.color }}
-                  >
-                    {person.name.charAt(0).toUpperCase()}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h3
-                      className="text-sm font-bold text-slate-900 dark:text-white truncate"
-                      title={person.name}
-                    >
-                      {person.name}
-                    </h3>
-
-                    {/* Color Swatch & Badge */}
-                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                      <span
-                        className="w-3 h-3 rounded-full shrink-0 border border-black/10 dark:border-white/10"
-                        style={{ backgroundColor: person.color }}
-                        title={person.color}
-                      />
-                      <span className="text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                        {person.color.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Badges / Stats */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <CalendarCheck2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                    <span>{monthsCount} {monthsCount === 1 ? 'mês ativo' : 'meses ativos'}</span>
-                  </span>
-
-                  {isInCurrentMonth && (
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-900/60">
-                      Na escala deste mês
-                    </span>
-                  )}
-                </div>
-
-                {/* Card Action Buttons */}
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenEdit(person)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 transition"
-                  >
-                    <Edit2 className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Editar</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleOpenDelete(person)}
-                    title={`Excluir cadastro de ${person.name}`}
-                    aria-label={`Excluir cadastro de ${person.name}`}
-                    className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+                person={person}
+                monthsCount={monthsCount}
+                isInCurrentMonth={isInCurrentMonth}
+                canDelete={canDelete}
+                onEdit={handleOpenEdit}
+                onDeleteRequest={handleDeleteRequest}
+                onReactivate={reactivatePerson}
+              />
             );
           })}
         </div>
@@ -243,7 +203,7 @@ export const PeopleManagementView: React.FC = () => {
         onSave={handleSavePerson}
       />
 
-      {/* Confirmation Delete Dialog */}
+      {/* Confirmation Permanent Delete Dialog (0 historical allocations) */}
       <ConfirmDeleteModal
         isOpen={Boolean(personToDelete)}
         person={personToDelete}
@@ -255,7 +215,19 @@ export const PeopleManagementView: React.FC = () => {
           }
         }}
       />
+
+      {/* Deactivate Interception Dialog (Has historical allocations) */}
+      <DeactivatePersonModal
+        isOpen={Boolean(personToDeactivate)}
+        person={personToDeactivate}
+        onClose={() => setPersonToDeactivate(null)}
+        onConfirm={() => {
+          if (personToDeactivate) {
+            deactivatePerson(personToDeactivate.id);
+            setPersonToDeactivate(null);
+          }
+        }}
+      />
     </div>
   );
 };
-

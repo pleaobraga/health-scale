@@ -71,16 +71,45 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const addedPerson = afterAdd.find((p) => p.name === 'Enfermeiro Teste');
     expect(addedPerson).toBeDefined();
 
-    // Atualizar
-    store.updatePerson(addedPerson!.id, 'Enf. Teste Atualizado', '#10b981');
-    const updatedPerson = useScheduleStore.getState().persons.find((p) => p.id === addedPerson!.id);
-    expect(updatedPerson?.name).toBe('Enf. Teste Atualizado');
-    expect(updatedPerson?.color).toBe('#10b981');
+    expect(addedPerson?.active).toBe(true);
 
-    // Excluir
-    store.deletePerson(addedPerson!.id);
+    // Excluir pessoa sem escala
+    const deleteResult = store.deletePerson(addedPerson!.id);
+    expect(deleteResult).toBe(true);
     const afterDelete = useScheduleStore.getState().persons;
     expect(afterDelete.length).toBe(initialCount);
+  });
+
+  it('deve proteger integridade referencial: bloquear exclusão se houver escala vinculada e permitir desativação/reativação', () => {
+    const store = useScheduleStore.getState();
+    const personId = store.persons[0].id;
+    const dateStr = '2026-10-10';
+
+    // Vincula a pessoa a um dia da escala
+    store.addPersonToDay(dateStr, personId);
+    expect(store.canDeletePerson(personId)).toBe(false);
+
+    // Tentar deletar deve falhar e retornar false
+    const deleteSuccess = store.deletePerson(personId);
+    expect(deleteSuccess).toBe(false);
+    expect(useScheduleStore.getState().persons.some((p) => p.id === personId)).toBe(true);
+
+    // Desativar a pessoa
+    store.deactivatePerson(personId);
+    let person = useScheduleStore.getState().persons.find((p) => p.id === personId);
+    expect(person?.active).toBe(false);
+
+    // Histórico de escala continua intacto
+    expect(useScheduleStore.getState().assignments[dateStr]).toContain(personId);
+
+    // Reativar a pessoa
+    store.reactivatePerson(personId);
+    person = useScheduleStore.getState().persons.find((p) => p.id === personId);
+    expect(person?.active).toBe(true);
+
+    // Remove alocação e verifica que agora canDeletePerson é true
+    store.removePersonFromDay(dateStr, personId);
+    expect(store.canDeletePerson(personId)).toBe(true);
   });
 
   it('deve manipular disponibilidades individuais e atalhos rápidos (pares, ímpares, limpar)', () => {

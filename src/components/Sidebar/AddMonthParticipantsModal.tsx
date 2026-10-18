@@ -26,9 +26,9 @@ export const AddMonthParticipantsModal: React.FC<AddMonthParticipantsModalProps>
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [modalSearch, setModalSearch] = useState('');
 
-  // Eligible persons are global persons NOT yet in this month
+  // Eligible persons are ACTIVE global persons NOT yet in this month
   const eligiblePersons = allPersons.filter(
-    (p) => !currentParticipantIds.includes(p.id)
+    (p) => p.active !== false && !currentParticipantIds.includes(p.id)
   );
 
   const filteredEligible = eligiblePersons.filter((p) =>
