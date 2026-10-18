@@ -1,0 +1,73 @@
+name: Deploy para GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Permissões mínimas necessárias para publicação no GitHub Pages via GITHUB_TOKEN nativo
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Cancela execuções anteriores em andamento caso novos commits sejam enviados
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Validação & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: 2. Setup do pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: 3. Setup do Node.js com cache do pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 4. Instalação estrita de dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: 5. Checagem de tipos TypeScript (tsc)
+        run: pnpm typecheck
+
+      - name: 6. Validação de lint (ESLint)
+        run: pnpm lint
+
+      - name: 7. Execução dos testes automatizados (Vitest)
+        run: pnpm test:run
+
+      - name: 8. Build de produção (Vite)
+        run: pnpm build
+
+      - name: 9. Configuração do GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: 10. Upload do artefato da pasta ./dist
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+  deploy:
+    name: Publicação no GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 11. Publicação final no Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+

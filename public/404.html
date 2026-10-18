@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gerenciador de Escalas Mensais</title>
+    <script>
+      // Single Page Application (SPA) redirect script for GitHub Pages
+      // When a direct route is accessed or refreshed without hash (e.g. /health-scale/pessoas),
+      // GitHub Pages serves this 404.html. The script redirects to the corresponding HashRouter path:
+      // https://<owner>.github.io/<repo>/pessoas -> https://<owner>.github.io/<repo>/#/pessoas
+      (function () {
+        var path = window.location.pathname;
+        var segments = path.split('/').filter(Boolean);
+        var repo = segments.length > 0 ? segments[0] : '';
+        var remainingPath = segments.slice(1).join('/');
+        var search = window.location.search || '';
+        var hash = window.location.hash || '';
+
+        var targetUrl =
+          window.location.origin +
+          (repo ? '/' + repo : '') +
+          '/#' +
+          (remainingPath ? '/' + remainingPath : '/') +
+          search +
+          hash;
+
+        window.location.replace(targetUrl);
+      })();
+    </script>
+  </head>
+  <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f8fafc; color: #334155;">
+    <p>Redirecionando para a aplicação...</p>
+  </body>
+</html>
+
