@@ -8,6 +8,7 @@ export const HoverSidebar: React.FC = () => {
   const { currentView, setCurrentView, isDarkMode, toggleDarkMode } = useScheduleStore();
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
   const navItems: { id: NavigationTab; label: string; icon: React.FC<{ className?: string }> }[] = [
     {
@@ -43,15 +44,25 @@ export const HoverSidebar: React.FC = () => {
   return (
     <aside
       data-testid="hover-sidebar"
-      className="group/sidebar h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-sm overflow-hidden select-none"
+      className={`group/sidebar sticky top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out z-40 ${
+        isMobileExpanded ? 'w-64' : 'w-16'
+      } lg:w-16 lg:hover:w-64 shrink-0 shadow-sm overflow-hidden select-none`}
     >
       {/* Top: Logo & App Branding */}
       <div>
-        <div className="flex items-center gap-3 px-3.5 py-4 border-b border-slate-100 dark:border-slate-800/80">
+        <div
+          onClick={() => setIsMobileExpanded(!isMobileExpanded)}
+          className="flex items-center gap-3 px-3.5 py-4 border-b border-slate-100 dark:border-slate-800/80 cursor-pointer lg:cursor-default"
+          title="Alternar menu lateral"
+        >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
             <CalendarDays className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+          <div
+            className={`${
+              isMobileExpanded ? 'opacity-100' : 'opacity-0'
+            } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
+          >
             <h1 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
               Escalas Mensais
             </h1>
@@ -71,7 +82,10 @@ export const HoverSidebar: React.FC = () => {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setCurrentView(item.id)}
+                onClick={() => {
+                  setCurrentView(item.id);
+                  setIsMobileExpanded(false);
+                }}
                 title={item.label}
                 aria-label={item.label}
                 className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all ${
@@ -83,7 +97,11 @@ export const HoverSidebar: React.FC = () => {
                 <div className="w-5 h-5 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+                <span
+                  className={`${
+                    isMobileExpanded ? 'opacity-100' : 'opacity-0'
+                  } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
+                >
                   {item.label}
                 </span>
               </button>
@@ -110,7 +128,11 @@ export const HoverSidebar: React.FC = () => {
               <Download className="w-4 h-4" />
             )}
           </div>
-          <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+          <span
+            className={`${
+              isMobileExpanded ? 'opacity-100' : 'opacity-0'
+            } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
+          >
             {exportSuccess ? 'Exportado!' : 'Exportar Dados'}
           </span>
         </button>
@@ -130,7 +152,11 @@ export const HoverSidebar: React.FC = () => {
               <Moon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             )}
           </div>
-          <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+          <span
+            className={`${
+              isMobileExpanded ? 'opacity-100' : 'opacity-0'
+            } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
+          >
             {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
           </span>
         </button>

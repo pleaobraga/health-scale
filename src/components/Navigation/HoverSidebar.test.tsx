@@ -72,5 +72,22 @@ describe('HoverSidebar Component', () => {
     expect(exportBtn).toBeInTheDocument();
     fireEvent.click(exportBtn);
   });
+
+  it('deve alternar a expansão no mobile ao clicar no cabeçalho do menu', () => {
+    render(<HoverSidebar />);
+
+    const headerToggle = screen.getByTitle(/alternar menu lateral/i);
+    const sidebar = screen.getByTestId('hover-sidebar');
+
+    expect(sidebar.className).toContain('w-16');
+
+    // Clica para expandir no mobile
+    fireEvent.click(headerToggle);
+    expect(sidebar.className).toContain('w-64');
+
+    // Clica para recolher no mobile
+    fireEvent.click(headerToggle);
+    expect(sidebar.className).toContain('w-16');
+  });
 });
 

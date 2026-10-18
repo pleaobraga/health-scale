@@ -38,21 +38,21 @@ export const App: React.FC = () => {
   }, [setCurrentView])
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans transition-colors">
+    <div className="min-h-screen lg:h-screen w-screen overflow-x-hidden lg:overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans transition-colors">
       {/* 1. Global Navigation: Hover Sidebar (Retractable on hover) */}
       <HoverSidebar />
 
-      {/* Main Content Area */}
-      <div className="flex-1 h-full overflow-hidden flex flex-col min-w-0">
+      {/* Main Content Area: Scrolls on < 1024px (whole page scrollbar) */}
+      <div className="flex-1 min-h-screen lg:h-full overflow-y-auto lg:overflow-hidden flex flex-col min-w-0 custom-scrollbar">
         {currentView === 'calendar' ? (
-          <main className="flex-1 flex flex-col lg:flex-row gap-5 p-3 sm:p-4 md:p-5 overflow-hidden max-w-[2000px] w-full mx-auto min-h-0">
-            {/* Left Month Sidebar: Pessoas do Mês */}
-            <div className="w-full lg:w-[21rem] shrink-0 h-full overflow-hidden flex flex-col">
+          <main className="flex-1 flex flex-col lg:flex-row gap-5 p-3 sm:p-4 md:p-5 lg:overflow-hidden max-w-[2000px] w-full mx-auto min-h-0">
+            {/* Left Month Sidebar: Pessoas do Mês (Minimizes / Expands on screens < 1024px) */}
+            <div className="w-full lg:w-[21rem] shrink-0 lg:h-full flex flex-col">
               <Sidebar />
             </div>
 
             {/* Central / Right Area: Calendar & Validation */}
-            <div className="flex-1 h-full overflow-y-auto pr-1 flex flex-col gap-5 min-w-0 pb-6 custom-scrollbar">
+            <div className="flex-1 lg:h-full lg:overflow-y-auto pr-0 lg:pr-1 flex flex-col gap-5 min-w-0 pb-6 custom-scrollbar">
               <CalendarGrid />
               <ValidationPanel />
             </div>

@@ -86,5 +86,21 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     // MAS continua no cadastro geral de persons!
     expect(useScheduleStore.getState().persons.some((p) => p.id === 'p1')).toBe(true);
   });
+
+  it('deve alternar entre recolhido e expandido ao clicar no botão de alternância', () => {
+    render(<Sidebar />);
+
+    const toggleBtn = screen.getByTestId('toggle-sidebar-collapse');
+    expect(toggleBtn).toBeInTheDocument();
+    expect(toggleBtn).toHaveTextContent(/recolher/i);
+
+    // Clica para recolher/minimizar
+    fireEvent.click(toggleBtn);
+    expect(toggleBtn).toHaveTextContent(/expandir/i);
+
+    // Clica novamente para expandir
+    fireEvent.click(toggleBtn);
+    expect(toggleBtn).toHaveTextContent(/recolher/i);
+  });
 });
 
