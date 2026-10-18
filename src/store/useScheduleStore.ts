@@ -69,7 +69,9 @@ interface ScheduleStore {
 
   // Events management
   addEvent: (event: Omit<CalendarEvent, 'id'>) => void;
+  updateEvent: (eventId: string, event: Partial<Omit<CalendarEvent, 'id'>>) => void;
   deleteEvent: (eventId: string) => void;
+
 
   // Audit and Persistence
   validateCurrentSchedule: () => ValidationError[];
@@ -489,11 +491,20 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     set({ events: updated });
   },
 
+  updateEvent: (eventId, updatedData) => {
+    const updated = get().events.map((e) =>
+      e.id === eventId ? { ...e, ...updatedData } : e
+    );
+    StorageService.saveEvents(updated);
+    set({ events: updated });
+  },
+
   deleteEvent: (eventId) => {
     const updated = get().events.filter((e) => e.id !== eventId);
     StorageService.saveEvents(updated);
     set({ events: updated });
   },
+
 
   validateCurrentSchedule: () => {
     const errors = validateSchedule({

@@ -144,6 +144,17 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const added = updatedEvents.find((e) => e.title === 'Plantão Extraordinário');
     expect(added).toBeDefined();
 
+    // Atualizar evento
+    store.updateEvent(added!.id, {
+      title: 'Plantão Extraordinário Atualizado',
+      time: '20:00',
+      description: 'Alterado pelo coordenador',
+    });
+    const modified = useScheduleStore.getState().events.find((e) => e.id === added!.id);
+    expect(modified?.title).toBe('Plantão Extraordinário Atualizado');
+    expect(modified?.time).toBe('20:00');
+    expect(modified?.description).toBe('Alterado pelo coordenador');
+
     store.deleteEvent(added!.id);
     expect(useScheduleStore.getState().events.length).toBe(initialEventsCount);
   });
