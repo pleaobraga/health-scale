@@ -76,4 +76,50 @@ describe('AddMonthParticipantsModal Component', () => {
     expect(handleAdd).toHaveBeenCalledWith(['p3']);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it('deve disparar onGoToGlobalManagement e fechar o modal ao clicar no botão no estado vazio', () => {
+    const handleClose = vi.fn();
+    const handleGoToPeople = vi.fn();
+
+    render(
+      <AddMonthParticipantsModal
+        isOpen={true}
+        onClose={handleClose}
+        currentMonth="2026-10"
+        allPersons={[]}
+        currentParticipantIds={[]}
+        onAddParticipants={vi.fn()}
+        onGoToGlobalManagement={handleGoToPeople}
+      />
+    );
+
+    const btn = screen.getByRole('button', { name: /Ir para Gerenciar Pessoas/i });
+    fireEvent.click(btn);
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+    expect(handleGoToPeople).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve disparar onGoToGlobalManagement e fechar o modal pelo rodapé quando houver candidatos', () => {
+    const handleClose = vi.fn();
+    const handleGoToPeople = vi.fn();
+
+    render(
+      <AddMonthParticipantsModal
+        isOpen={true}
+        onClose={handleClose}
+        currentMonth="2026-10"
+        allPersons={mockPersons}
+        currentParticipantIds={[]}
+        onAddParticipants={vi.fn()}
+        onGoToGlobalManagement={handleGoToPeople}
+      />
+    );
+
+    const btn = screen.getByRole('button', { name: /Gerenciar Pessoas/i });
+    fireEvent.click(btn);
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+    expect(handleGoToPeople).toHaveBeenCalledTimes(1);
+  });
 });

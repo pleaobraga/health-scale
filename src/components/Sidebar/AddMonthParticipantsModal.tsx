@@ -255,9 +255,24 @@ export const AddMonthParticipantsModal: React.FC<AddMonthParticipantsModalProps>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-            <strong>{selectedIds.length}</strong> de {eligiblePersons.length} selecionados
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              <strong>{selectedIds.length}</strong> de {eligiblePersons.length} selecionados
+            </span>
+            {onGoToGlobalManagement && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onGoToGlobalManagement();
+                }}
+                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 transition cursor-pointer"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Gerenciar Pessoas</span>
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <button

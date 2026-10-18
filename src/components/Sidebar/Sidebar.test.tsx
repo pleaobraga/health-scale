@@ -1,7 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useScheduleStore } from '../../store/useScheduleStore';
+
+const renderSidebar = () =>
+  render(
+    <MemoryRouter>
+      <Sidebar />
+    </MemoryRouter>
+  );
 
 describe('Sidebar Component (Pessoas do Mês)', () => {
   beforeEach(() => {
@@ -24,7 +32,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
   });
 
   it('deve listar APENAS as pessoas vinculadas ao mês corrente', () => {
-    render(<Sidebar />);
+    renderSidebar();
 
     // p1 and p2 are in the month
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
@@ -42,14 +50,14 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
       },
     });
 
-    render(<Sidebar />);
+    renderSidebar();
 
     expect(screen.getByText('Nenhuma pessoa no mês')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /\+ adicionar pessoas ao mês/i })).toBeInTheDocument();
   });
 
   it('deve abrir modal de vinculação e adicionar nova pessoa ao mês', () => {
-    render(<Sidebar />);
+    renderSidebar();
 
     const vincularBtn = screen.getByRole('button', { name: /vincular/i });
     fireEvent.click(vincularBtn);
@@ -72,7 +80,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
   });
 
   it('deve remover uma pessoa do mês sem excluí-la do cadastro geral de pessoas', () => {
-    render(<Sidebar />);
+    renderSidebar();
 
     const removeBtn = screen.getByRole('button', {
       name: /remover dra\. camila santos deste mês/i,
@@ -88,7 +96,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
   });
 
   it('deve alternar entre recolhido e expandido ao clicar no botão de alternância', () => {
-    render(<Sidebar />);
+    renderSidebar();
 
     const toggleBtn = screen.getByTestId('toggle-sidebar-collapse');
     expect(toggleBtn).toBeInTheDocument();

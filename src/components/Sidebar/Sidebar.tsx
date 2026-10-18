@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useScheduleStore } from '../../store/useScheduleStore';
 import { PersonCard } from './PersonCard';
 import { AddMonthParticipantsModal } from './AddMonthParticipantsModal';
@@ -8,6 +9,7 @@ import { formatMonthYear } from '../../utils/dateUtils';
 import { UserPlus, Users, Sparkles, Search, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
+  const navigate = useNavigate();
   const {
     persons,
     monthParticipants,
@@ -214,7 +216,10 @@ export const Sidebar: React.FC = () => {
         allPersons={persons}
         currentParticipantIds={currentParticipantIds}
         onAddParticipants={(ids) => addPersonsToMonth(ids, currentMonth)}
-        onGoToGlobalManagement={() => setCurrentView('people')}
+        onGoToGlobalManagement={() => {
+          setCurrentView('people');
+          navigate('/pessoas');
+        }}
       />
 
       {/* Month Availability Modal */}
