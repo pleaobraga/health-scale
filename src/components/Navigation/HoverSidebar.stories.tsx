@@ -52,3 +52,15 @@ export const DarkMode: Story = {
   },
 };
 
+export const MobileView: Story = {
+  parameters: {
+    viewport: {
+      defaultViewport: 'mobile1',
+    },
+  },
+  render: () => {
+    useScheduleStore.setState({ currentView: 'calendar', isDarkMode: false });
+    return <HoverSidebar />;
+  },
+};
+

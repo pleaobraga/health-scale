@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarDays, Users, Sun, Moon, Download, Upload, Check } from 'lucide-react';
+import { CalendarDays, Users, Sun, Moon, Download, Upload, Check, Menu, X } from 'lucide-react';
 import { useScheduleStore } from '../../store/useScheduleStore';
 import { NavigationTab } from '../../types';
 import { exportAppData } from '../../services/backupService';
@@ -8,7 +8,7 @@ export const HoverSidebar: React.FC = () => {
   const { currentView, setCurrentView, isDarkMode, toggleDarkMode } = useScheduleStore();
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems: { id: NavigationTab; label: string; icon: React.FC<{ className?: string }> }[] = [
     {
@@ -42,27 +42,17 @@ export const HoverSidebar: React.FC = () => {
   };
 
   return (
-    <aside
-      data-testid="hover-sidebar"
-      className={`group/sidebar sticky top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out z-40 ${
-        isMobileExpanded ? 'w-64' : 'w-16'
-      } lg:w-16 lg:hover:w-64 shrink-0 shadow-sm overflow-hidden select-none`}
-    >
-      {/* Top: Logo & App Branding */}
-      <div>
-        <div
-          onClick={() => setIsMobileExpanded(!isMobileExpanded)}
-          className="flex items-center gap-3 px-3.5 py-4 border-b border-slate-100 dark:border-slate-800/80 cursor-pointer lg:cursor-default"
-          title="Alternar menu lateral"
-        >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
-            <CalendarDays className="w-5 h-5 stroke-[2.2]" />
+    <>
+      {/* 1. Mobile Top Header (Telas menores que 768px: < md) */}
+      <header
+        data-testid="mobile-header"
+        className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40 shadow-xs md:hidden select-none transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+            <CalendarDays className="w-4 h-4 stroke-[2.2]" />
           </div>
-          <div
-            className={`${
-              isMobileExpanded ? 'opacity-100' : 'opacity-0'
-            } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
-          >
+          <div className="flex flex-col">
             <h1 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
               Escalas Mensais
             </h1>
@@ -72,96 +62,227 @@ export const HoverSidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="p-2 space-y-1.5" aria-label="Menu Principal">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentView === item.id;
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(true)}
+          title="Abrir menu"
+          aria-label="Abrir menu"
+          data-testid="mobile-menu-button"
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      </header>
 
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => {
-                  setCurrentView(item.id);
-                  setIsMobileExpanded(false);
-                }}
-                title={item.label}
-                aria-label={item.label}
-                className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all ${
-                  isActive
-                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 border border-transparent font-medium'
-                }`}
-              >
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5" />
+      {/* 2. Mobile Full-Screen Menu Overlay (Aberto ao clicar no botão de menu) */}
+      {isMobileMenuOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu de navegação"
+          data-testid="mobile-fullscreen-menu"
+          className="fixed inset-0 z-50 bg-white dark:bg-slate-900 flex flex-col justify-between p-5 overflow-y-auto animate-in fade-in duration-200 md:hidden text-slate-900 dark:text-slate-100"
+        >
+          {/* Top Bar of Mobile Menu */}
+          <div>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                  <CalendarDays className="w-5 h-5 stroke-[2.2]" />
                 </div>
-                <span
-                  className={`${
-                    isMobileExpanded ? 'opacity-100' : 'opacity-0'
-                  } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
-                >
-                  {item.label}
-                </span>
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
+                    Escalas Mensais
+                  </h2>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    HealthScale
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                title="Fechar menu"
+                aria-label="Fechar menu"
+                data-testid="mobile-menu-close"
+                className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                <X className="w-6 h-6" />
               </button>
-            );
-          })}
-        </nav>
-      </div>
+            </div>
 
-      {/* Bottom Section: Actions & Theme Toggle */}
-      <div className="p-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
-        {/* Immediate Action: Exportar Dados */}
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={isExporting}
-          title="Exportar Dados"
-          aria-label="Exportar Dados"
-          className="w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-300 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
-        >
-          <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
-            {exportSuccess ? (
-              <Check className="w-4 h-4 text-emerald-500" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-          </div>
-          <span
-            className={`${
-              isMobileExpanded ? 'opacity-100' : 'opacity-0'
-            } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
-          >
-            {exportSuccess ? 'Exportado!' : 'Exportar Dados'}
-          </span>
-        </button>
+            {/* Navigation Items in Full Screen */}
+            <nav className="py-6 space-y-2.5" aria-label="Navegação em tela cheia">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentView === item.id;
 
-        {/* Theme Toggle */}
-        <button
-          type="button"
-          onClick={toggleDarkMode}
-          title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
-          aria-label={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
-          className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors"
-        >
-          <div className="w-5 h-5 flex items-center justify-center shrink-0">
-            {isDarkMode ? (
-              <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
-            ) : (
-              <Moon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            )}
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setCurrentView(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    title={item.label}
+                    aria-label={item.label}
+                    className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base transition-all ${
+                      isActive
+                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'
+                    }`}
+                  >
+                    <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-          <span
-            className={`${
-              isMobileExpanded ? 'opacity-100' : 'opacity-0'
-            } lg:opacity-0 lg:group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden`}
+
+          {/* Footer Actions in Full Screen */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            {/* Immediate Action: Exportar Dados */}
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting}
+              title="Exportar Dados"
+              aria-label="Exportar Dados"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-sm font-bold shadow-xs hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-300 transition disabled:opacity-50"
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+                {exportSuccess ? (
+                  <Check className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <Download className="w-5 h-5" />
+                )}
+              </div>
+              <span>{exportSuccess ? 'Exportado com sucesso!' : 'Exportar Dados'}</span>
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+              aria-label={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-sm font-bold shadow-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                {isDarkMode ? (
+                  <Sun className="w-5 h-5 text-amber-400 animate-spin-slow" />
+                ) : (
+                  <Moon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                )}
+              </div>
+              <span>{isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Desktop / Tablet Fixed Hover Sidebar (Telas >= 768px: md+) */}
+      <aside
+        data-testid="hover-sidebar"
+        className="group/sidebar fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-sm overflow-hidden select-none"
+      >
+        {/* Top: Logo & App Branding */}
+        <div>
+          <div className="flex items-center gap-3 px-3.5 py-4 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+              <CalendarDays className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+              <h1 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
+                Escalas Mensais
+              </h1>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                HealthScale
+              </span>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="p-2 space-y-1.5" aria-label="Menu Principal">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setCurrentView(item.id)}
+                  title={item.label}
+                  aria-label={item.label}
+                  className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all ${
+                    isActive
+                      ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 border border-transparent font-medium'
+                  }`}
+                >
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Bottom Section: Actions & Theme Toggle */}
+        <div className="p-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+          {/* Immediate Action: Exportar Dados */}
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            title="Exportar Dados"
+            aria-label="Exportar Dados"
+            className="w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-300 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
           >
-            {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
-          </span>
-        </button>
-      </div>
-    </aside>
+            <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+              {exportSuccess ? (
+                <Check className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+            </div>
+            <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+              {exportSuccess ? 'Exportado!' : 'Exportar Dados'}
+            </span>
+          </button>
+
+          {/* Theme Toggle */}
+          <button
+            type="button"
+            onClick={toggleDarkMode}
+            title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+            aria-label={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+            className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors"
+          >
+            <div className="w-5 h-5 flex items-center justify-center shrink-0">
+              {isDarkMode ? (
+                <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              )}
+            </div>
+            <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+              {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
+            </span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 

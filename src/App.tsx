@@ -38,8 +38,8 @@ export const App: React.FC = () => {
   }, [setCurrentView])
 
   return (
-    <div className="min-h-screen lg:h-screen w-screen overflow-x-hidden lg:overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex font-sans transition-colors">
-      {/* 1. Global Navigation: Hover Sidebar (Retractable on hover) */}
+    <div className="min-h-screen lg:h-screen w-screen overflow-x-hidden lg:overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-colors pt-14 md:pt-0 md:pl-16">
+      {/* 1. Global Navigation: Hover Sidebar (Desktop fixed left / Mobile top header + fullscreen menu) */}
       <HoverSidebar />
 
       {/* Main Content Area: Scrolls on < 1024px (whole page scrollbar) */}

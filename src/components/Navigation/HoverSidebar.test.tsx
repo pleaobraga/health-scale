@@ -14,8 +14,8 @@ describe('HoverSidebar Component', () => {
   it('deve renderizar a logo, os links de navegação e o alternador de tema', () => {
     render(<HoverSidebar />);
 
-    expect(screen.getByText('Escalas Mensais')).toBeInTheDocument();
-    expect(screen.getByText('HealthScale')).toBeInTheDocument();
+    expect(screen.getAllByText('Escalas Mensais').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('HealthScale').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /calendário de escalas/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /gerenciar pessoas/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /mudar para modo escuro/i })).toBeInTheDocument();
@@ -73,21 +73,27 @@ describe('HoverSidebar Component', () => {
     fireEvent.click(exportBtn);
   });
 
-  it('deve alternar a expansão no mobile ao clicar no cabeçalho do menu', () => {
+  it('deve exibir o cabeçalho mobile e abrir o menu em tela cheia ao clicar no botão de menu', () => {
     render(<HoverSidebar />);
 
-    const headerToggle = screen.getByTitle(/alternar menu lateral/i);
-    const sidebar = screen.getByTestId('hover-sidebar');
+    // Cabeçalho mobile visível com botão de menu
+    const mobileHeader = screen.getByTestId('mobile-header');
+    expect(mobileHeader).toBeInTheDocument();
 
-    expect(sidebar.className).toContain('w-16');
+    const menuBtn = screen.getByTestId('mobile-menu-button');
+    expect(menuBtn).toBeInTheDocument();
 
-    // Clica para expandir no mobile
-    fireEvent.click(headerToggle);
-    expect(sidebar.className).toContain('w-64');
+    // Menu em tela cheia inicialmente fechado
+    expect(screen.queryByTestId('mobile-fullscreen-menu')).not.toBeInTheDocument();
 
-    // Clica para recolher no mobile
-    fireEvent.click(headerToggle);
-    expect(sidebar.className).toContain('w-16');
+    // Clica para abrir o menu em tela cheia
+    fireEvent.click(menuBtn);
+    expect(screen.getByTestId('mobile-fullscreen-menu')).toBeInTheDocument();
+
+    // Clica para fechar o menu
+    const closeBtn = screen.getByTestId('mobile-menu-close');
+    fireEvent.click(closeBtn);
+    expect(screen.queryByTestId('mobile-fullscreen-menu')).not.toBeInTheDocument();
   });
 });
 
