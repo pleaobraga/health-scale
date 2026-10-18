@@ -15,9 +15,13 @@ const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
     user: null,
     role: 'user',
     isAdmin: false,
+    isGuest: false,
     loading: false,
     login: vi.fn(),
+    loginAsGuest: vi.fn(),
     logout: vi.fn(),
+    guestProfiles: [],
+    deleteGuestProfile: vi.fn(),
     ...authValue,
   };
 

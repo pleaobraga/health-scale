@@ -115,6 +115,17 @@ Export the active month schedule with one click into a formatted spreadsheet con
   - Master staff updates (creation, deactivation, deletion) are synchronized to `schedules/_master_people`.
 - **On-Demand Pull Button**: Administrators can explicitly pull remote cloud data into local storage from both the **Settings** and **Import** views.
 
+### 4. Guest Mode & Multi-Profile Local Isolation ("Entrar como Convidado")
+- **Instant Local Access**: Users can enter the system as guests directly from the login screen without network credentials.
+- **Strict Non-Admin Role**: Guest accounts are assigned non-admin status (`role: 'user'`, `isAdmin: false`) and cannot access user administration routes or trigger Firestore cloud writes.
+- **Multi-Guest Account Switcher**:
+  - All guest accounts created on the device are remembered and listed in the Guest Access modal.
+  - Users can select any existing profile to instantly resume work with their saved schedules and staff data.
+  - Option to create a new guest profile with an arbitrary display name.
+- **Isolated Local Datasets**: Each guest profile's data is isolated under scoped keys (`scale_manager_guest_data_v1_{id}`), ensuring complete data separation between different guest profiles.
+- **Profile Deletion**: Obsolete guest profiles and their associated datasets can be removed with one click.
+
+
 ---
 
 ## 🌐 Live Demo & Static Hosting

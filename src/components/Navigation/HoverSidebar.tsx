@@ -36,6 +36,7 @@ export const HoverSidebar: React.FC = () => {
   const auth = useContext(AuthContext);
   const user = auth?.user;
   const isAdmin = auth?.isAdmin ?? false;
+  const isGuest = auth?.isGuest ?? false;
   const isSyncEnabled = CloudSyncService.isSyncEnabled();
 
   const navItems: {
@@ -207,10 +208,10 @@ export const HoverSidebar: React.FC = () => {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {user.email}
+                      {user.displayName || user.email || 'Convidado'}
                     </p>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                      {isAdmin ? 'Administrador' : 'Profissional'}
+                      {isAdmin ? 'Administrador' : isGuest ? 'Convidado' : 'Profissional'}
                     </span>
                   </div>
                 </div>
@@ -469,7 +470,7 @@ export const HoverSidebar: React.FC = () => {
           {/* User profile identifier (collapsed: icon, expanded: email + role) */}
           {user && (
             <div
-              title={user.email || 'Usuário autenticado'}
+              title={user.displayName || user.email || 'Usuário autenticado'}
               className="flex items-center gap-3 px-2 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 text-xs overflow-hidden"
             >
               <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
@@ -477,14 +478,15 @@ export const HoverSidebar: React.FC = () => {
               </div>
               <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden min-w-0">
                 <p className="font-bold truncate text-[11px] leading-tight">
-                  {user.email}
+                  {user.displayName || user.email || 'Convidado'}
                 </p>
                 <span className="text-[9px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold">
-                  {isAdmin ? 'Administrador' : 'Profissional'}
+                  {isAdmin ? 'Administrador' : isGuest ? 'Convidado' : 'Profissional'}
                 </span>
               </div>
             </div>
           )}
+
 
           {/* Immediate Action: Exportar Dados */}
           <button

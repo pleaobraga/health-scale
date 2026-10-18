@@ -3,8 +3,12 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { HoverSidebar } from './HoverSidebar'
+import { AuthProvider } from '../../context/AuthContext'
 import * as backupService from '../../services/backupService'
 import { useScheduleStore } from '../../store/useScheduleStore'
+
+import type { AuthContextType } from '../../context/AuthContext'
+import type { User } from 'firebase/auth'
 
 const renderWithRouter = (initialPath = '/') => {
   return render(
@@ -127,4 +131,29 @@ describe('HoverSidebar Component', () => {
       screen.queryByTestId('mobile-fullscreen-menu'),
     ).not.toBeInTheDocument()
   })
+
+  it('deve renderizar o nome e o badge de Convidado quando o usuário for convidado', () => {
+    const mockAuth: Partial<AuthContextType> = {
+      user: {
+        uid: 'guest_123',
+        displayName: 'Dr. Convidado',
+        email: null,
+      } as unknown as User,
+      role: 'user',
+      isAdmin: false,
+      isGuest: true,
+    }
+
+    render(
+      <AuthProvider value={mockAuth}>
+        <MemoryRouter initialEntries={['/']}>
+          <HoverSidebar />
+        </MemoryRouter>
+      </AuthProvider>,
+    )
+
+    expect(screen.getAllByText('Dr. Convidado').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Convidado').length).toBeGreaterThan(0)
+  })
 })
+

@@ -78,5 +78,50 @@ describe('StorageService - Persistência Local-First', () => {
     const loaded = StorageService.getMonthParticipants();
     expect(loaded).toEqual(participants);
   });
+
+  it('deve gerenciar perfis de convidados e datasets isolados', () => {
+    const profiles = [
+      {
+        id: 'guest_1',
+        name: 'Dr. Roberto',
+        createdAt: '2026-10-18T10:00:00Z',
+        lastActiveAt: '2026-10-18T10:00:00Z',
+      },
+    ];
+
+    StorageService.saveGuestProfiles(profiles);
+    expect(StorageService.getGuestProfiles()).toEqual(profiles);
+
+    StorageService.setActiveGuestId('guest_1');
+    expect(StorageService.getActiveGuestId()).toBe('guest_1');
+
+    // Save dataset for guest_1
+    const dataset = {
+      persons: [{ id: 'p1', name: 'Dr. Roberto', color: '#10b981', active: true }],
+      availabilities: [],
+      assignments: { '2026-10-15': ['p1'] },
+      events: [],
+      monthParticipants: { '2026-10': ['p1'] },
+    };
+
+    StorageService.saveGuestDataset('guest_1', dataset);
+    expect(StorageService.getGuestDataset('guest_1')).toEqual(dataset);
+
+    // Test restoring dataset
+    StorageService.resetToDefault();
+    expect(StorageService.getPersons()).toEqual([]);
+
+    StorageService.restoreDataset(dataset);
+    expect(StorageService.getPersons()).toHaveLength(1);
+    expect(StorageService.getAssignments()['2026-10-15']).toEqual(['p1']);
+
+    // Test deleting dataset
+    StorageService.deleteGuestDataset('guest_1');
+    expect(StorageService.getGuestDataset('guest_1')).toBeNull();
+
+    StorageService.setActiveGuestId(null);
+    expect(StorageService.getActiveGuestId()).toBeNull();
+  });
 });
+
 

@@ -85,6 +85,7 @@ interface ScheduleStore {
   saveSchedule: () => Promise<void>;
   pullCloudData: (month?: string) => Promise<{ success: boolean; message: string }>;
   dismissValidation: () => void;
+  reloadFromStorage: () => void;
 
   // Theme
   isDarkMode: boolean;
@@ -687,6 +688,26 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   dismissValidation: () => {
     set({ hasValidated: false, validationErrors: [] });
+  },
+
+  reloadFromStorage: () => {
+    const persons = StorageService.getPersons();
+    const monthParticipants = StorageService.getMonthParticipants();
+    const availabilities = StorageService.getAvailabilities();
+    const assignments = StorageService.getAssignments();
+    const events = StorageService.getEvents();
+
+    set({
+      persons,
+      monthParticipants,
+      availabilities,
+      assignments,
+      savedAssignments: { ...assignments },
+      events,
+      validationErrors: [],
+      hasValidated: false,
+      hasUnsavedChanges: false,
+    });
   },
 
   toggleDarkMode: () => {

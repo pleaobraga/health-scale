@@ -50,3 +50,19 @@ export interface AppDataSnapshot {
   events: Array<CalendarEvent | (CalendarEvent & { [key: string]: unknown })>;
   [key: string]: unknown; // Extensible for global settings, themes, or future properties
 }
+
+export interface GuestProfile {
+  id: string;
+  name: string;
+  createdAt: string;
+  lastActiveAt: string;
+}
+
+export interface GuestDataset {
+  persons: Person[];
+  availabilities: MonthlyAvailability[];
+  assignments: Record<string, string[]>;
+  events: CalendarEvent[];
+  monthParticipants: Record<string, string[]>;
+}
+
