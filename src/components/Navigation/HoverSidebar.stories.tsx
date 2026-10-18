@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MemoryRouter } from 'react-router-dom';
 import { HoverSidebar } from './HoverSidebar';
 import { useScheduleStore } from '../../store/useScheduleStore';
 
@@ -11,12 +12,14 @@ const meta: Meta<typeof HoverSidebar> = {
   },
   decorators: [
     (Story) => (
-      <div className="h-screen flex bg-slate-100 dark:bg-slate-950">
-        <Story />
-        <div className="flex-1 p-6 text-slate-600 dark:text-slate-400">
-          <p className="text-sm">Passe o mouse sobre a barra lateral à esquerda para expandir.</p>
+      <MemoryRouter initialEntries={['/']}>
+        <div className="h-screen flex bg-slate-100 dark:bg-slate-950">
+          <Story />
+          <div className="flex-1 p-6 text-slate-600 dark:text-slate-400">
+            <p className="text-sm">Passe o mouse sobre a barra lateral à esquerda para expandir.</p>
+          </div>
         </div>
-      </div>
+      </MemoryRouter>
     ),
   ],
 };

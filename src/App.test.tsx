@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { App } from './App';
+import { TestAppRouter } from './router';
 import { useScheduleStore } from './store/useScheduleStore';
 import * as backupService from './services/backupService';
 
@@ -14,7 +14,7 @@ describe('App Root Component - Onboarding & Navigation', () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false);
     useScheduleStore.setState({ currentView: 'calendar' });
 
-    render(<App />);
+    render(<TestAppRouter initialEntries={['/']} />);
 
     await waitFor(() => {
       expect(useScheduleStore.getState().currentView).toBe('import');
@@ -26,19 +26,38 @@ describe('App Root Component - Onboarding & Navigation', () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true);
     useScheduleStore.setState({ currentView: 'calendar' });
 
-    render(<App />);
+    render(<TestAppRouter initialEntries={['/']} />);
 
     await waitFor(() => {
       expect(useScheduleStore.getState().currentView).toBe('calendar');
+      expect(screen.getByTestId('calendar-view')).toBeInTheDocument();
     });
   });
 
-  it('deve renderizar a tela de pessoas quando currentView for "people"', () => {
+  it('deve renderizar a tela de pessoas quando a rota for "/pessoas"', () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true);
-    useScheduleStore.setState({ currentView: 'people' });
 
-    render(<App />);
+    render(<TestAppRouter initialEntries={['/pessoas']} />);
 
     expect(screen.getByText(/Cadastro Geral de Funcionários/i)).toBeInTheDocument();
+    expect(useScheduleStore.getState().currentView).toBe('people');
+  });
+
+  it('deve renderizar a tela de configurações quando a rota for "/configuracoes"', () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true);
+
+    render(<TestAppRouter initialEntries={['/configuracoes']} />);
+
+    expect(screen.getByText(/Configurações Gerais/i)).toBeInTheDocument();
+  });
+
+  it('deve redirecionar rotas inválidas (*) para a rota raiz', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true);
+
+    render(<TestAppRouter initialEntries={['/rota-desconhecida']} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('calendar-view')).toBeInTheDocument();
+    });
   });
 });

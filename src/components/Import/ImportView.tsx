@@ -21,8 +21,10 @@ import {
 } from '../../services/backupService';
 import { StorageService } from '../../services/storageService';
 import { ConfirmOverwriteModal } from './ConfirmOverwriteModal';
+import { useNavigate } from 'react-router-dom';
 
 export const ImportView: React.FC = () => {
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
@@ -121,6 +123,10 @@ export const ImportView: React.FC = () => {
       hasUnsavedChanges: false,
       isEditMode: false,
     });
+
+    if (navigate) {
+      navigate('/pessoas');
+    }
   };
 
   const handleRestoreClick = async () => {
@@ -141,6 +147,9 @@ export const ImportView: React.FC = () => {
       setIsRestoring(true);
       await restoreAppData(parsedData);
       setIsConfirmModalOpen(false);
+      if (navigate) {
+        navigate('/');
+      }
     } catch (err) {
       console.error('Falha ao restaurar dados:', err);
       setErrorMessage('Falha ao aplicar os dados do backup. Tente novamente.');

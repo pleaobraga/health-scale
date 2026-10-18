@@ -1,9 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { ImportView } from './ImportView';
 import { useScheduleStore } from '../../store/useScheduleStore';
 import * as backupService from '../../services/backupService';
 import { AppDataSnapshot } from '../../types';
+
+const renderWithRouter = () =>
+  render(
+    <MemoryRouter>
+      <ImportView />
+    </MemoryRouter>,
+  );
 
 describe('ImportView Component', () => {
   beforeEach(() => {
@@ -13,7 +21,7 @@ describe('ImportView Component', () => {
   });
 
   it('deve renderizar o banner de boas-vindas e a área de dropzone', () => {
-    render(<ImportView />);
+    renderWithRouter();
 
     expect(screen.getByText(/Gerenciador de Escalas Mensais/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /começar do zero/i })).toBeInTheDocument();
@@ -22,7 +30,7 @@ describe('ImportView Component', () => {
   });
 
   it('deve permitir começar do zero limpando dados e navegando para a tela de pessoas', () => {
-    render(<ImportView />);
+    renderWithRouter();
 
     const startZeroBtn = screen.getByRole('button', { name: /começar do zero/i });
     fireEvent.click(startZeroBtn);
@@ -32,7 +40,7 @@ describe('ImportView Component', () => {
   });
 
   it('deve exibir mensagem de erro quando arquivo inválido for selecionado', async () => {
-    render(<ImportView />);
+    renderWithRouter();
 
     const invalidFile = new File(['corrupt-data'], 'bad.json', { type: 'application/json' });
     const input = screen.getByTestId('backup-file-input');
@@ -62,7 +70,7 @@ describe('ImportView Component', () => {
       type: 'application/json',
     });
 
-    render(<ImportView />);
+    renderWithRouter();
 
     const input = screen.getByTestId('backup-file-input');
     fireEvent.change(input, { target: { files: [validFile] } });
@@ -92,7 +100,7 @@ describe('ImportView Component', () => {
       type: 'application/json',
     });
 
-    render(<ImportView />);
+    renderWithRouter();
 
     const input = screen.getByTestId('backup-file-input');
     fireEvent.change(input, { target: { files: [validFile] } });
@@ -126,7 +134,7 @@ describe('ImportView Component', () => {
       type: 'application/json',
     });
 
-    render(<ImportView />);
+    renderWithRouter();
 
     const input = screen.getByTestId('backup-file-input');
     fireEvent.change(input, { target: { files: [validFile] } });

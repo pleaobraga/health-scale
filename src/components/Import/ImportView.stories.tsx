@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MemoryRouter } from 'react-router-dom';
 import { ImportView } from './ImportView';
 import { useScheduleStore } from '../../store/useScheduleStore';
 
@@ -11,9 +12,11 @@ const meta: Meta<typeof ImportView> = {
   },
   decorators: [
     (Story) => (
-      <div className="h-screen flex bg-slate-50 dark:bg-slate-950">
-        <Story />
-      </div>
+      <MemoryRouter>
+        <div className="h-screen flex bg-slate-50 dark:bg-slate-950">
+          <Story />
+        </div>
+      </MemoryRouter>
     ),
   ],
 };

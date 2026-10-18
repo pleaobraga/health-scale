@@ -4,57 +4,75 @@ import {
   Download,
   Menu,
   Moon,
+  Settings,
   Sun,
   Upload,
   Users,
   X,
-} from 'lucide-react'
-import React, { useState } from 'react'
-import { exportAppData } from '../../services/backupService'
-import { useScheduleStore } from '../../store/useScheduleStore'
-import { NavigationTab } from '../../types'
+} from 'lucide-react';
+import React, { useState } from 'react';
+import { NavLink, useInRouterContext } from 'react-router-dom';
+import { exportAppData } from '../../services/backupService';
+import { useScheduleStore } from '../../store/useScheduleStore';
+import { NavigationTab } from '../../types';
 
 export const HoverSidebar: React.FC = () => {
   const { currentView, setCurrentView, isDarkMode, toggleDarkMode } =
-    useScheduleStore()
-  const [isExporting, setIsExporting] = useState(false)
-  const [exportSuccess, setExportSuccess] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    useScheduleStore();
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const inRouter = useInRouterContext();
 
   const navItems: {
-    id: NavigationTab
-    label: string
-    icon: React.FC<{ className?: string }>
+    id: NavigationTab;
+    path: string;
+    label: string;
+    icon: React.FC<{ className?: string }>;
+    end?: boolean;
   }[] = [
     {
       id: 'calendar',
+      path: '/',
       label: 'Calendário de Escalas',
       icon: CalendarDays,
+      end: true,
     },
     {
       id: 'people',
+      path: '/pessoas',
       label: 'Gerenciar Pessoas',
       icon: Users,
+      end: false,
     },
     {
       id: 'import',
+      path: '/importar',
       label: 'Importar Dados',
       icon: Upload,
+      end: false,
     },
-  ]
+    {
+      id: 'settings',
+      path: '/configuracoes',
+      label: 'Configurações',
+      icon: Settings,
+      end: false,
+    },
+  ];
 
   const handleExport = async () => {
     try {
-      setIsExporting(true)
-      await exportAppData()
-      setExportSuccess(true)
-      setTimeout(() => setExportSuccess(false), 2500)
+      setIsExporting(true);
+      await exportAppData();
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 2500);
     } catch (err) {
-      console.error('Erro ao exportar backup:', err)
+      console.error('Erro ao exportar backup:', err);
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
   return (
     <>
@@ -133,21 +151,49 @@ export const HoverSidebar: React.FC = () => {
               aria-label="Navegação em tela cheia"
             >
               {navItems.map((item) => {
-                const Icon = item.icon
-                const isActive = currentView === item.id
+                const Icon = item.icon;
+                const isSelected = currentView === item.id;
+
+                if (inRouter) {
+                  return (
+                    <NavLink
+                      key={item.id}
+                      to={item.path}
+                      end={item.end}
+                      onClick={() => {
+                        setCurrentView(item.id);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      title={item.label}
+                      aria-label={item.label}
+                      className={({ isActive }) =>
+                        `w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base transition-all ${
+                          isActive
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 shadow-xs'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'
+                        }`
+                      }
+                    >
+                      <div className="w-6 h-6 flex items-center justify-center shrink-0">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span>{item.label}</span>
+                    </NavLink>
+                  );
+                }
 
                 return (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => {
-                      setCurrentView(item.id)
-                      setIsMobileMenuOpen(false)
+                      setCurrentView(item.id);
+                      setIsMobileMenuOpen(false);
                     }}
                     title={item.label}
                     aria-label={item.label}
                     className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-base transition-all ${
-                      isActive
+                      isSelected
                         ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 shadow-xs'
                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium'
                     }`}
@@ -157,7 +203,7 @@ export const HoverSidebar: React.FC = () => {
                     </div>
                     <span>{item.label}</span>
                   </button>
-                )
+                );
               })}
             </nav>
           </div>
@@ -241,8 +287,35 @@ export const HoverSidebar: React.FC = () => {
             aria-label="Menu Principal"
           >
             {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = currentView === item.id
+              const Icon = item.icon;
+              const isSelected = currentView === item.id;
+
+              if (inRouter) {
+                return (
+                  <NavLink
+                    key={item.id}
+                    to={item.path}
+                    end={item.end}
+                    onClick={() => setCurrentView(item.id)}
+                    title={item.label}
+                    aria-label={item.label}
+                    className={({ isActive }) =>
+                      `w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all ${
+                        isActive
+                          ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 border border-transparent font-medium'
+                      }`
+                    }
+                  >
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+                      {item.label}
+                    </span>
+                  </NavLink>
+                );
+              }
 
               return (
                 <button
@@ -252,7 +325,7 @@ export const HoverSidebar: React.FC = () => {
                   title={item.label}
                   aria-label={item.label}
                   className={`w-full flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm transition-all ${
-                    isActive
+                    isSelected
                       ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 border border-transparent font-medium'
                   }`}
@@ -264,7 +337,7 @@ export const HoverSidebar: React.FC = () => {
                     {item.label}
                   </span>
                 </button>
-              )
+              );
             })}
           </nav>
         </div>
@@ -318,5 +391,5 @@ export const HoverSidebar: React.FC = () => {
         </div>
       </aside>
     </>
-  )
-}
+  );
+};

@@ -1,7 +1,16 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { useScheduleStore } from '../../store/useScheduleStore'
 import { HoverSidebar } from './HoverSidebar'
+
+const renderWithRouter = (initialPath = '/') => {
+  return render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <HoverSidebar />
+    </MemoryRouter>,
+  )
+}
 
 describe('HoverSidebar Component', () => {
   beforeEach(() => {
@@ -12,15 +21,15 @@ describe('HoverSidebar Component', () => {
   })
 
   it('deve renderizar a logo, os links de navegação e o alternador de tema', () => {
-    render(<HoverSidebar />)
+    renderWithRouter()
 
     expect(screen.getAllByText('Escalas Mensais').length).toBeGreaterThan(0)
     expect(screen.getAllByText('HealthSchedule').length).toBeGreaterThan(0)
     expect(
-      screen.getByRole('button', { name: /calendário de escalas/i }),
+      screen.getByRole('link', { name: /calendário de escalas/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /gerenciar pessoas/i }),
+      screen.getByRole('link', { name: /gerenciar pessoas/i }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /mudar para modo escuro/i }),
@@ -28,28 +37,28 @@ describe('HoverSidebar Component', () => {
   })
 
   it('deve alternar a tela para "people" ao clicar em Gerenciar Pessoas', () => {
-    render(<HoverSidebar />)
+    renderWithRouter()
 
-    const peopleBtn = screen.getByRole('button', { name: /gerenciar pessoas/i })
-    fireEvent.click(peopleBtn)
+    const peopleLink = screen.getByRole('link', { name: /gerenciar pessoas/i })
+    fireEvent.click(peopleLink)
 
     expect(useScheduleStore.getState().currentView).toBe('people')
   })
 
   it('deve alternar a tela para "calendar" ao clicar em Calendário de Escalas', () => {
     useScheduleStore.setState({ currentView: 'people' })
-    render(<HoverSidebar />)
+    renderWithRouter('/pessoas')
 
-    const calendarBtn = screen.getByRole('button', {
+    const calendarLink = screen.getByRole('link', {
       name: /calendário de escalas/i,
     })
-    fireEvent.click(calendarBtn)
+    fireEvent.click(calendarLink)
 
     expect(useScheduleStore.getState().currentView).toBe('calendar')
   })
 
   it('deve alternar entre Dark Mode e Light Mode e alterar a classe dark no documento', () => {
-    render(<HoverSidebar />)
+    renderWithRouter()
 
     const toggleBtn = screen.getByRole('button', {
       name: /mudar para modo escuro/i,
@@ -69,16 +78,16 @@ describe('HoverSidebar Component', () => {
   })
 
   it('deve alternar a tela para "import" ao clicar em Importar Dados', () => {
-    render(<HoverSidebar />)
+    renderWithRouter()
 
-    const importBtn = screen.getByRole('button', { name: /importar dados/i })
-    fireEvent.click(importBtn)
+    const importLink = screen.getByRole('link', { name: /importar dados/i })
+    fireEvent.click(importLink)
 
     expect(useScheduleStore.getState().currentView).toBe('import')
   })
 
   it('deve exibir o botão de Exportar Dados e permitir o clique', () => {
-    render(<HoverSidebar />)
+    renderWithRouter()
 
     const exportBtn = screen.getByRole('button', { name: /exportar dados/i })
     expect(exportBtn).toBeInTheDocument()
@@ -86,7 +95,7 @@ describe('HoverSidebar Component', () => {
   })
 
   it('deve exibir o cabeçalho mobile e abrir o menu em tela cheia ao clicar no botão de menu', () => {
-    render(<HoverSidebar />)
+    renderWithRouter()
 
     // Cabeçalho mobile visível com botão de menu
     const mobileHeader = screen.getByTestId('mobile-header')
