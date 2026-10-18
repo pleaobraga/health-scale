@@ -1,31 +1,48 @@
 import React from 'react';
 import { Routes, Route, Navigate, MemoryRouter, HashRouter } from 'react-router-dom';
+import { AuthProvider, AuthContextType } from '../context/AuthContext';
+import { PrivateRoute } from '../components/Auth/PrivateRoute';
+import { AdminRoute } from '../components/Auth/AdminRoute';
+import { LoginPage } from '../pages/LoginPage';
 import { RootLayout } from '../components/Layout/RootLayout';
 import { CalendarView } from '../components/Calendar/CalendarView';
 import { PeopleManagementView } from '../components/PeopleManagement/PeopleManagementView';
 import { ImportView } from '../components/Import/ImportView';
 import { SettingsView } from '../components/Settings/SettingsView';
+import { UserManagementView } from '../pages/UserManagementView';
 
 /**
  * Main application routes tree.
- * Renders RootLayout with HoverSidebar and Outlet for child views.
+ * Enforces authentication on private routes and role-based access on admin endpoints.
  */
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<RootLayout />}>
-        {/* Root Route / Calendar */}
-        <Route index element={<CalendarView />} />
-        {/* Alias route /calendario */}
-        <Route path="calendario" element={<CalendarView />} />
-        {/* Global People Management Route */}
-        <Route path="pessoas" element={<PeopleManagementView />} />
-        {/* Data Import Route */}
-        <Route path="importar" element={<ImportView />} />
-        {/* Extensible Route: General Settings */}
-        <Route path="configuracoes" element={<SettingsView />} />
-        {/* Fallback Route / Internal 404: Redirect to #/ */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+      {/* 1. Public Authentication Route */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* 2. Private Routes Guarded by Firebase Auth */}
+      <Route element={<PrivateRoute />}>
+        <Route element={<RootLayout />}>
+          {/* Root Route / Calendar */}
+          <Route index element={<CalendarView />} />
+          {/* Alias route /calendario */}
+          <Route path="calendario" element={<CalendarView />} />
+          {/* Global People Management Route */}
+          <Route path="pessoas" element={<PeopleManagementView />} />
+          {/* Data Import Route */}
+          <Route path="importar" element={<ImportView />} />
+          {/* Extensible Route: General Settings */}
+          <Route path="configuracoes" element={<SettingsView />} />
+
+          {/* Admin-Exclusive Route: User Management */}
+          <Route element={<AdminRoute />}>
+            <Route path="usuarios" element={<UserManagementView />} />
+          </Route>
+
+          {/* Fallback Route / Internal 404: Redirect to /calendario */}
+          <Route path="*" element={<Navigate to="/calendario" replace />} />
+        </Route>
       </Route>
     </Routes>
   );
@@ -37,21 +54,44 @@ export const AppRoutes: React.FC = () => {
  */
 export const AppRouter: React.FC = () => {
   return (
-    <HashRouter>
-      <AppRoutes />
-    </HashRouter>
+    <AuthProvider>
+      <HashRouter>
+        <AppRoutes />
+      </HashRouter>
+    </AuthProvider>
   );
 };
 
 /**
  * Test wrapper using MemoryRouter for deterministic testing with Vitest.
+ * Defaults to an authenticated admin mock to maintain test compatibility unless specified.
  */
-export const TestAppRouter: React.FC<{ initialEntries?: string[] }> = ({
+export const TestAppRouter: React.FC<{
+  initialEntries?: string[];
+  authValue?: Partial<AuthContextType>;
+}> = ({
   initialEntries = ['/'],
+  authValue,
 }) => {
+  const defaultAuth: Partial<AuthContextType> = {
+    user: {
+      uid: 'test-admin-uid',
+      email: 'admin@healthscale.com',
+    } as unknown as AuthContextType['user'],
+    role: 'admin',
+    isAdmin: true,
+    loading: false,
+    login: async () => {},
+    logout: async () => {},
+  };
+
   return (
-    <MemoryRouter initialEntries={initialEntries}>
-      <AppRoutes />
-    </MemoryRouter>
+    <AuthProvider value={authValue !== undefined ? authValue : defaultAuth}>
+      <MemoryRouter initialEntries={initialEntries}>
+        <AppRoutes />
+      </MemoryRouter>
+    </AuthProvider>
   );
 };
+
+export default AppRouter;

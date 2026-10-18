@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import {
   UploadCloud,
   FileText,
@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Trash2,
   Database,
+  Cloud,
+  RefreshCw,
 } from 'lucide-react';
 import { useScheduleStore } from '../../store/useScheduleStore';
 import { AppDataSnapshot } from '../../types';
@@ -20,12 +22,24 @@ import {
   hasExistingLocalData,
 } from '../../services/backupService';
 import { StorageService } from '../../services/storageService';
+import { CloudSyncService } from '../../services/cloudSyncService';
+import { AuthContext } from '../../context/AuthContext';
 import { ConfirmOverwriteModal } from './ConfirmOverwriteModal';
 import { useNavigate } from 'react-router-dom';
 
 export const ImportView: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const auth = useContext(AuthContext);
+  const isAdmin = auth?.isAdmin ?? false;
+
+  const { pullCloudData } = useScheduleStore();
+  const [isPullingCloud, setIsPullingCloud] = useState(false);
+  const [cloudFeedback, setCloudFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -35,6 +49,43 @@ export const ImportView: React.FC = () => {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isStorageEmpty, setIsStorageEmpty] = useState<boolean | null>(null);
+
+  const handlePullCloudData = async () => {
+    try {
+      setIsPullingCloud(true);
+      setCloudFeedback(null);
+
+      // Auto-enable sync if not already enabled
+      if (!CloudSyncService.isSyncEnabled()) {
+        CloudSyncService.setSyncEnabled(true);
+      }
+
+      const result = await pullCloudData();
+      if (result.success) {
+        setCloudFeedback({
+          type: 'success',
+          message: `${result.message} Redirecionando para a escala...`,
+        });
+        setTimeout(() => {
+          navigate('/calendario');
+        }, 1200);
+      } else {
+        setCloudFeedback({
+          type: 'error',
+          message: result.message,
+        });
+        setTimeout(() => setCloudFeedback(null), 5000);
+      }
+    } catch {
+      setCloudFeedback({
+        type: 'error',
+        message: 'Falha ao sincronizar dados com a nuvem.',
+      });
+      setTimeout(() => setCloudFeedback(null), 5000);
+    } finally {
+      setIsPullingCloud(false);
+    }
+  };
 
   // Check initial local storage state
   useEffect(() => {
@@ -195,16 +246,89 @@ export const ImportView: React.FC = () => {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={handleStartZero}
-              className="shrink-0 flex items-center gap-2 px-5 py-3 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow-md transition-all active:scale-98"
-            >
-              <span>Começar do zero</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-            </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={handlePullCloudData}
+                  disabled={isPullingCloud}
+                  data-testid="banner-pull-cloud-button"
+                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white border border-white/20 font-bold text-sm backdrop-blur-md shadow-md transition-all active:scale-98 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
+                  <span>{isPullingCloud ? 'Buscando...' : 'Puxar da Nuvem'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleStartZero}
+                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow-md transition-all active:scale-98"
+              >
+                <span>Começar do zero</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Dedicated Admin Cloud Pull Card */}
+        {isAdmin && (
+          <div
+            data-testid="admin-cloud-pull-card"
+            className="bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-900/60 rounded-3xl p-6 shadow-sm space-y-4"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 shrink-0">
+                  <Cloud className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                      Puxar Dados da Nuvem (Firestore)
+                    </h3>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                      Admin
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Recupere instantaneamente a escala do mês ativo e os profissionais salvos no Firestore para este dispositivo.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handlePullCloudData}
+                disabled={isPullingCloud}
+                data-testid="import-pull-cloud-button"
+                className="shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition disabled:opacity-50 w-full sm:w-auto"
+              >
+                <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
+                <span>{isPullingCloud ? 'Buscando da nuvem...' : 'Puxar Dados da Nuvem'}</span>
+              </button>
+            </div>
+
+            {cloudFeedback && (
+              <div
+                data-testid="cloud-feedback-banner"
+                className={`flex items-center gap-2.5 p-3.5 rounded-2xl text-xs font-semibold ${
+                  cloudFeedback.type === 'success'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-900/60'
+                    : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-900/60'
+                }`}
+              >
+                {cloudFeedback.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                )}
+                <span>{cloudFeedback.message}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Dropzone Container */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">

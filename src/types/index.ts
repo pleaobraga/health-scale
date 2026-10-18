@@ -39,7 +39,7 @@ export interface ValidationError {
 }
 
 export type MonthParticipants = Record<string, string[]>; // 'YYYY-MM' -> personId[]
-export type NavigationTab = 'calendar' | 'people' | 'import' | 'settings';
+export type NavigationTab = 'calendar' | 'people' | 'import' | 'settings' | 'users';
 
 export interface AppDataSnapshot {
   exportedAt: string; // ISO timestamp of export time

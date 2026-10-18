@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types';
 import { StorageService } from '../services/storageService';
 import { PersonService } from '../services/personService';
+import { CloudSyncService } from '../services/cloudSyncService';
 import { validateSchedule } from '../utils/validateSchedule';
 import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/dateUtils';
 
@@ -79,7 +80,8 @@ interface ScheduleStore {
 
   // Audit and Persistence
   validateCurrentSchedule: () => ValidationError[];
-  saveSchedule: () => void;
+  saveSchedule: () => Promise<void>;
+  pullCloudData: (month?: string) => Promise<{ success: boolean; message: string }>;
   dismissValidation: () => void;
 
   // Theme
@@ -288,6 +290,10 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.savePersons(updatedPersons);
     StorageService.saveAvailabilities(updatedAvails);
 
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updatedPersons);
+    }
+
     set({
       persons: updatedPersons,
       availabilities: updatedAvails,
@@ -297,6 +303,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   updatePerson: (id, name, color) => {
     const updated = get().persons.map((p) => (p.id === id ? { ...p, name, color } : p));
     StorageService.savePersons(updated);
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updated);
+    }
     set({ persons: updated });
   },
 
@@ -309,6 +318,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       p.id === id ? { ...p, active: false } : p
     );
     StorageService.savePersons(updatedPersons);
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updatedPersons);
+    }
     set({
       persons: updatedPersons,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
@@ -320,6 +332,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       p.id === id ? { ...p, active: true } : p
     );
     StorageService.savePersons(updatedPersons);
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updatedPersons);
+    }
     set({ persons: updatedPersons });
   },
 
@@ -348,6 +363,10 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveAvailabilities(updatedAvails);
     StorageService.saveAssignments(currentAssignments);
     StorageService.saveMonthParticipants(updatedMonthParticipants);
+
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updatedPersons);
+    }
 
     set({
       persons: updatedPersons,
@@ -550,7 +569,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     return errors;
   },
 
-  saveSchedule: () => {
+  saveSchedule: async () => {
     set({ isSaving: true });
     // Save everything in storage
     StorageService.savePersons(get().persons);
@@ -565,13 +584,30 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       hasUnsavedChanges: false,
     });
 
+    // If cloud sync is active, explicitly push to Firestore
+    let cloudSaved = false;
+    if (CloudSyncService.isSyncEnabled()) {
+      try {
+        cloudSaved = await CloudSyncService.saveMonthToCloud(get().currentMonth, {
+          assignments: get().assignments,
+          monthParticipants: get().monthParticipants,
+          availabilities: get().availabilities,
+          events: get().events,
+        });
+      } catch (err) {
+        console.error('Failed to sync schedule to cloud:', err);
+      }
+    }
+
     // Execute audit validation
     const errors = get().validateCurrentSchedule();
 
     const errorCount = errors.filter((e) => e.severity === 'error').length;
     const warningCount = errors.filter((e) => e.severity === 'warning').length;
 
-    let msg = 'Escala salva com sucesso no armazenamento local!';
+    let msg = cloudSaved
+      ? 'Escala salva e sincronizada na nuvem com sucesso!'
+      : 'Escala salva com sucesso no armazenamento local!';
     if (errorCount > 0) {
       msg = `Escala salva, porém existem ${errorCount} erro(s) e ${warningCount} aviso(s) que precisam de atenção.`;
     } else if (warningCount > 0) {
@@ -586,6 +622,65 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     setTimeout(() => {
       set({ saveFeedback: null });
     }, 5000);
+  },
+
+  pullCloudData: async (month?: string) => {
+    const targetMonth = month || get().currentMonth;
+    if (!CloudSyncService.isSyncEnabled()) {
+      return {
+        success: false,
+        message: 'A sincronização na nuvem precisa estar ativada.',
+      };
+    }
+
+    try {
+      const { monthData, persons } = await CloudSyncService.pullAllFromCloud(targetMonth);
+
+      if (!monthData && !persons) {
+        return {
+          success: false,
+          message: 'Nenhum dado encontrado na nuvem para sincronizar.',
+        };
+      }
+
+      if (persons && persons.length > 0) {
+        StorageService.savePersons(persons);
+        set({ persons });
+      }
+
+      if (monthData) {
+        if (monthData.assignments) {
+          StorageService.saveAssignments(monthData.assignments);
+          set({
+            assignments: monthData.assignments,
+            savedAssignments: { ...monthData.assignments },
+          });
+        }
+        if (monthData.monthParticipants) {
+          StorageService.saveMonthParticipants(monthData.monthParticipants);
+          set({ monthParticipants: monthData.monthParticipants });
+        }
+        if (monthData.availabilities) {
+          StorageService.saveAvailabilities(monthData.availabilities);
+          set({ availabilities: monthData.availabilities });
+        }
+        if (monthData.events) {
+          StorageService.saveEvents(monthData.events);
+          set({ events: monthData.events });
+        }
+      }
+
+      return {
+        success: true,
+        message: 'Dados locais atualizados a partir da nuvem com sucesso!',
+      };
+    } catch (err) {
+      console.error('Failed to pull data from cloud:', err);
+      return {
+        success: false,
+        message: 'Erro ao tentar buscar dados na nuvem.',
+      };
+    }
   },
 
   dismissValidation: () => {

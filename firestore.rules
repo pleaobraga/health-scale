@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    match /schedules/{monthId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /people/{personId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /users/{userId} {
+      // O próprio usuário pode ler seu doc, OU um admin pode ler o de qualquer um
+      allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // O usuário pode criar seu próprio registro inicial, ou admin pode criar
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+
+      // Admin pode listar todos e fazer alterações/exclusões
+      allow list, update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

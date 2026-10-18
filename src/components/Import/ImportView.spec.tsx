@@ -6,12 +6,27 @@ import { useScheduleStore } from '../../store/useScheduleStore';
 import * as backupService from '../../services/backupService';
 import { AppDataSnapshot } from '../../types';
 
-const renderWithRouter = () =>
-  render(
-    <MemoryRouter>
-      <ImportView />
-    </MemoryRouter>,
+import { AuthContext, AuthContextType } from '../../context/authContextBase';
+
+const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
+  const contextValue: AuthContextType = {
+    user: null,
+    role: 'user',
+    isAdmin: false,
+    loading: false,
+    login: vi.fn(),
+    logout: vi.fn(),
+    ...authValue,
+  };
+
+  return render(
+    <AuthContext.Provider value={contextValue}>
+      <MemoryRouter>
+        <ImportView />
+      </MemoryRouter>
+    </AuthContext.Provider>,
   );
+};
 
 describe('ImportView Component', () => {
   beforeEach(() => {
@@ -162,6 +177,42 @@ describe('ImportView Component', () => {
 
     await waitFor(() => {
       expect(restoreSpy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('não deve exibir os botões de puxar da nuvem quando o usuário não for admin', async () => {
+    renderWithRouter({ isAdmin: false });
+
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
+    expect(screen.queryByTestId('admin-cloud-pull-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('banner-pull-cloud-button')).not.toBeInTheDocument();
+  });
+
+  it('deve exibir os botões de puxar da nuvem quando o usuário for admin e executar a sincronização', async () => {
+    const pullCloudDataMock = vi.fn().mockResolvedValue({
+      success: true,
+      message: 'Dados da nuvem sincronizados com sucesso!',
+    });
+
+    useScheduleStore.setState({
+      pullCloudData: pullCloudDataMock,
+    });
+
+    renderWithRouter({ isAdmin: true, role: 'admin' });
+
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
+    expect(screen.getByTestId('admin-cloud-pull-card')).toBeInTheDocument();
+    expect(screen.getByTestId('banner-pull-cloud-button')).toBeInTheDocument();
+
+    const pullBtn = screen.getByTestId('import-pull-cloud-button');
+    fireEvent.click(pullBtn);
+
+    await waitFor(() => {
+      expect(pullCloudDataMock).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('cloud-feedback-banner')).toBeInTheDocument();
+      expect(
+        screen.getByText(/Dados da nuvem sincronizados com sucesso!/i),
+      ).toBeInTheDocument();
     });
   });
 });

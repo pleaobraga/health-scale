@@ -6,12 +6,15 @@ import { FullScreenCalendarModal } from '../Modals/FullScreenCalendarModal';
 import { UnsavedChangesModal } from '../Modals/UnsavedChangesModal';
 import { useScheduleStore } from '../../store/useScheduleStore';
 import { hasExistingLocalData } from '../../services/backupService';
-import { NavigationTab } from '../../types';
+import { useCloudSync } from '../../hooks/useCloudSync';
 
 export const RootLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const setCurrentView = useScheduleStore((state) => state.setCurrentView);
+
+  // Mount admin-conditional cloud sync
+  useCloudSync();
 
   // Sync store's currentView with route changes
   useEffect(() => {
@@ -23,7 +26,9 @@ export const RootLayout: React.FC = () => {
     } else if (path.startsWith('/importar')) {
       setCurrentView('import');
     } else if (path.startsWith('/configuracoes')) {
-      setCurrentView('settings' as NavigationTab);
+      setCurrentView('settings');
+    } else if (path.startsWith('/usuarios')) {
+      setCurrentView('users');
     }
   }, [location.pathname, setCurrentView]);
 
