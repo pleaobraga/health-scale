@@ -135,12 +135,17 @@ export const GlobalPersonModal: React.FC<GlobalPersonModalProps> = ({
                 <Palette className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Cor de Destaque / Identificação</span>
               </label>
-              <span className="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500">
-                {selectedColor.toUpperCase()}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.name || 'Cor Personalizada'}
+                </span>
+                <span className="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                  {selectedColor.toUpperCase()}
+                </span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-6 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 max-h-56 overflow-y-auto">
               {TAILWIND_PALETTE.map((color) => {
                 const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase();
                 return (
@@ -148,7 +153,7 @@ export const GlobalPersonModal: React.FC<GlobalPersonModalProps> = ({
                     key={color.hex}
                     type="button"
                     onClick={() => setSelectedColor(color.hex)}
-                    title={color.name}
+                    title={`${color.name} (${color.hex})`}
                     aria-label={color.name}
                     className={`w-full aspect-square rounded-xl flex items-center justify-center transition-all ${
                       isSelected

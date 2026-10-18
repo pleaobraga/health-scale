@@ -4,12 +4,23 @@ import { useScheduleStore } from './useScheduleStore';
 describe('useScheduleStore - Gerenciamento de Estado Global', () => {
   beforeEach(() => {
     localStorage.clear();
-    // Reset store state to initial
-    const store = useScheduleStore.getState();
-    store.setCurrentMonth('2026-10');
-    store.setEditMode(false);
-    store.setHighlightedPersonId(null);
+    useScheduleStore.setState({
+      currentMonth: '2026-10',
+      isEditMode: false,
+      highlightedPersonId: null,
+      persons: [{ id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' }],
+      monthParticipants: { '2026-10': ['p1'] },
+      availabilities: [],
+      assignments: {},
+      savedAssignments: {},
+      events: [],
+      hasUnsavedChanges: false,
+      isUnsavedModalOpen: false,
+      hasValidated: false,
+      validationErrors: [],
+    });
   });
+
 
   it('deve navegar entre meses (anterior, próximo e direto)', () => {
     const store = useScheduleStore.getState();

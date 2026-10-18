@@ -7,11 +7,11 @@ describe('StorageService - Persistência Local-First', () => {
     localStorage.clear();
   });
 
-  it('deve carregar seed padrão de pessoas caso o storage esteja vazio', () => {
+  it('deve retornar lista vazia caso o storage esteja vazio', () => {
     const persons = StorageService.getPersons();
-    expect(persons.length).toBeGreaterThan(0);
-    expect(persons[0].name).toContain('Dra. Camila Santos');
+    expect(persons).toEqual([]);
   });
+
 
   it('deve salvar e recuperar pessoas atualizadas', () => {
     const newPersons: Person[] = [
@@ -54,7 +54,7 @@ describe('StorageService - Persistência Local-First', () => {
     expect(loaded).toEqual(sampleEvents);
   });
 
-  it('deve restaurar dados iniciais ao chamar resetToDefault', () => {
+  it('deve limpar dados ao chamar resetToDefault', () => {
     // Altera dados
     StorageService.savePersons([{ id: 'tmp', name: 'Temporário', color: '#000000' }]);
     expect(StorageService.getPersons()[0].name).toBe('Temporário');
@@ -62,10 +62,11 @@ describe('StorageService - Persistência Local-First', () => {
     // Executa reset
     StorageService.resetToDefault();
 
-    // Ao recarregar, deve carregar o seed novamente
+    // Ao recarregar, deve retornar vazio
     const reloaded = StorageService.getPersons();
-    expect(reloaded[0].name).toBe('Dra. Camila Santos');
+    expect(reloaded).toEqual([]);
   });
+
 
   it('deve persistir e recuperar participantes mensais', () => {
     const participants = { '2026-10': ['p1', 'p2'] };
