@@ -222,8 +222,8 @@ health-scale/
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **Package Manager**: [pnpm](https://pnpm.io/) (`>= 8.0.0` recommended)
+- **Node.js**: `>= v24.22.0`
+- **Package Manager**: [pnpm](https://pnpm.io/) (`>= 12.14.0`)
 
 ### Installation
 Clone the repository and install all project dependencies:
