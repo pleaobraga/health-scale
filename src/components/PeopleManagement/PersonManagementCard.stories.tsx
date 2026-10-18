@@ -42,6 +42,7 @@ export const ActiveState: Story = {
     isInCurrentMonth: true,
     canDelete: false, // Has schedule history
     onEdit: () => {},
+    onDeactivate: () => {},
     onDeleteRequest: () => {},
     onReactivate: () => {},
   },
@@ -54,6 +55,7 @@ export const InactiveStateWithHistory: Story = {
     isInCurrentMonth: false,
     canDelete: false, // Inactive with historical assignments: permanent delete blocked
     onEdit: () => {},
+    onDeactivate: () => {},
     onDeleteRequest: () => {},
     onReactivate: () => {},
   },
@@ -66,6 +68,7 @@ export const InactiveStateWithoutHistory: Story = {
     isInCurrentMonth: false,
     canDelete: true, // Inactive and 0 assignments: can be permanently deleted
     onEdit: () => {},
+    onDeactivate: () => {},
     onDeleteRequest: () => {},
     onReactivate: () => {},
   },

@@ -187,6 +187,7 @@ export const PeopleManagementView: React.FC = () => {
                 isInCurrentMonth={isInCurrentMonth}
                 canDelete={canDelete}
                 onEdit={handleOpenEdit}
+                onDeactivate={setPersonToDeactivate}
                 onDeleteRequest={handleDeleteRequest}
                 onReactivate={reactivatePerson}
               />

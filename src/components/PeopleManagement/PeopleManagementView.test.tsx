@@ -106,6 +106,28 @@ describe('PeopleManagementView Component', () => {
     expect(useScheduleStore.getState().assignments['2026-10-05']).toContain('p1');
   });
 
+  it('deve abrir o modal de desativação ao clicar no botão Desativar do card e desativar o profissional', () => {
+    render(<PeopleManagementView />);
+
+    const deactivateBtn = screen.getByRole('button', {
+      name: /desativar funcionário dra\. camila santos/i,
+    });
+    fireEvent.click(deactivateBtn);
+
+    expect(screen.getByText('Histórico em Escala Detectado')).toBeInTheDocument();
+    expect(
+      screen.getByText(/este profissional já possui histórico em escalas e não pode ser excluído permanentemente/i)
+    ).toBeInTheDocument();
+
+    const confirmDeactivateBtn = screen.getByRole('button', {
+      name: /sim, desativar profissional/i,
+    });
+    fireEvent.click(confirmDeactivateBtn);
+
+    const camila = useScheduleStore.getState().persons.find((p) => p.id === 'p1');
+    expect(camila?.active).toBe(false);
+  });
+
   it('deve exibir badge "Inativo" e permitir reativar um funcionário inativo', () => {
     useScheduleStore.setState({
       persons: [

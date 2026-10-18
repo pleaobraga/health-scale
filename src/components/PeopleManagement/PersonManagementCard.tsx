@@ -8,6 +8,7 @@ export interface PersonManagementCardProps {
   isInCurrentMonth: boolean;
   canDelete: boolean;
   onEdit: (person: Person) => void;
+  onDeactivate: (person: Person) => void;
   onDeleteRequest: (person: Person) => void;
   onReactivate: (personId: string) => void;
 }
@@ -18,6 +19,7 @@ export const PersonManagementCard: React.FC<PersonManagementCardProps> = ({
   isInCurrentMonth,
   canDelete,
   onEdit,
+  onDeactivate,
   onDeleteRequest,
   onReactivate,
 }) => {
@@ -105,10 +107,22 @@ export const PersonManagementCard: React.FC<PersonManagementCardProps> = ({
             <button
               type="button"
               onClick={() => onEdit(person)}
+              title={`Editar cadastro de ${person.name}`}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 transition"
             >
               <Edit2 className="w-3.5 h-3.5 text-slate-500" />
               <span>Editar</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onDeactivate(person)}
+              title={`Desativar funcionário ${person.name}`}
+              aria-label={`Desativar funcionário ${person.name}`}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800 transition"
+            >
+              <UserX className="w-3.5 h-3.5" />
+              <span>Desativar</span>
             </button>
 
             <button
@@ -120,7 +134,7 @@ export const PersonManagementCard: React.FC<PersonManagementCardProps> = ({
                   : `Desativar ${person.name} (possui histórico em escalas)`
               }
               aria-label={`Excluir cadastro de ${person.name}`}
-              className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition"
+              className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition shrink-0"
             >
               <Trash2 className="w-4 h-4" />
             </button>
