@@ -23,7 +23,7 @@ export interface CalendarDayInfo {
   dayNumber: number;
   isCurrentMonth: boolean;
   isToday: boolean;
-  dayOfWeek: number; // 0 = Domingo, 6 = Sábado
+  dayOfWeek: number; // 0 = Sunday, 6 = Saturday
 }
 
 /**

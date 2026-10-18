@@ -18,7 +18,7 @@ describe('ValidationPanel Component', () => {
   });
 
   it('deve exibir painel de auditoria com estado 100% conforme quando não há erros', () => {
-    // Simula estado sem erros no store
+    // Simulates error-free state in store
     useScheduleStore.setState({
       hasValidated: true,
       validationErrors: [],
@@ -67,7 +67,7 @@ describe('ValidationPanel Component', () => {
     const saveBtn = screen.getByRole('button', { name: /Salvar/i });
     fireEvent.click(saveBtn);
 
-    // Deve exibir feedback de salvamento
+    // Should display save feedback
     expect(useScheduleStore.getState().hasValidated).toBe(true);
   });
 });

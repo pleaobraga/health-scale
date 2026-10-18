@@ -25,7 +25,7 @@ describe('exportScheduleToExcel - Geração de Planilha', () => {
       'Grade Panorâmica',
     ]);
 
-    // Valida que a primeira planilha contém as células esperadas
+    // Validates that the first sheet contains expected cells
     const detailedSheet = workbook.Sheets['Escala Detalhada'];
     expect(detailedSheet).toBeDefined();
 

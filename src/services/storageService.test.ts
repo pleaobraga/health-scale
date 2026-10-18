@@ -56,14 +56,14 @@ describe('StorageService - Persistência Local-First', () => {
   });
 
   it('deve limpar dados ao chamar resetToDefault', () => {
-    // Altera dados
+    // Modify data
     StorageService.savePersons([{ id: 'tmp', name: 'Temporário', color: '#000000' }]);
     expect(StorageService.getPersons()[0].name).toBe('Temporário');
 
-    // Executa reset
+    // Execute reset
     StorageService.resetToDefault();
 
-    // Ao recarregar, deve retornar vazio
+    // When reloading, should return empty
     const reloaded = StorageService.getPersons();
     expect(reloaded).toEqual([]);
   });

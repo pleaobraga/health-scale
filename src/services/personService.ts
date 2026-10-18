@@ -2,10 +2,10 @@ import { Person } from '../types';
 
 export class PersonService {
   /**
-   * Varre o mapeamento de assignments (em todos os meses salvos) para verificar se a pessoa possui histórico de alocações.
-   * @param personId ID da pessoa
-   * @param assignments Dicionário de assignments {'YYYY-MM-DD': string[]}
-   * @returns boolean true se estiver alocado em 1 ou mais dias/turnos
+   * Scans all assignments across saved months to verify if the person has any schedule history.
+   * @param personId Person identifier
+   * @param assignments Dictionary of assignments {'YYYY-MM-DD': string[]}
+   * @returns boolean true if assigned to 1 or more days/shifts
    */
   static hasScheduleHistory(personId: string, assignments: Record<string, string[]>): boolean {
     if (!assignments || typeof assignments !== 'object') return false;
@@ -15,25 +15,25 @@ export class PersonService {
   }
 
   /**
-   * Verifica se a pessoa pode ser excluída definitivamente do sistema.
-   * A exclusão definitiva NÃO é permitida se a pessoa possuir qualquer histórico na escala.
-   * @param personId ID da pessoa
-   * @param assignments Dicionário global de assignments
-   * @returns boolean true se não possuir histórico (0 alocações)
+   * Checks if the person can be permanently deleted from the system.
+   * Permanent deletion is NOT allowed if the person has any history in schedules.
+   * @param personId Person identifier
+   * @param assignments Global assignments dictionary
+   * @returns boolean true if has no history (0 allocations)
    */
   static canDeletePerson(personId: string, assignments: Record<string, string[]>): boolean {
     return !this.hasScheduleHistory(personId, assignments);
   }
 
   /**
-   * Retorna apenas os profissionais com active === true
+   * Returns only professionals where active === true (or not false).
    */
   static getActivePersons(persons: Person[]): Person[] {
     return persons.filter((p) => p.active !== false);
   }
 }
 
-// Funções utilitárias exportadas diretamente
+// Utility functions exported directly
 export const canDeletePerson = (personId: string, assignments: Record<string, string[]>): boolean =>
   PersonService.canDeletePerson(personId, assignments);
 

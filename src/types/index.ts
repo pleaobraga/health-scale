@@ -2,7 +2,7 @@ export interface Person {
   id: string;
   name: string;
   color: string; // Tailwind hex code
-  active?: boolean; // true por padrão
+  active?: boolean; // Defaults to true
   [key: string]: unknown;
 }
 
@@ -42,11 +42,11 @@ export type MonthParticipants = Record<string, string[]>; // 'YYYY-MM' -> person
 export type NavigationTab = 'calendar' | 'people' | 'import' | 'settings';
 
 export interface AppDataSnapshot {
-  exportedAt: string; // ISO timestamp do momento da exportação
+  exportedAt: string; // ISO timestamp of export time
   people: Array<Person | (Person & { [key: string]: unknown })>;
-  monthParticipants: Record<string, string[]>; // 'YYYY-MM' -> array de personId
-  availabilities: Record<string, unknown> | MonthlyAvailability[]; // Mapeamento de disponibilidade mensal de cada pessoa
-  assignments: Record<string, unknown>; // Mapeamento das escalas e alocações diárias/turnos
+  monthParticipants: Record<string, string[]>; // 'YYYY-MM' -> array of personId
+  availabilities: Record<string, unknown> | MonthlyAvailability[]; // Monthly availability mapping for each person
+  assignments: Record<string, unknown>; // Schedule assignments and daily allocations
   events: Array<CalendarEvent | (CalendarEvent & { [key: string]: unknown })>;
-  [key: string]: unknown; // Aberto para configurações globais, temas ou futuros campos
+  [key: string]: unknown; // Extensible for global settings, themes, or future properties
 }

@@ -54,7 +54,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     store.setHighlightedPersonId('p1');
     expect(useScheduleStore.getState().highlightedPersonId).toBe('p1');
 
-    // Ao clicar no mesmo membro, deve desativar
+    // Clicking same member again should deactivate highlight
     store.setHighlightedPersonId('p1');
     expect(useScheduleStore.getState().highlightedPersonId).toBeNull();
   });
@@ -63,7 +63,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const store = useScheduleStore.getState();
     const initialCount = store.persons.length;
 
-    // Adicionar
+    // Add
     store.addPerson('Enfermeiro Teste', '#0ea5e9', [1, 2, 3]);
     const afterAdd = useScheduleStore.getState().persons;
     expect(afterAdd.length).toBe(initialCount + 1);
@@ -73,7 +73,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
 
     expect(addedPerson?.active).toBe(true);
 
-    // Excluir pessoa sem escala
+    // Delete person without assignments
     const deleteResult = store.deletePerson(addedPerson!.id);
     expect(deleteResult).toBe(true);
     const afterDelete = useScheduleStore.getState().persons;
@@ -85,29 +85,29 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const personId = store.persons[0].id;
     const dateStr = '2026-10-10';
 
-    // Vincula a pessoa a um dia da escala
+    // Link person to schedule day
     store.addPersonToDay(dateStr, personId);
     expect(store.canDeletePerson(personId)).toBe(false);
 
-    // Tentar deletar deve falhar e retornar false
+    // Attempting to delete must fail and return false
     const deleteSuccess = store.deletePerson(personId);
     expect(deleteSuccess).toBe(false);
     expect(useScheduleStore.getState().persons.some((p) => p.id === personId)).toBe(true);
 
-    // Desativar a pessoa
+    // Deactivate person
     store.deactivatePerson(personId);
     let person = useScheduleStore.getState().persons.find((p) => p.id === personId);
     expect(person?.active).toBe(false);
 
-    // Histórico de escala continua intacto
+    // Schedule history remains intact
     expect(useScheduleStore.getState().assignments[dateStr]).toContain(personId);
 
-    // Reativar a pessoa
+    // Reactivate person
     store.reactivatePerson(personId);
     person = useScheduleStore.getState().persons.find((p) => p.id === personId);
     expect(person?.active).toBe(true);
 
-    // Remove alocação e verifica que agora canDeletePerson é true
+    // Remove assignment and verify canDeletePerson is now true
     store.removePersonFromDay(dateStr, personId);
     expect(store.canDeletePerson(personId)).toBe(true);
   });
@@ -117,28 +117,28 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const personId = store.persons[0].id;
     const month = '2026-10';
 
-    // Atalho: dias pares
+    // Shortcut: even days
     store.setQuickAvailability(personId, month, 'even');
     let avail = useScheduleStore.getState().availabilities.find(
       (a) => a.personId === personId && a.month === month
     );
     expect(avail?.availableDays.every((d) => d % 2 === 0)).toBe(true);
 
-    // Atalho: dias ímpares
+    // Shortcut: odd days
     store.setQuickAvailability(personId, month, 'odd');
     avail = useScheduleStore.getState().availabilities.find(
       (a) => a.personId === personId && a.month === month
     );
     expect(avail?.availableDays.every((d) => d % 2 !== 0)).toBe(true);
 
-    // Atalho: limpar
+    // Shortcut: clear
     store.setQuickAvailability(personId, month, 'clear');
     avail = useScheduleStore.getState().availabilities.find(
       (a) => a.personId === personId && a.month === month
     );
     expect(avail?.availableDays.length).toBe(0);
 
-    // Toggle de dia individual
+    // Toggle individual day
     store.togglePersonDayAvailability(personId, month, 15);
     avail = useScheduleStore.getState().availabilities.find(
       (a) => a.personId === personId && a.month === month
@@ -173,7 +173,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const added = updatedEvents.find((e) => e.title === 'Plantão Extraordinário');
     expect(added).toBeDefined();
 
-    // Atualizar evento
+    // Update event
     store.updateEvent(added!.id, {
       title: 'Plantão Extraordinário Atualizado',
       time: '20:00',
@@ -203,10 +203,10 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const store = useScheduleStore.getState();
     const month = '2026-10';
 
-    // Garante que existem escalas para o mês
+    // Ensures assignments exist for the month
     store.addPersonToDay('2026-10-01', 'p1');
     store.addPersonToDay('2026-10-02', 'p2');
-    store.addPersonToDay('2026-11-01', 'p1'); // Outro mês
+    store.addPersonToDay('2026-11-01', 'p1'); // Other month
 
     expect(useScheduleStore.getState().assignments['2026-10-01']).toBeDefined();
     expect(useScheduleStore.getState().assignments['2026-10-02']).toBeDefined();
@@ -217,7 +217,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const assignmentsAfter = useScheduleStore.getState().assignments;
     expect(assignmentsAfter['2026-10-01']).toBeUndefined();
     expect(assignmentsAfter['2026-10-02']).toBeUndefined();
-    // Mês seguinte deve ser preservado
+    // Following month should be preserved
     expect(assignmentsAfter['2026-11-01']).toBeDefined();
   });
 
@@ -226,13 +226,13 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const month = '2026-10';
     const personId = store.persons[0].id;
 
-    // Configura disponibilidade específica (dias 5 e 12)
+    // Set specific availability (days 5 and 12)
     store.setPersonAvailability(personId, month, [5, 12]);
 
-    // Limpa o mês antes
+    // Clear month first
     store.clearMonthAssignments(month);
 
-    // Insere todos os dias da pessoa no mês
+    // Insert all person available days into the month
     store.insertAllPersonDaysToMonth(personId, month);
 
     const assignments = useScheduleStore.getState().assignments;
@@ -245,34 +245,34 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const store = useScheduleStore.getState();
     const month = '2026-10';
 
-    // Salva estado inicial limpo
+    // Save clean initial state
     store.clearMonthAssignments(month);
     store.saveSchedule();
 
     const savedState = { ...useScheduleStore.getState().assignments };
     expect(savedState['2026-10-20']).toBeUndefined();
 
-    // Entra no modo de edição
+    // Enter edit mode
     store.setEditMode(true);
     expect(useScheduleStore.getState().isEditMode).toBe(true);
 
-    // Faz alterações na escala
+    // Make changes to the schedule
     store.addPersonToDay('2026-10-20', 'p1');
     expect(useScheduleStore.getState().assignments['2026-10-20']).toEqual(['p1']);
     expect(useScheduleStore.getState().hasUnsavedChanges).toBe(true);
 
-    // Tenta sair do modo de edição SEM salvar
+    // Try to exit edit mode WITHOUT saving
     store.setEditMode(false);
 
-    // Deve abrir o modal de aviso e manter o modo de edição ativo para decisão do usuário
+    // Should open warning modal and keep edit mode active for user decision
     expect(useScheduleStore.getState().isUnsavedModalOpen).toBe(true);
     expect(useScheduleStore.getState().isEditMode).toBe(true);
 
-    // Ao descartar as alterações pelo modal
+    // When discarding changes via the modal
     store.discardChanges();
     useScheduleStore.setState({ isEditMode: false });
 
-    // Deve ter revertido ao estado salvo e saído do modo de edição
+    // Should have reverted to saved state and exited edit mode
     expect(useScheduleStore.getState().isEditMode).toBe(false);
     expect(useScheduleStore.getState().assignments['2026-10-20']).toBeUndefined();
     expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false);
@@ -298,7 +298,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false);
     expect(useScheduleStore.getState().savedAssignments['2026-10-28']).toEqual(['p1']);
 
-    // Ao sair do modo de edição agora, a alteração permanece
+    // When exiting edit mode now, changes remain
     store.setEditMode(false);
     expect(useScheduleStore.getState().assignments['2026-10-28']).toEqual(['p1']);
   });

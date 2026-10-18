@@ -14,7 +14,7 @@ describe('PeopleManagementView Component', () => {
         '2026-10': ['p1'],
       },
       assignments: {
-        '2026-10-05': ['p1'], // p1 possui histórico em escalas
+        '2026-10-05': ['p1'], // p1 has assignment history
       },
       currentMonth: '2026-10',
     });
@@ -80,29 +80,29 @@ describe('PeopleManagementView Component', () => {
   it('deve interceptar exclusão de pessoa com histórico em escala e exibir modal de desativação', () => {
     render(<PeopleManagementView />);
 
-    // Dra. Camila (p1) possui histórico em assignments ('2026-10-05')
+    // Dra. Camila (p1) has assignments history ('2026-10-05')
     const deleteBtn = screen.getByRole('button', {
       name: /excluir cadastro de dra\. camila santos/i,
     });
     fireEvent.click(deleteBtn);
 
-    // Deve abrir o modal de interceptação e aviso de integridade
+    // Should open interception modal with integrity alert
     expect(screen.getByText('Histórico em Escala Detectado')).toBeInTheDocument();
     expect(
       screen.getByText(/este profissional já possui histórico em escalas e não pode ser excluído/i)
     ).toBeInTheDocument();
 
-    // Confirmar desativação
+    // Confirm deactivation
     const confirmDeactivateBtn = screen.getByRole('button', {
       name: /sim, desativar profissional/i,
     });
     fireEvent.click(confirmDeactivateBtn);
 
-    // O status do profissional deve mudar para active: false
+    // Person status must change to active: false
     const camila = useScheduleStore.getState().persons.find((p) => p.id === 'p1');
     expect(camila?.active).toBe(false);
 
-    // O histórico na escala ('2026-10-05') permanece preservado
+    // Schedule history ('2026-10-05') remains preserved
     expect(useScheduleStore.getState().assignments['2026-10-05']).toContain('p1');
   });
 
@@ -150,7 +150,7 @@ describe('PeopleManagementView Component', () => {
   it('deve abrir diálogo de confirmação tradicional e excluir funcionário definitivamente quando ele NÃO tiver histórico de escala', () => {
     render(<PeopleManagementView />);
 
-    // Dr. Lucas (p2) não possui nenhuma escala em assignments
+    // Dr. Lucas (p2) does not have any assignments
     const deleteBtn = screen.getByRole('button', {
       name: /excluir cadastro de dr\. lucas oliveira/i,
     });

@@ -76,7 +76,7 @@ export const HoverSidebar: React.FC = () => {
 
   return (
     <>
-      {/* 1. Mobile Top Header (Telas menores que 768px: < md) */}
+      {/* 1. Mobile Top Header (Screens smaller than 768px: < md) */}
       <header
         data-testid="mobile-header"
         className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40 shadow-xs md:hidden select-none transition-colors"
@@ -107,7 +107,7 @@ export const HoverSidebar: React.FC = () => {
         </button>
       </header>
 
-      {/* 2. Mobile Full-Screen Menu Overlay (Aberto ao clicar no botão de menu) */}
+      {/* 2. Mobile Full-Screen Menu Overlay (Opened when clicking the menu button) */}
       {isMobileMenuOpen && (
         <div
           role="dialog"
@@ -260,7 +260,7 @@ export const HoverSidebar: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Desktop / Tablet Fixed Hover Sidebar (Telas >= 768px: md+) */}
+      {/* 3. Desktop / Tablet Fixed Hover Sidebar (Screens >= 768px: md+) */}
       <aside
         data-testid="hover-sidebar"
         className="group/sidebar fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-sm overflow-hidden select-none"

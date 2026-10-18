@@ -59,7 +59,7 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 1: Preferências de Aparência */}
+        {/* Section 1: Appearance Preferences */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
             Aparência e Tema
@@ -88,7 +88,7 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 2: Resumo do Armazenamento Local */}
+        {/* Section 2: Local Storage Summary */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -138,7 +138,7 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 3: Ações de Backup & Restauração */}
+        {/* Section 3: Backup & Restore Actions */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
             Backup e Segurança de Dados
@@ -164,7 +164,7 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 4: Informações do Sistema */}
+        {/* Section 4: System Information */}
         <div className="bg-slate-100 dark:bg-slate-900/60 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400">
           <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
           <div className="space-y-1">

@@ -97,23 +97,23 @@ describe('HoverSidebar Component', () => {
   it('deve exibir o cabeçalho mobile e abrir o menu em tela cheia ao clicar no botão de menu', () => {
     renderWithRouter()
 
-    // Cabeçalho mobile visível com botão de menu
+    // Mobile header visible with menu button
     const mobileHeader = screen.getByTestId('mobile-header')
     expect(mobileHeader).toBeInTheDocument()
 
     const menuBtn = screen.getByTestId('mobile-menu-button')
     expect(menuBtn).toBeInTheDocument()
 
-    // Menu em tela cheia inicialmente fechado
+    // Fullscreen mobile menu initially closed
     expect(
       screen.queryByTestId('mobile-fullscreen-menu'),
     ).not.toBeInTheDocument()
 
-    // Clica para abrir o menu em tela cheia
+    // Click to open fullscreen menu
     fireEvent.click(menuBtn)
     expect(screen.getByTestId('mobile-fullscreen-menu')).toBeInTheDocument()
 
-    // Clica para fechar o menu
+    // Click to close menu
     const closeBtn = screen.getByTestId('mobile-menu-close')
     fireEvent.click(closeBtn)
     expect(

@@ -15,7 +15,7 @@ describe('AvailabilityMiniCalendar Component', () => {
 
     expect(screen.getByText(/Disponibilidade \(Outubro de 2026\)/i)).toBeInTheDocument();
     expect(screen.getByText('3 / 31 dias')).toBeInTheDocument();
-    // Verifica presença de dias individuais
+    // Verify presence of individual days
     expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '31' })).toBeInTheDocument();
   });
@@ -35,7 +35,7 @@ describe('AvailabilityMiniCalendar Component', () => {
 
     expect(handleChange).toHaveBeenCalledTimes(1);
     const calledWith = handleChange.mock.calls[0][0];
-    expect(calledWith.length).toBe(15); // Em 31 dias, 15 pares
+    expect(calledWith.length).toBe(15); // Out of 31 days, 15 even days
     expect(calledWith.every((d: number) => d % 2 === 0)).toBe(true);
   });
 
@@ -54,7 +54,7 @@ describe('AvailabilityMiniCalendar Component', () => {
 
     expect(handleChange).toHaveBeenCalledTimes(1);
     const calledWith = handleChange.mock.calls[0][0];
-    expect(calledWith.length).toBe(16); // Em 31 dias, 16 ímpares
+    expect(calledWith.length).toBe(16); // Out of 31 days, 16 odd days
     expect(calledWith.every((d: number) => d % 2 !== 0)).toBe(true);
   });
 
@@ -84,12 +84,12 @@ describe('AvailabilityMiniCalendar Component', () => {
       />
     );
 
-    // Clica no dia 15 (não selecionado -> deve adicionar)
+    // Click on day 15 (not selected -> should add)
     const day15 = screen.getByRole('button', { name: '15' });
     fireEvent.click(day15);
     expect(handleChange).toHaveBeenCalledWith([10, 15]);
 
-    // Clica no dia 10 (já selecionado -> deve remover)
+    // Click on day 10 (already selected -> should remove)
     const day10 = screen.getByRole('button', { name: '10' });
     fireEvent.click(day10);
     expect(handleChange).toHaveBeenCalledWith([]);

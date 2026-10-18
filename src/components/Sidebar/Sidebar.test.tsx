@@ -12,7 +12,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
         { id: 'p3', name: 'Enf. Beatriz Lima', color: '#8b5cf6' },
       ],
       monthParticipants: {
-        '2026-10': ['p1', 'p2'], // Somente p1 e p2 no mês
+        '2026-10': ['p1', 'p2'], // Only p1 and p2 in the month
       },
       availabilities: [
         { personId: 'p1', month: '2026-10', availableDays: [1, 2, 3] },
@@ -26,11 +26,11 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
   it('deve listar APENAS as pessoas vinculadas ao mês corrente', () => {
     render(<Sidebar />);
 
-    // p1 e p2 estão no mês
+    // p1 and p2 are in the month
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
     expect(screen.getByText('Dr. Lucas Oliveira')).toBeInTheDocument();
 
-    // p3 NÃO está no mês 2026-10 e não deve aparecer na lista
+    // p3 is NOT in month 2026-10 and must not appear in the list
     expect(screen.queryByText('Enf. Beatriz Lima')).not.toBeInTheDocument();
     expect(screen.getByText(/2 vinculadas/i)).toBeInTheDocument();
   });
@@ -55,18 +55,18 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     fireEvent.click(vincularBtn);
 
     expect(screen.getByText('Vincular Pessoas ao Mês')).toBeInTheDocument();
-    // Enf. Beatriz Lima é a única elegível (não participante)
+    // Enf. Beatriz Lima is the only eligible person (non-participant)
     expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument();
 
-    // Seleciona Enf. Beatriz Lima
+    // Select Enf. Beatriz Lima
     const beatrizCard = screen.getByText('Enf. Beatriz Lima');
     fireEvent.click(beatrizCard);
 
-    // Clica em Adicionar Selecionados
+    // Click "Adicionar Selecionados"
     const addSelectedBtn = screen.getByRole('button', { name: /adicionar selecionados/i });
     fireEvent.click(addSelectedBtn);
 
-    // Agora Beatriz deve estar na lista do mês
+    // Now Beatriz should be in the month list
     expect(useScheduleStore.getState().monthParticipants['2026-10']).toContain('p3');
     expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument();
   });
@@ -79,11 +79,11 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     });
     fireEvent.click(removeBtn);
 
-    // Não está mais no mês
+    // No longer in the month
     expect(useScheduleStore.getState().monthParticipants['2026-10']).not.toContain('p1');
     expect(screen.queryByText('Dra. Camila Santos')).not.toBeInTheDocument();
 
-    // MAS continua no cadastro geral de persons!
+    // BUT remains in the global people registry!
     expect(useScheduleStore.getState().persons.some((p) => p.id === 'p1')).toBe(true);
   });
 
@@ -94,11 +94,11 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(toggleBtn).toBeInTheDocument();
     expect(toggleBtn).toHaveTextContent(/recolher/i);
 
-    // Clica para recolher/minimizar
+    // Click to collapse/minimize
     fireEvent.click(toggleBtn);
     expect(toggleBtn).toHaveTextContent(/expandir/i);
 
-    // Clica novamente para expandir
+    // Click again to expand
     fireEvent.click(toggleBtn);
     expect(toggleBtn).toHaveTextContent(/recolher/i);
   });

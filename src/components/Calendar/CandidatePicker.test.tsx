@@ -12,7 +12,7 @@ describe('CandidatePicker Component', () => {
 
   it('permite selecionar profissional que possui disponibilidade', () => {
     const handleSelect = vi.fn();
-    // Apenas p1 tem disponibilidade no dia 15
+    // Only p1 has availability on day 15
     const isPersonAvailable = (id: string, day: number) => id === 'p1' && day === 15;
 
     render(
@@ -27,11 +27,11 @@ describe('CandidatePicker Component', () => {
       />
     );
 
-    // Clica no botão "Adicionar" para abrir o dropdown
+    // Click "Adicionar" button to open dropdown
     const addBtn = screen.getByRole('button', { name: /adicionar/i });
     fireEvent.click(addBtn);
 
-    // Dra. Camila está disponível e deve ser clicável
+    // Dra. Camila is available and must be clickable
     const camilaBtn = screen.getByRole('button', { name: 'Dra. Camila' });
     expect(camilaBtn).toBeEnabled();
 
@@ -42,7 +42,7 @@ describe('CandidatePicker Component', () => {
 
   it('bloqueia e desabilita profissionais que NÃO possuem disponibilidade no dia', () => {
     const handleSelect = vi.fn();
-    // Apenas p1 tem disponibilidade no dia 15; p2 e p3 não possuem
+    // Only p1 has availability on day 15; p2 and p3 do not
     const isPersonAvailable = (id: string, day: number) => id === 'p1' && day === 15;
 
     render(
@@ -59,19 +59,19 @@ describe('CandidatePicker Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /adicionar/i }));
 
-    // Dr. Lucas e Enf. Beatriz devem estar na seção "Sem disponibilidade" e desabilitados
+    // Dr. Lucas and Enf. Beatriz must be in the "Sem disponibilidade" section and disabled
     const lucasBtn = screen.getByTitle(/dr\. lucas não possui disponibilidade no dia 15/i);
     expect(lucasBtn).toBeDisabled();
     expect(lucasBtn).toHaveAttribute('aria-disabled', 'true');
 
-    // Clicar em profissional indisponível não deve chamar onSelectPerson
+    // Clicking an unavailable professional must not trigger onSelectPerson
     fireEvent.click(lucasBtn);
     expect(handleSelect).not.toHaveBeenCalled();
   });
 
   it('exibe mensagem quando nenhum profissional possui disponibilidade para o dia', () => {
     const handleSelect = vi.fn();
-    // Ninguém disponível
+    // Nobody is available
     const isPersonAvailable = () => false;
 
     render(
@@ -110,7 +110,7 @@ describe('CandidatePicker Component', () => {
   });
 
   it('considera APENAS pessoas participantes do mês fornecidas para a seleção', () => {
-    // Apenas p1 e p2 são participantes do mês corrente; p3 está no cadastro geral mas não no mês
+    // Only p1 and p2 are participants of current month; p3 is in global people but not in the month
     const monthOnlyPersons = [mockPersons[0], mockPersons[1]];
 
     render(

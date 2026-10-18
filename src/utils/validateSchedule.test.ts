@@ -30,7 +30,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
   it('deve acusar erro quando a mesma pessoa trabalha em dias consecutivos no mesmo mês', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1'],
-      '2026-10-02': ['p1'], // Consecutivo
+      '2026-10-02': ['p1'], // Consecutive
     };
 
     const errors = validateSchedule({
@@ -51,7 +51,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
   it('deve acusar erro de dias consecutivos na virada de mês (ex: 31 de Outubro e 01 de Novembro)', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-31': ['p1'],
-      '2026-11-01': ['p1'], // Virada de mês
+      '2026-11-01': ['p1'], // Month boundary rollover
     };
 
     const errors = validateSchedule({
@@ -67,11 +67,11 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
   });
 
   it('deve acusar erro quando o limite semanal de 2 escalas (Domingo a Sábado) é ultrapassado', () => {
-    // 2026-10-04 é Domingo e 2026-10-10 é Sábado
+    // 2026-10-04 is Sunday and 2026-10-10 is Saturday
     const assignments: Record<string, string[]> = {
-      '2026-10-04': ['p1'], // Dom
-      '2026-10-06': ['p1'], // Ter
-      '2026-10-08': ['p1'], // Qui (3º dia na mesma semana!)
+      '2026-10-04': ['p1'], // Sun
+      '2026-10-06': ['p1'], // Tue
+      '2026-10-08': ['p1'], // Thu (3rd day in same week!)
     };
 
     const errors = validateSchedule({
@@ -90,7 +90,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
 
   it('deve acusar erro quando há mais de uma pessoa atribuída ao mesmo dia (conflito não resolvido)', () => {
     const assignments: Record<string, string[]> = {
-      '2026-10-01': ['p1', 'p3'], // 2 pessoas no mesmo dia
+      '2026-10-01': ['p1', 'p3'], // 2 people assigned to the same day
     };
 
     const errors = validateSchedule({
@@ -120,16 +120,16 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     });
 
     const emptyErrors = errors.filter((e) => e.rule === 'empty_day');
-    // Outubro tem 31 dias, 1 preenchido => 30 dias vazios
+    // October has 31 days, 1 assigned => 30 empty days
     expect(emptyErrors.length).toBe(30);
     expect(emptyErrors[0].severity).toBe('warning');
     expect(emptyErrors[0].message).toContain('Dia sem responsável');
   });
 
   it('deve acusar erro quando uma pessoa é escalada sem ter marcado disponibilidade', () => {
-    // p2 só tem disponibilidade nos dias pares (2, 4, 6...)
+    // p2 only has availability on even days (2, 4, 6...)
     const assignments: Record<string, string[]> = {
-      '2026-10-05': ['p2'], // Dia 5 não está na disponibilidade de p2
+      '2026-10-05': ['p2'], // Day 5 is not in p2's availability
     };
 
     const errors = validateSchedule({
@@ -147,9 +147,9 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
   });
 
   it('deve retornar zero erros críticos quando todos os dias estão em conformidade com as regras', () => {
-    // Cria uma alocação alternada sem dias consecutivos e com máx 2 dias por semana
-    // Semana 1: 01 (Qui - p1), 03 (Sáb - p1) -> 2 vezes na semana
-    // Semana 2: 05 (Seg - p3), 07 (Qua - p3) -> 2 vezes na semana
+    // Creates alternating assignment without consecutive days and max 2 days per week
+    // Week 1: 01 (Thu - p1), 03 (Sat - p1) -> 2 times in the week
+    // Week 2: 05 (Mon - p3), 07 (Wed - p3) -> 2 times in the week
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1'],
       '2026-10-03': ['p1'],

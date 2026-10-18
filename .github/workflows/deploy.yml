@@ -6,13 +6,13 @@ on:
       - main
   workflow_dispatch:
 
-# Permissões mínimas necessárias para publicação no GitHub Pages via GITHUB_TOKEN nativo
+# Minimum permissions required for GitHub Pages deployment using the native GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Cancela execuções anteriores em andamento caso novos commits sejam enviados
+# Cancel in-progress runs when new commits are pushed
 concurrency:
   group: 'pages'
   cancel-in-progress: true

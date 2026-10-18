@@ -70,10 +70,10 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
 
     render(<TestAppRouter initialEntries={['/']} />);
 
-    // Inicia no calendário
+    // Starts on calendar
     expect(screen.getByTestId('calendar-view')).toBeInTheDocument();
 
-    // Clica no link de pessoas
+    // Click on people link
     const peopleLink = screen.getByRole('link', { name: /gerenciar pessoas/i });
     fireEvent.click(peopleLink);
 
@@ -81,7 +81,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
       expect(screen.getByText(/Cadastro Geral de Funcionários/i)).toBeInTheDocument();
     });
 
-    // Clica no link de importar
+    // Click on import link
     const importLink = screen.getByRole('link', { name: /importar dados/i });
     fireEvent.click(importLink);
 
@@ -89,7 +89,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
       expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument();
     });
 
-    // Clica no link de configurações
+    // Click on settings link
     const settingsLink = screen.getByRole('link', { name: /configurações/i });
     fireEvent.click(settingsLink);
 

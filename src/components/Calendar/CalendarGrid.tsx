@@ -256,7 +256,7 @@ export const CalendarGrid: React.FC = () => {
         </div>
       )}
 
-      {/* Main 7-Column Grid (Domingo a Sábado) */}
+      {/* Main 7-Column Grid (Sunday to Saturday) */}
       <div className="flex flex-col">
         <CalendarHeader />
         <div className="grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 flex-1 auto-rows-fr">

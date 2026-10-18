@@ -14,17 +14,17 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<RootLayout />}>
-        {/* Rota Raiz / Calendário */}
+        {/* Root Route / Calendar */}
         <Route index element={<CalendarView />} />
-        {/* Rota alias /calendario */}
+        {/* Alias route /calendario */}
         <Route path="calendario" element={<CalendarView />} />
-        {/* Rota de Gestão Global de Pessoas */}
+        {/* Global People Management Route */}
         <Route path="pessoas" element={<PeopleManagementView />} />
-        {/* Rota de Importação de Dados */}
+        {/* Data Import Route */}
         <Route path="importar" element={<ImportView />} />
-        {/* Rota Extensível: Configurações Gerais */}
+        {/* Extensible Route: General Settings */}
         <Route path="configuracoes" element={<SettingsView />} />
-        {/* Rota Fallback / 404 Interno: Redireciona para #/ */}
+        {/* Fallback Route / Internal 404: Redirect to #/ */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

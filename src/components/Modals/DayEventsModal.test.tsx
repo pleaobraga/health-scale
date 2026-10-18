@@ -94,11 +94,11 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />);
 
-    // Clica no botão de editar do evento
+    // Click edit button for event
     const editBtn = screen.getByRole('button', { name: /Editar evento Plantão Manhã/i });
     fireEvent.click(editBtn);
 
-    // O cabeçalho do formulário deve mudar para "Editar Evento"
+    // Form title should change to "Editar Evento"
     expect(screen.getByText('Editar Evento')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Salvar Alterações/i })).toBeInTheDocument();
     expect(screen.getByText('Cancelar Edição')).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('DayEventsModal', () => {
     const descInput = screen.getByPlaceholderText('Detalhes adicionais...');
     expect(descInput).toHaveValue('Troca de turno');
 
-    // Modifica o título e o horário
+    // Modify title and time
     fireEvent.change(titleInput, { target: { value: 'Plantão Noturno Extra' } });
     fireEvent.change(timeInput, { target: { value: '22:00' } });
     fireEvent.change(descInput, { target: { value: 'Equipe ampliada' } });
@@ -125,7 +125,7 @@ describe('DayEventsModal', () => {
     expect(storeEvents[0].time).toBe('22:00');
     expect(storeEvents[0].description).toBe('Equipe ampliada');
 
-    // Formulário deve voltar ao estado inicial de novo evento
+    // Form should return to initial state for new event
     expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument();
   });
 

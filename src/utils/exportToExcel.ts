@@ -21,7 +21,7 @@ export const generateScheduleWorkbook = ({
   const days = getMonthDaysArray(month);
   const formattedMonthTitle = formatMonthYear(month);
 
-  // 1. Sheet 1: Escala Diária Detalhada
+  // 1. Sheet 1: Detailed Daily Schedule
   const dailyRows: (string | number)[][] = [
     [`ESCALA DE PLANTÕES - ${formattedMonthTitle.toUpperCase()}`],
     [],
@@ -64,14 +64,14 @@ export const generateScheduleWorkbook = ({
 
   const dailySheet = XLSX.utils.aoa_to_sheet(dailyRows);
   dailySheet['!cols'] = [
-    { wch: 14 }, // Data
-    { wch: 18 }, // Dia da Semana
-    { wch: 32 }, // Profissional(is)
+    { wch: 14 }, // Date
+    { wch: 18 }, // Day of Week
+    { wch: 32 }, // Assigned Professional(s)
     { wch: 16 }, // Status
-    { wch: 40 }, // Eventos
+    { wch: 40 }, // Events
   ];
 
-  // 2. Sheet 2: Resumo por Profissional
+  // 2. Sheet 2: Summary by Professional
   const summaryRows: (string | number)[][] = [
     [`RESUMO DE PLANTÕES POR PROFISSIONAL - ${formattedMonthTitle.toUpperCase()}`],
     [],
@@ -97,12 +97,12 @@ export const generateScheduleWorkbook = ({
 
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
   summarySheet['!cols'] = [
-    { wch: 28 }, // Profissional
+    { wch: 28 }, // Professional
     { wch: 18 }, // Total
-    { wch: 50 }, // Dias
+    { wch: 50 }, // Days
   ];
 
-  // 3. Sheet 3: Grade Panorâmica (Matriz: Profissional x Dias 1..N)
+  // 3. Sheet 3: Panoramic Grid (Matrix: Professional x Days 1..N)
   const matrixHeader: (string | number)[] = ['Profissional', ...days.map((d) => d.toString())];
   const matrixRows: (string | number)[][] = [
     [`GRADE PANORÂMICA MENSAL - ${formattedMonthTitle.toUpperCase()}`],
@@ -121,7 +121,7 @@ export const generateScheduleWorkbook = ({
     matrixRows.push(row);
   });
 
-  // Linha de total por dia
+  // Daily total row
   const dailyTotalRow: (string | number)[] = ['TOTAL ESCALADOS'];
   days.forEach((dayNum) => {
     const dayStr = dayNum.toString().padStart(2, '0');
@@ -133,7 +133,7 @@ export const generateScheduleWorkbook = ({
   const matrixSheet = XLSX.utils.aoa_to_sheet(matrixRows);
   matrixSheet['!cols'] = [{ wch: 28 }, ...days.map(() => ({ wch: 5 }))];
 
-  // 4. Montagem do Workbook
+  // 4. Assemble Workbook
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, dailySheet, 'Escala Detalhada');
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumo por Profissional');

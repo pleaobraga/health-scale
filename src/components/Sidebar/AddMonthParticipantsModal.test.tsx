@@ -24,7 +24,7 @@ describe('AddMonthParticipantsModal Component', () => {
 
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
     expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument();
-    // O profissional inativo não deve aparecer na lista de candidatos do mês
+    // The inactive professional must not appear in the month candidate list
     expect(screen.queryByText('Dr. Lucas Oliveira (Inativo)')).not.toBeInTheDocument();
   });
 
@@ -57,12 +57,12 @@ describe('AddMonthParticipantsModal Component', () => {
         onClose={handleClose}
         currentMonth="2026-10"
         allPersons={mockPersons}
-        currentParticipantIds={['p1']} // Camila já está vinculada
+        currentParticipantIds={['p1']} // Camila is already linked
         onAddParticipants={handleAdd}
       />
     );
 
-    // Como Camila já está no mês e Lucas é inativo, apenas Beatriz deve estar elegível
+    // Since Camila is already in the month and Lucas is inactive, only Beatriz is eligible
     expect(screen.queryByText('Dra. Camila Santos')).not.toBeInTheDocument();
     expect(screen.queryByText('Dr. Lucas Oliveira (Inativo)')).not.toBeInTheDocument();
     expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument();
