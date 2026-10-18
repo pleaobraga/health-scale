@@ -1,8 +1,11 @@
-import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { describe, it, expect } from 'vitest';
+
 import { PrivateRoute } from './PrivateRoute';
-import { AuthProvider, AuthContextType } from '../../context/AuthContext';
+import { AuthProvider } from '../../context/AuthContext';
+
+import type { AuthContextType } from '../../context/AuthContext';
 
 describe('PrivateRoute Guard', () => {
   const renderPrivateRoute = (authValue: Partial<AuthContextType>, initialEntries = ['/protegido']) => {

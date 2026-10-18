@@ -1,5 +1,5 @@
 import { parseISO, format } from 'date-fns';
-import { Person, MonthlyAvailability, ValidationError } from '../types';
+
 import {
   getMonthDaysArray,
   getConsecutiveDates,
@@ -7,6 +7,8 @@ import {
   getWeekEndKey,
   formatDisplayDate,
 } from './dateUtils';
+
+import type { Person, MonthlyAvailability, ValidationError } from '../types';
 
 export interface ValidationParams {
   currentMonth: string; // 'YYYY-MM'

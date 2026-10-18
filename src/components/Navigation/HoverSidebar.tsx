@@ -17,11 +17,13 @@ import {
 } from 'lucide-react';
 import React, { useContext, useState } from 'react';
 import { NavLink, useInRouterContext } from 'react-router-dom';
+
 import { AuthContext } from '../../context/AuthContext';
 import { exportAppData } from '../../services/backupService';
 import { CloudSyncService } from '../../services/cloudSyncService';
 import { useScheduleStore } from '../../store/useScheduleStore';
-import { NavigationTab } from '../../types';
+
+import type { NavigationTab } from '../../types';
 
 export const HoverSidebar: React.FC = () => {
   const { currentView, setCurrentView, isDarkMode, toggleDarkMode } =

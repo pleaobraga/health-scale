@@ -1,8 +1,3 @@
-import React, { useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { getMonthCalendarGrid, formatMonthYear, formatDateWithWeekday } from '../../utils/dateUtils';
-import { exportScheduleToExcel } from '../../utils/exportToExcel';
 import {
   CalendarDays,
   X,
@@ -12,6 +7,12 @@ import {
   FileSpreadsheet,
   Calendar as CalendarIcon,
 } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+
+import { useScheduleStore } from '../../store/useScheduleStore';
+import { getMonthCalendarGrid, formatMonthYear, formatDateWithWeekday } from '../../utils/dateUtils';
+import { exportScheduleToExcel } from '../../utils/exportToExcel';
 
 const WEEKDAYS = [
   { short: 'Dom', full: 'Domingo', isWeekend: true },

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { useScheduleStore } from './useScheduleStore';
 
 describe('useScheduleStore - Gerenciamento de Estado Global', () => {

@@ -1,8 +1,10 @@
+import { X, Check, User, Palette } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Person } from '../../types';
+
 import { TAILWIND_PALETTE } from '../../constants/tailwindColors';
-import { X, Check, User, Palette } from 'lucide-react';
+
+import type { Person } from '../../types';
 
 interface GlobalPersonModalProps {
   isOpen: boolean;

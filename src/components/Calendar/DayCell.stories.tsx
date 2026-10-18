@@ -1,7 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DayCell } from './DayCell';
-import { Person } from '../../types';
-import { CalendarDayInfo } from '../../utils/dateUtils';
+
+import type { Person } from '../../types';
+import type { CalendarDayInfo } from '../../utils/dateUtils';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockPersons: Person[] = [
   { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6' },

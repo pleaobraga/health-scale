@@ -1,12 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { ImportView } from './ImportView';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import * as backupService from '../../services/backupService';
-import { AppDataSnapshot } from '../../types';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import { AuthContext, AuthContextType } from '../../context/authContextBase';
+import { ImportView } from './ImportView';
+import { AuthContext } from '../../context/authContextBase';
+import * as backupService from '../../services/backupService';
+import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { AuthContextType } from '../../context/authContextBase';
+import type { AppDataSnapshot } from '../../types';
 
 const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
   const contextValue: AuthContextType = {

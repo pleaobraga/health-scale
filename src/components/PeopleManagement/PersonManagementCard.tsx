@@ -1,6 +1,7 @@
-import React from 'react';
-import { Person } from '../../types';
 import { Edit2, Trash2, CalendarCheck2, RotateCcw, UserX, CheckCircle, ShieldAlert } from 'lucide-react';
+import React from 'react';
+
+import type { Person } from '../../types';
 
 export interface PersonManagementCardProps {
   person: Person;

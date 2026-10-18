@@ -1,7 +1,8 @@
+import { AlertTriangle, Save, Trash2, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+
 import { useScheduleStore } from '../../store/useScheduleStore';
-import { AlertTriangle, Save, Trash2, X } from 'lucide-react';
 
 export const UnsavedChangesModal: React.FC = () => {
   const {

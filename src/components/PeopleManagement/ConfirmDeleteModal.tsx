@@ -1,7 +1,8 @@
+import { AlertTriangle, Trash2, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Person } from '../../types';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+
+import type { Person } from '../../types';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;

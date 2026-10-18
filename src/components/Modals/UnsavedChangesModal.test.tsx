@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { UnsavedChangesModal } from './UnsavedChangesModal';
 import { useScheduleStore } from '../../store/useScheduleStore';
 

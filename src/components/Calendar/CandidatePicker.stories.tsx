@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { CandidatePicker } from './CandidatePicker';
-import { Person } from '../../types';
+
+import type { Person } from '../../types';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const mockPersons: Person[] = [
   { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6' },

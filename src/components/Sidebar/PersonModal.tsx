@@ -1,9 +1,11 @@
+import { X, Check, Trash2, User, Palette } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Person } from '../../types';
-import { TAILWIND_PALETTE } from '../../constants/tailwindColors';
+
 import { AvailabilityMiniCalendar } from './AvailabilityMiniCalendar';
-import { X, Check, Trash2, User, Palette } from 'lucide-react';
+import { TAILWIND_PALETTE } from '../../constants/tailwindColors';
+
+import type { Person } from '../../types';
 
 interface PersonModalProps {
   isOpen: boolean;

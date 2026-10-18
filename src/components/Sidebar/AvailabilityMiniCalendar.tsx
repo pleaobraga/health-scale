@@ -1,6 +1,7 @@
-import React from 'react';
-import { getDaysCountInMonth, formatMonthYear } from '../../utils/dateUtils';
 import { Sparkles, Eraser, CheckSquare, Calendar } from 'lucide-react';
+import React from 'react';
+
+import { getDaysCountInMonth, formatMonthYear } from '../../utils/dateUtils';
 
 interface AvailabilityMiniCalendarProps {
   month: string; // 'YYYY-MM'

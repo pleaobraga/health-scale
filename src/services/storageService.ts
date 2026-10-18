@@ -1,4 +1,4 @@
-import { Person, MonthlyAvailability, CalendarEvent } from '../types';
+import type { Person, MonthlyAvailability, CalendarEvent } from '../types';
 
 const STORAGE_KEYS = {
   PERSONS: 'scale_manager_persons_v1',

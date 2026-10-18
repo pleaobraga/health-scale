@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
-import { User } from 'firebase/auth';
+
+import type { User } from 'firebase/auth';
 
 export type UserRole = 'admin' | 'user';
 

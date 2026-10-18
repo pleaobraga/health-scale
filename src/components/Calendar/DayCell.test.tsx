@@ -1,8 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
 import { DayCell } from './DayCell';
-import { Person, CalendarEvent } from '../../types';
-import { CalendarDayInfo } from '../../utils/dateUtils';
+
+import type { Person, CalendarEvent } from '../../types';
+import type { CalendarDayInfo } from '../../utils/dateUtils';
 
 describe('DayCell Component', () => {
   const mockDayInfo: CalendarDayInfo = {

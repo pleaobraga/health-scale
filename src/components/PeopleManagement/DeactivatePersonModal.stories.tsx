@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DeactivatePersonModal } from './DeactivatePersonModal';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof DeactivatePersonModal> = {
   title: 'PeopleManagement/DeactivatePersonModal',

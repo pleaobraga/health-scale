@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
+
 import { validateSchedule } from './validateSchedule';
-import { Person, MonthlyAvailability } from '../types';
+
+import type { Person, MonthlyAvailability } from '../types';
 
 describe('validateSchedule - Motor de Regras e Auditoria', () => {
   const mockPersons: Person[] = [

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+
 import { StorageService } from './storageService';
-import { Person, CalendarEvent, MonthlyAvailability } from '../types';
+
+import type { Person, CalendarEvent, MonthlyAvailability } from '../types';
 
 describe('StorageService - Persistência Local-First', () => {
   beforeEach(() => {

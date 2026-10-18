@@ -1,19 +1,23 @@
 /* eslint-disable react-refresh/only-export-components */
 import {
-  User,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
-import { auth, db } from '../services/firebase'
+
 import {
   AuthContext,
-  AuthContextType,
-  UserRole,
   useAuth,
 } from './authContextBase'
+import { auth, db } from '../services/firebase'
+
+import type {
+  AuthContextType,
+  UserRole} from './authContextBase';
+import type {
+  User} from 'firebase/auth';
 
 export { AuthContext, useAuth }
 export type { AuthContextType, UserRole }
@@ -35,8 +39,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    console.log(`value`, value)
-
     // If an external value override is provided (e.g. in unit tests), bypass auth listener
     if (value && value.user !== undefined) {
       setUser(value.user)

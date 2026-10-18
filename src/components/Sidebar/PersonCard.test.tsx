@@ -1,7 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
 import { PersonCard } from './PersonCard';
-import { Person } from '../../types';
+
+import type { Person } from '../../types';
 
 describe('PersonCard Component', () => {
   const mockPerson: Person = {

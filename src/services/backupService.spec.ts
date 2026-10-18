@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
 import {
   exportAppData,
   validateAndParseBackup,
@@ -8,7 +9,8 @@ import {
 } from './backupService';
 import { StorageService } from './storageService';
 import { useScheduleStore } from '../store/useScheduleStore';
-import { AppDataSnapshot } from '../types';
+
+import type { AppDataSnapshot } from '../types';
 
 describe('BackupService', () => {
   beforeEach(() => {

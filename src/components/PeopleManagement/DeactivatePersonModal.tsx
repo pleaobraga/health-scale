@@ -1,7 +1,8 @@
+import { AlertTriangle, UserX, X, ShieldAlert } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Person } from '../../types';
-import { AlertTriangle, UserX, X, ShieldAlert } from 'lucide-react';
+
+import type { Person } from '../../types';
 
 export interface DeactivatePersonModalProps {
   isOpen: boolean;

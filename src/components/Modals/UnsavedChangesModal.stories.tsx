@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { UnsavedChangesModal } from './UnsavedChangesModal';
 import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof UnsavedChangesModal> = {
   title: 'Modals/UnsavedChangesModal',

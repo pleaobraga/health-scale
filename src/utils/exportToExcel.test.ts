@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { generateScheduleWorkbook } from './exportToExcel';
 
 describe('exportScheduleToExcel - Geração de Planilha', () => {

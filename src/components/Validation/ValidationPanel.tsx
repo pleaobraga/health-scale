@@ -1,5 +1,3 @@
-import React from 'react';
-import { useScheduleStore } from '../../store/useScheduleStore';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -8,6 +6,9 @@ import {
   ShieldCheck,
   RotateCcw,
 } from 'lucide-react';
+import React from 'react';
+
+import { useScheduleStore } from '../../store/useScheduleStore';
 
 export const ValidationPanel: React.FC = () => {
   const {

@@ -1,12 +1,14 @@
+import { UserPlus, Users, Sparkles, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { PersonCard } from './PersonCard';
+
 import { AddMonthParticipantsModal } from './AddMonthParticipantsModal';
 import { MonthAvailabilityModal } from './MonthAvailabilityModal';
-import { Person } from '../../types';
+import { PersonCard } from './PersonCard';
+import { useScheduleStore } from '../../store/useScheduleStore';
 import { formatMonthYear } from '../../utils/dateUtils';
-import { UserPlus, Users, Sparkles, Search, ChevronDown, ChevronUp } from 'lucide-react';
+
+import type { Person } from '../../types';
 
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();

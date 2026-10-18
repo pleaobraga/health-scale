@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { TestAppRouter } from './index';
 import * as backupService from '../services/backupService';
 import { useScheduleStore } from '../store/useScheduleStore';

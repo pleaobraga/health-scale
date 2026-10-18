@@ -1,15 +1,18 @@
 import React from 'react';
 import { Routes, Route, Navigate, MemoryRouter, HashRouter } from 'react-router-dom';
-import { AuthProvider, AuthContextType } from '../context/AuthContext';
-import { PrivateRoute } from '../components/Auth/PrivateRoute';
+
 import { AdminRoute } from '../components/Auth/AdminRoute';
-import { LoginPage } from '../pages/LoginPage';
-import { RootLayout } from '../components/Layout/RootLayout';
+import { PrivateRoute } from '../components/Auth/PrivateRoute';
 import { CalendarView } from '../components/Calendar/CalendarView';
-import { PeopleManagementView } from '../components/PeopleManagement/PeopleManagementView';
 import { ImportView } from '../components/Import/ImportView';
+import { RootLayout } from '../components/Layout/RootLayout';
+import { PeopleManagementView } from '../components/PeopleManagement/PeopleManagementView';
 import { SettingsView } from '../components/Settings/SettingsView';
+import { AuthProvider } from '../context/AuthContext';
+import { LoginPage } from '../pages/LoginPage';
 import { UserManagementView } from '../pages/UserManagementView';
+
+import type { AuthContextType } from '../context/AuthContext';
 
 /**
  * Main application routes tree.

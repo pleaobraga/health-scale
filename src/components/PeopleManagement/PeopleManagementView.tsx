@@ -1,11 +1,13 @@
+import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react';
 import React, { useState } from 'react';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { Person } from '../../types';
-import { GlobalPersonModal } from './GlobalPersonModal';
+
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { DeactivatePersonModal } from './DeactivatePersonModal';
+import { GlobalPersonModal } from './GlobalPersonModal';
 import { PersonManagementCard } from './PersonManagementCard';
-import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react';
+import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { Person } from '../../types';
 
 export const PeopleManagementView: React.FC = () => {
   const {

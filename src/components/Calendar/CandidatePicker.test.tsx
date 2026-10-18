@@ -1,7 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+
 import { CandidatePicker } from './CandidatePicker';
-import { Person } from '../../types';
+
+import type { Person } from '../../types';
 
 describe('CandidatePicker Component', () => {
   const mockPersons: Person[] = [

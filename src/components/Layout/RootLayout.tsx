@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { HoverSidebar } from '../Navigation/HoverSidebar';
+
+import { useCloudSync } from '../../hooks/useCloudSync';
+import { hasExistingLocalData } from '../../services/backupService';
+import { useScheduleStore } from '../../store/useScheduleStore';
 import { DayEventsModal } from '../Modals/DayEventsModal';
 import { FullScreenCalendarModal } from '../Modals/FullScreenCalendarModal';
 import { UnsavedChangesModal } from '../Modals/UnsavedChangesModal';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { hasExistingLocalData } from '../../services/backupService';
-import { useCloudSync } from '../../hooks/useCloudSync';
+import { HoverSidebar } from '../Navigation/HoverSidebar';
 
 export const RootLayout: React.FC = () => {
   const navigate = useNavigate();

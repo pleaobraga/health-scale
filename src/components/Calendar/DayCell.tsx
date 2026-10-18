@@ -1,8 +1,10 @@
-import React from 'react';
-import { CalendarDayInfo } from '../../utils/dateUtils';
-import { Person, CalendarEvent } from '../../types';
-import { CandidatePicker } from './CandidatePicker';
 import { Calendar as CalendarIcon, X, Sparkles } from 'lucide-react';
+import React from 'react';
+
+import { CandidatePicker } from './CandidatePicker';
+
+import type { Person, CalendarEvent } from '../../types';
+import type { CalendarDayInfo } from '../../utils/dateUtils';
 
 interface DayCellProps {
   dayInfo: CalendarDayInfo;

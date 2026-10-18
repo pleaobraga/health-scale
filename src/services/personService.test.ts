@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
+
 import { PersonService, canDeletePerson, hasScheduleHistory } from './personService';
-import { Person } from '../types';
+
+import type { Person } from '../types';
 
 describe('PersonService', () => {
   const mockAssignments: Record<string, string[]> = {

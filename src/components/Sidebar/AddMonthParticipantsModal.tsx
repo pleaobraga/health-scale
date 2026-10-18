@@ -1,8 +1,10 @@
+import { UserPlus, Check, X, Users, CheckSquare, Square, Search } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Person } from '../../types';
+
 import { formatMonthYear } from '../../utils/dateUtils';
-import { UserPlus, Check, X, Users, CheckSquare, Square, Search } from 'lucide-react';
+
+import type { Person } from '../../types';
 
 interface AddMonthParticipantsModalProps {
   isOpen: boolean;

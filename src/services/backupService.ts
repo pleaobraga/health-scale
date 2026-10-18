@@ -1,6 +1,7 @@
-import { AppDataSnapshot, MonthlyAvailability } from '../types';
 import { StorageService } from './storageService';
 import { useScheduleStore } from '../store/useScheduleStore';
+
+import type { AppDataSnapshot, MonthlyAvailability } from '../types';
 
 /**
  * Generates the standardized filename for exports:

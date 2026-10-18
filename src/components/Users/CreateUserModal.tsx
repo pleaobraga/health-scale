@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { X, UserPlus, Mail, Lock, User as UserIcon, ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+
 import { firebaseConfig, db } from '../../services/firebase';
-import { UserRole } from '../../context/AuthContext';
+
+import type { UserRole } from '../../context/AuthContext';
 
 export interface CreateUserModalProps {
   isOpen: boolean;

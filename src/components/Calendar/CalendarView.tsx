@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { CalendarGrid } from './CalendarGrid';
 import { Sidebar } from '../Sidebar/Sidebar';
 import { ValidationPanel } from '../Validation/ValidationPanel';

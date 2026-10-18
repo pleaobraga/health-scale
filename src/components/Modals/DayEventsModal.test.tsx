@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
+
 import { DayEventsModal } from './DayEventsModal';
 import { useScheduleStore } from '../../store/useScheduleStore';
 

@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DayEventsModal } from './DayEventsModal';
 import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof DayEventsModal> = {
   title: 'Modals/DayEventsModal',

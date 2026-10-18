@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { TestAppRouter } from './router';
-import { useScheduleStore } from './store/useScheduleStore';
 import * as backupService from './services/backupService';
+import { useScheduleStore } from './store/useScheduleStore';
 
 describe('App Root Component - Onboarding & Navigation', () => {
   beforeEach(() => {

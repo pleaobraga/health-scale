@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Person } from '../../types';
 import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react';
+import React, { useState } from 'react';
+
+import type { Person } from '../../types';
 
 interface PersonCardProps {
   person: Person;

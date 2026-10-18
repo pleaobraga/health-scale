@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PersonManagementCard } from './PersonManagementCard';
-import { Person } from '../../types';
+
+import type { Person } from '../../types';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof PersonManagementCard> = {
   title: 'PeopleManagement/PersonManagementCard',

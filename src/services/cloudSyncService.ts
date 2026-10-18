@@ -2,11 +2,14 @@ import {
   doc,
   getDoc,
   setDoc,
-  serverTimestamp,
-  DocumentData,
+  serverTimestamp
 } from 'firebase/firestore';
+
 import { auth, db } from './firebase';
-import { MonthlyAvailability, CalendarEvent, Person } from '../types';
+
+import type { MonthlyAvailability, CalendarEvent, Person } from '../types';
+import type {
+  DocumentData} from 'firebase/firestore';
 
 export const CLOUD_SYNC_STORAGE_KEY = 'scale_manager_cloud_sync_enabled';
 

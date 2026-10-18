@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
+
 import { HoverSidebar } from './HoverSidebar';
 import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof HoverSidebar> = {
   title: 'Navigation/HoverSidebar',

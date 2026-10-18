@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import {
   ShieldCheck,
@@ -7,9 +6,12 @@ import {
   Search,
   User as UserIcon,
 } from 'lucide-react';
-import { db } from '../services/firebase';
-import { UserRole } from '../context/AuthContext';
+import React, { useEffect, useState, useCallback } from 'react';
+
 import { CreateUserModal } from '../components/Users/CreateUserModal';
+import { db } from '../services/firebase';
+
+import type { UserRole } from '../context/AuthContext';
 
 export interface AppUserRecord {
   uid: string;

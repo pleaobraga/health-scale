@@ -1,9 +1,11 @@
+import { Calendar, X } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Person } from '../../types';
-import { formatMonthYear } from '../../utils/dateUtils';
+
 import { AvailabilityMiniCalendar } from './AvailabilityMiniCalendar';
-import { Calendar, X } from 'lucide-react';
+import { formatMonthYear } from '../../utils/dateUtils';
+
+import type { Person } from '../../types';
 
 interface MonthAvailabilityModalProps {
   isOpen: boolean;

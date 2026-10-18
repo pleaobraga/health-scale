@@ -1,8 +1,3 @@
-import React from 'react';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { getMonthCalendarGrid, formatMonthYear } from '../../utils/dateUtils';
-import { CalendarHeader } from './CalendarHeader';
-import { DayCell } from './DayCell';
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +11,12 @@ import {
   Save,
   RotateCcw,
 } from 'lucide-react';
+import React from 'react';
+
+import { CalendarHeader } from './CalendarHeader';
+import { DayCell } from './DayCell';
+import { useScheduleStore } from '../../store/useScheduleStore';
+import { getMonthCalendarGrid, formatMonthYear } from '../../utils/dateUtils';
 import { exportScheduleToExcel } from '../../utils/exportToExcel';
 
 export const CalendarGrid: React.FC = () => {

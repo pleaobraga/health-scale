@@ -1,8 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { formatDisplayDate } from '../../utils/dateUtils';
-import { CalendarEvent } from '../../types';
 import {
   X,
   Plus,
@@ -14,6 +9,13 @@ import {
   AlertCircle,
   RotateCcw,
 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+
+import { useScheduleStore } from '../../store/useScheduleStore';
+import { formatDisplayDate } from '../../utils/dateUtils';
+
+import type { CalendarEvent } from '../../types';
 
 export const DayEventsModal: React.FC = () => {
   const {

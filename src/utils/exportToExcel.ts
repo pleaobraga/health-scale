@@ -1,8 +1,10 @@
-import * as XLSX from 'xlsx';
-import { Person, CalendarEvent } from '../types';
-import { getMonthDaysArray, formatMonthYear } from './dateUtils';
 import { parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+
+import { getMonthDaysArray, formatMonthYear } from './dateUtils';
+
+import type { Person, CalendarEvent } from '../types';
 
 interface ExportScheduleParams {
   month: string; // 'YYYY-MM'

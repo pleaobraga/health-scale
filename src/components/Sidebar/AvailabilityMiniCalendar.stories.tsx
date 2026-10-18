@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AvailabilityMiniCalendar } from './AvailabilityMiniCalendar';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof AvailabilityMiniCalendar> = {
   title: 'Sidebar/AvailabilityMiniCalendar',

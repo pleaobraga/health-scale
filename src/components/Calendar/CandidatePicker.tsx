@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Person } from '../../types';
 import { Plus, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+
+import type { Person } from '../../types';
 
 interface CandidatePickerProps {
   dateStr: string;

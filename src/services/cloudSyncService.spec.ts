@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as firestoreModule from 'firebase/firestore';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { CloudSyncService, CLOUD_SYNC_STORAGE_KEY } from './cloudSyncService';
 
 vi.mock('firebase/firestore', async (importOriginal) => {

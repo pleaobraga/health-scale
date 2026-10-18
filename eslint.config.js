@@ -1,43 +1,70 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
-import tseslint from 'typescript-eslint';
+import storybook from 'eslint-plugin-storybook'
+
+import js from '@eslint/js'
+import importPlugin from 'eslint-plugin-import-x'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { globalIgnores } from 'eslint/config'
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  {
-    ignores: ['dist/**', 'storybook-static/**', 'node_modules/**', '.storybook/**'],
-  },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: {
-        ...globals.browser,
-        ...globals.es2020,
-        ...globals.node,
+  [
+    globalIgnores(['dist']),
+    {
+      files: ['**/*.{ts,tsx}'],
+      extends: [
+        js.configs.recommended,
+        tseslint.configs.recommended,
+        reactHooks.configs.flat['recommended-latest'],
+        reactRefresh.configs.vite
+      ],
+      plugins: {
+        react: reactPlugin,
+        import: importPlugin
       },
+      languageOptions: {
+        ecmaVersion: 2020,
+        globals: globals.browser
+      },
+      rules: {
+        'react-hooks/set-state-in-effect': 'off',
+        '@typescript-eslint/no-unused-vars': [
+          'warn',
+          { vars: 'all', args: 'after-used', ignoreRestSiblings: true }
+        ],
+        '@typescript-eslint/consistent-type-imports': [
+          'error',
+          { prefer: 'type-imports' }
+        ],
+        'no-console': ['warn', { allow: ['warn', 'error'] }],
+        'no-debugger': 'error',
+        'react/jsx-no-useless-fragment': 'warn',
+        'import/first': 'error',
+        'import/no-duplicates': 'error',
+        'import/order': [
+          'error',
+          {
+            groups: [
+              'builtin',
+              'external',
+              'internal',
+              ['parent', 'sibling', 'index'],
+              'type'
+            ],
+            alphabetize: { order: 'asc', caseInsensitive: true },
+            'newlines-between': 'always'
+          }
+        ]
+      }
     },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-hooks/set-state-in-effect': 'off',
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-        },
-      ],
-      '@typescript-eslint/no-explicit-any': 'warn',
-    },
-  }
-);
+    {
+      files: ['**/*.stories.{ts,tsx}'],
+      rules: {
+        'no-console': 'off'
+      }
+    }
+  ],
+  storybook.configs['flat/recommended']
+)

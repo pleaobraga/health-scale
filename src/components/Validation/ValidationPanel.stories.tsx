@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ValidationPanel } from './ValidationPanel';
 import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ValidationPanel> = {
   title: 'Validation/ValidationPanel',

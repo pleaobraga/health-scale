@@ -1,9 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { LoginPage } from './LoginPage';
-import { AuthProvider, AuthContextType } from '../context/AuthContext';
+import { AuthProvider } from '../context/AuthContext';
 import { getFriendlyAuthErrorMessage } from '../utils/authErrors';
+
+import type { AuthContextType } from '../context/AuthContext';
 
 describe('LoginPage Component', () => {
   beforeEach(() => {

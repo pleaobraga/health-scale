@@ -1,4 +1,3 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
 import {
   UploadCloud,
   FileText,
@@ -14,18 +13,22 @@ import {
   Cloud,
   RefreshCw,
 } from 'lucide-react';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { AppDataSnapshot } from '../../types';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { ConfirmOverwriteModal } from './ConfirmOverwriteModal';
+import { AuthContext } from '../../context/AuthContext';
 import {
   validateAndParseBackup,
   restoreAppData,
   hasExistingLocalData,
 } from '../../services/backupService';
-import { StorageService } from '../../services/storageService';
 import { CloudSyncService } from '../../services/cloudSyncService';
-import { AuthContext } from '../../context/AuthContext';
-import { ConfirmOverwriteModal } from './ConfirmOverwriteModal';
-import { useNavigate } from 'react-router-dom';
+import { StorageService } from '../../services/storageService';
+import { useScheduleStore } from '../../store/useScheduleStore';
+
+import type { AppDataSnapshot } from '../../types';
+
 
 export const ImportView: React.FC = () => {
   const navigate = useNavigate();

@@ -1,12 +1,17 @@
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import {
   initializeFirestore,
   getFirestore,
   persistentLocalCache,
-  persistentMultipleTabManager,
-  Firestore,
+  persistentMultipleTabManager
 } from 'firebase/firestore';
+
+import type { FirebaseApp } from 'firebase/app';
+import type { Auth } from 'firebase/auth';
+import type {
+  Firestore} from 'firebase/firestore';
+
 
 /**
  * Firebase application configuration sourced from Vite environment variables.

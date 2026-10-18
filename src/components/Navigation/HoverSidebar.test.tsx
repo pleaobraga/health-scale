@@ -1,9 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
-import { useScheduleStore } from '../../store/useScheduleStore'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { HoverSidebar } from './HoverSidebar'
 import * as backupService from '../../services/backupService'
+import { useScheduleStore } from '../../store/useScheduleStore'
 
 const renderWithRouter = (initialPath = '/') => {
   return render(

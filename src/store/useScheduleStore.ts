@@ -1,10 +1,12 @@
 import { create } from 'zustand';
-import { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types';
-import { StorageService } from '../services/storageService';
-import { PersonService } from '../services/personService';
+
 import { CloudSyncService } from '../services/cloudSyncService';
-import { validateSchedule } from '../utils/validateSchedule';
+import { PersonService } from '../services/personService';
+import { StorageService } from '../services/storageService';
 import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/dateUtils';
+import { validateSchedule } from '../utils/validateSchedule';
+
+import type { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types';
 
 interface ScheduleStore {
   // Navigation & UI state

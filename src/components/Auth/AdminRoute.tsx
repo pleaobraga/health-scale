@@ -1,5 +1,6 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
+
 import { useAuth } from '../../context/AuthContext'
 
 export interface AdminRouteProps {
@@ -13,10 +14,6 @@ export interface AdminRouteProps {
  */
 export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { user, isAdmin, loading } = useAuth()
-
-  console.log(
-    `AdminRoute: user=${user?.email}, isAdmin=${isAdmin}, loading=${loading}`,
-  )
 
   if (loading) {
     return (
@@ -52,7 +49,7 @@ export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     )
   }
 
-  return children ? <>{children}</> : <Outlet />
+  return children ? children : <Outlet />
 }
 
 export default AdminRoute
