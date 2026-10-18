@@ -1,16 +1,13 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+echo "🔍 [Pre-push] Starting quality checks..."
 
-echo "🔍 [Pre-push] Iniciando validações de qualidade..."
-
-echo "1/3 Verificando tipos TypeScript (tsc)..."
+echo "1/3 Checking TypeScript types (tsc)..."
 pnpm typecheck || exit 1
 
-echo "2/3 Verificando regras de lint (linter)..."
+echo "2/3 Checking lint rules (linter)..."
 pnpm lint || exit 1
 
-echo "3/3 Executando testes automatizados (vitest)..."
+echo "3/3 Running test suite (vitest)..."
 pnpm test:run || exit 1
 
-echo "✅ Tudo pronto! Prosseguindo com o git push..."
+echo "✅ All checks passed! Proceeding with git push..."
 
