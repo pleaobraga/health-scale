@@ -161,5 +161,36 @@ describe('DayCell Component', () => {
 
     expect(screen.getByText('Disp.')).toBeInTheDocument();
   });
+
+  it('deve destacar o dia atual com background diferenciado na DayCell sem criar círculo ao redor do número do dia', () => {
+    const todayInfo: CalendarDayInfo = {
+      ...mockDayInfo,
+      isToday: true,
+    };
+
+    const { container } = render(
+      <DayCell
+        dayInfo={todayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={['p1']}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    );
+
+    const cellElement = container.firstChild as HTMLElement;
+    expect(cellElement.className).toContain('bg-indigo-50/70');
+
+    const dayNumber = screen.getByText('15');
+    expect(dayNumber.className).not.toContain('bg-indigo-600 text-white');
+    expect(dayNumber.className).toContain('text-indigo-600');
+  });
 });
 

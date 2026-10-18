@@ -188,17 +188,19 @@ export const FullScreenCalendarModal: React.FC = () => {
                   className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 print:bg-white ${
                     !dayInfo.isCurrentMonth
                       ? 'bg-slate-100/60 dark:bg-slate-950/50 text-slate-400 dark:text-slate-600 print:bg-slate-100/70 print:text-slate-400'
+                      : dayInfo.isToday
+                      ? 'bg-indigo-50/70 dark:bg-indigo-950/40 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/60 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 print:bg-white'
                       : 'bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 print:bg-white'
                   }`}
                 >
                   {/* Cell Top Header */}
                   <div className="flex items-center justify-between mb-1.5">
                     <span
-                      className={`text-sm md:text-base font-semibold inline-flex items-center justify-center w-7 h-7 rounded-full transition-colors print:w-6 print:h-6 print:text-xs ${
+                      className={`text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
                         hasEvents
-                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 print:bg-red-100 print:text-red-700'
+                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full print:w-6 print:h-6 print:bg-red-100 print:text-red-700'
                           : dayInfo.isToday
-                          ? 'bg-indigo-600 text-white font-bold print:bg-slate-900 print:text-white'
+                          ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1 print:text-slate-900'
                           : dayInfo.isCurrentMonth
                           ? 'text-slate-800 dark:text-slate-200 print:text-slate-900 font-bold'
                           : 'text-slate-400 dark:text-slate-600 print:text-slate-400'

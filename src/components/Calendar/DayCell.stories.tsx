@@ -96,3 +96,13 @@ export const HighlightedAvailability: Story = {
   },
 };
 
+export const TodayHighlighted: Story = {
+  args: {
+    ...ReadingModeAssigned.args,
+    dayInfo: {
+      ...baseDayInfo,
+      isToday: true,
+    },
+  },
+};
+

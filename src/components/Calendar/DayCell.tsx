@@ -49,6 +49,8 @@ export const DayCell: React.FC<DayCellProps> = ({
           ? 'bg-slate-50/70 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600'
           : isTargetOfHighlight
           ? 'bg-amber-50/50 dark:bg-amber-950/30 ring-2 ring-inset ring-amber-400/50 dark:ring-amber-500/40'
+          : isToday
+          ? 'bg-indigo-50/70 dark:bg-indigo-950/40 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/60 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40'
           : 'bg-white dark:bg-slate-900 hover:bg-slate-50/30 dark:hover:bg-slate-800/30'
       }`}
     >
@@ -57,11 +59,11 @@ export const DayCell: React.FC<DayCellProps> = ({
         <div className="flex items-center gap-1.5">
           {/* Day number: RED if has 1 or more events */}
           <span
-            className={`text-sm font-semibold inline-flex items-center justify-center w-6 h-6 rounded-full transition-colors ${
+            className={`text-sm font-semibold inline-flex items-center justify-center transition-colors ${
               hasEvents
-                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60'
+                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-6 h-6 rounded-full'
                 : isToday
-                ? 'bg-indigo-600 text-white font-bold'
+                ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1'
                 : isCurrentMonth
                 ? 'text-slate-800 dark:text-slate-200'
                 : 'text-slate-400 dark:text-slate-600'
