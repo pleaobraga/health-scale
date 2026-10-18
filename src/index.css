@@ -72,4 +72,15 @@
   body:has(#fullscreen-calendar-modal-container) > #root {
     display: none !important;
   }
+
+  .print-page-break-before {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
 }
+

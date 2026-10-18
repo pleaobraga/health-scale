@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useScheduleStore } from '../../store/useScheduleStore';
-import { getMonthCalendarGrid, formatMonthYear } from '../../utils/dateUtils';
+import { getMonthCalendarGrid, formatMonthYear, formatDateWithWeekday } from '../../utils/dateUtils';
 import { exportScheduleToExcel } from '../../utils/exportToExcel';
 import {
   CalendarDays,
@@ -37,6 +37,17 @@ export const FullScreenCalendarModal: React.FC = () => {
 
   const daysGrid = getMonthCalendarGrid(currentMonth);
   const personMap = new Map(persons.map((p) => [p.id, p]));
+
+  // Events of the current month sorted chronologically by date and time
+  const monthEvents = events
+    .filter((e) => e.date.startsWith(currentMonth))
+    .sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      const timeCompare = (a.time || '').localeCompare(b.time || '');
+      if (timeCompare !== 0) return timeCompare;
+      return a.title.localeCompare(b.title);
+    });
 
   // Close on ESC key press
   useEffect(() => {
@@ -249,8 +260,96 @@ export const FullScreenCalendarModal: React.FC = () => {
             })}
           </div>
         </div>
+
+        {/* Print-only Events Section: list all events of the month ordered chronologically by date */}
+        {monthEvents.length > 0 && (
+          <div
+            data-testid="print-events-section"
+            className="hidden print:block print:break-before-page print-page-break-before w-full print:pt-6 print:px-2"
+          >
+            <div className="mb-4 pb-2 border-b-2 border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-extrabold text-slate-950 tracking-tight">
+                  Eventos do Mês – {formatMonthYear(currentMonth)}
+                </h3>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Listagem cronológica dos eventos e programações especiais cadastradas para o período
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-full border border-slate-300">
+                  Total: {monthEvents.length} {monthEvents.length === 1 ? 'evento' : 'eventos'}
+                </span>
+              </div>
+            </div>
+
+            <table className="w-full border-collapse border border-slate-300 text-left text-xs">
+              <thead>
+                <tr className="bg-slate-100 border-b-2 border-slate-400 text-slate-900 font-bold">
+                  <th className="py-2.5 px-3 border-r border-slate-300 w-36">Data</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 w-24">Horário</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 w-1/4">Evento</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300">Descrição / Observações</th>
+                  <th className="py-2.5 px-3 w-48">Escala do Dia</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {monthEvents.map((event) => {
+                  const { formattedDate, weekday } = formatDateWithWeekday(event.date);
+                  const assignedIds = assignments[event.date] || [];
+                  const assignedNames = assignedIds
+                    .map((id) => personMap.get(id)?.name)
+                    .filter(Boolean);
+
+                  return (
+                    <tr
+                      key={event.id}
+                      className="print:break-inside-avoid print-break-inside-avoid odd:bg-white even:bg-slate-50/60"
+                    >
+                      <td className="py-2 px-3 border-r border-slate-200 font-bold text-slate-950 whitespace-nowrap">
+                        <div>{formattedDate}</div>
+                        <div className="text-[10px] text-slate-500 font-medium">{weekday}</div>
+                      </td>
+                      <td className="py-2 px-3 border-r border-slate-200 whitespace-nowrap">
+                        {event.time ? (
+                          <span className="font-semibold text-slate-800">{event.time}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">Dia todo</span>
+                        )}
+                      </td>
+                      <td className="py-2 px-3 border-r border-slate-200 font-bold text-slate-900">
+                        {event.title}
+                      </td>
+                      <td className="py-2 px-3 border-r border-slate-200 text-slate-600">
+                        {event.description || <span className="text-slate-400 italic">-</span>}
+                      </td>
+                      <td className="py-2 px-3 text-slate-700">
+                        {assignedNames.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {assignedNames.map((name) => (
+                              <span
+                                key={name}
+                                className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[11px] font-medium text-slate-800"
+                              >
+                                {name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">Vago</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>,
+
+
     document.body
   );
 };

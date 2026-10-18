@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
-import { CalendarDays, Users, Sun, Moon, Download, Upload, Check, Menu, X } from 'lucide-react';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { NavigationTab } from '../../types';
-import { exportAppData } from '../../services/backupService';
+import {
+  CalendarDays,
+  Check,
+  Download,
+  Menu,
+  Moon,
+  Sun,
+  Upload,
+  Users,
+  X,
+} from 'lucide-react'
+import React, { useState } from 'react'
+import { exportAppData } from '../../services/backupService'
+import { useScheduleStore } from '../../store/useScheduleStore'
+import { NavigationTab } from '../../types'
 
 export const HoverSidebar: React.FC = () => {
-  const { currentView, setCurrentView, isDarkMode, toggleDarkMode } = useScheduleStore();
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportSuccess, setExportSuccess] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { currentView, setCurrentView, isDarkMode, toggleDarkMode } =
+    useScheduleStore()
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const navItems: { id: NavigationTab; label: string; icon: React.FC<{ className?: string }> }[] = [
+  const navItems: {
+    id: NavigationTab
+    label: string
+    icon: React.FC<{ className?: string }>
+  }[] = [
     {
       id: 'calendar',
       label: 'Calendário de Escalas',
@@ -26,20 +41,20 @@ export const HoverSidebar: React.FC = () => {
       label: 'Importar Dados',
       icon: Upload,
     },
-  ];
+  ]
 
   const handleExport = async () => {
     try {
-      setIsExporting(true);
-      await exportAppData();
-      setExportSuccess(true);
-      setTimeout(() => setExportSuccess(false), 2500);
+      setIsExporting(true)
+      await exportAppData()
+      setExportSuccess(true)
+      setTimeout(() => setExportSuccess(false), 2500)
     } catch (err) {
-      console.error('Erro ao exportar backup:', err);
+      console.error('Erro ao exportar backup:', err)
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   return (
     <>
@@ -57,7 +72,7 @@ export const HoverSidebar: React.FC = () => {
               Escalas Mensais
             </h1>
             <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-              HealthScale
+              HealthSchedule
             </span>
           </div>
         </div>
@@ -95,7 +110,7 @@ export const HoverSidebar: React.FC = () => {
                     Escalas Mensais
                   </h2>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                    HealthScale
+                    HealthSchedule
                   </span>
                 </div>
               </div>
@@ -113,18 +128,21 @@ export const HoverSidebar: React.FC = () => {
             </div>
 
             {/* Navigation Items in Full Screen */}
-            <nav className="py-6 space-y-2.5" aria-label="Navegação em tela cheia">
+            <nav
+              className="py-6 space-y-2.5"
+              aria-label="Navegação em tela cheia"
+            >
               {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentView === item.id;
+                const Icon = item.icon
+                const isActive = currentView === item.id
 
                 return (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => {
-                      setCurrentView(item.id);
-                      setIsMobileMenuOpen(false);
+                      setCurrentView(item.id)
+                      setIsMobileMenuOpen(false)
                     }}
                     title={item.label}
                     aria-label={item.label}
@@ -139,7 +157,7 @@ export const HoverSidebar: React.FC = () => {
                     </div>
                     <span>{item.label}</span>
                   </button>
-                );
+                )
               })}
             </nav>
           </div>
@@ -162,15 +180,21 @@ export const HoverSidebar: React.FC = () => {
                   <Download className="w-5 h-5" />
                 )}
               </div>
-              <span>{exportSuccess ? 'Exportado com sucesso!' : 'Exportar Dados'}</span>
+              <span>
+                {exportSuccess ? 'Exportado com sucesso!' : 'Exportar Dados'}
+              </span>
             </button>
 
             {/* Theme Toggle */}
             <button
               type="button"
               onClick={toggleDarkMode}
-              title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
-              aria-label={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+              title={
+                isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+              }
+              aria-label={
+                isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+              }
               className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-sm font-bold shadow-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -180,7 +204,11 @@ export const HoverSidebar: React.FC = () => {
                   <Moon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 )}
               </div>
-              <span>{isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}</span>
+              <span>
+                {isDarkMode
+                  ? 'Mudar para Modo Claro'
+                  : 'Mudar para Modo Escuro'}
+              </span>
             </button>
           </div>
         </div>
@@ -202,16 +230,19 @@ export const HoverSidebar: React.FC = () => {
                 Escalas Mensais
               </h1>
               <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                HealthScale
+                HealthSchedule
               </span>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-2 space-y-1.5" aria-label="Menu Principal">
+          <nav
+            className="p-2 space-y-1.5"
+            aria-label="Menu Principal"
+          >
             {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentView === item.id;
+              const Icon = item.icon
+              const isActive = currentView === item.id
 
               return (
                 <button
@@ -233,7 +264,7 @@ export const HoverSidebar: React.FC = () => {
                     {item.label}
                   </span>
                 </button>
-              );
+              )
             })}
           </nav>
         </div>
@@ -265,8 +296,12 @@ export const HoverSidebar: React.FC = () => {
           <button
             type="button"
             onClick={toggleDarkMode}
-            title={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
-            aria-label={isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
+            title={
+              isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+            }
+            aria-label={
+              isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+            }
             className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors"
           >
             <div className="w-5 h-5 flex items-center justify-center shrink-0">
@@ -283,6 +318,5 @@ export const HoverSidebar: React.FC = () => {
         </div>
       </aside>
     </>
-  );
-};
-
+  )
+}

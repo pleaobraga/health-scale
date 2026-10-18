@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { FullScreenCalendarModal } from './FullScreenCalendarModal';
 import { useScheduleStore } from '../../store/useScheduleStore';
 
@@ -30,12 +31,13 @@ describe('FullScreenCalendarModal', () => {
     render(<FullScreenCalendarModal />);
 
     // Title should show month and year
-    expect(screen.getByText(/outubro de 2026/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /outubro de 2026/i })).toBeInTheDocument();
     expect(screen.getByText('Tela Cheia')).toBeInTheDocument();
 
     // Should render assigned person name
-    expect(screen.getByText('Dr. Roberto Alves')).toBeInTheDocument();
+    expect(screen.getAllByText('Dr. Roberto Alves')[0]).toBeInTheDocument();
   });
+
 
   it('closes when close button is clicked', () => {
     useScheduleStore.setState({ isFullScreenModalOpen: true });
@@ -55,12 +57,94 @@ describe('FullScreenCalendarModal', () => {
     expect(useScheduleStore.getState().isFullScreenModalOpen).toBe(false);
   });
 
-  it('renders print and excel export buttons', () => {
+  it('renders print and excel export buttons and triggers print on click', () => {
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
     useScheduleStore.setState({ isFullScreenModalOpen: true });
     render(<FullScreenCalendarModal />);
 
-    expect(screen.getByTitle(/imprimir escala do mês/i)).toBeInTheDocument();
+    const printBtn = screen.getByTitle(/imprimir escala do mês/i);
+    expect(printBtn).toBeInTheDocument();
     expect(screen.getByTitle(/exportar para excel/i)).toBeInTheDocument();
+
+    fireEvent.click(printBtn);
+    expect(printSpy).toHaveBeenCalledTimes(1);
+    printSpy.mockRestore();
+  });
+
+  it('renders print-only events section with events ordered chronologically by date and time', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      persons: [
+        { id: 'p1', name: 'Dr. Roberto Alves', color: '#3B82F6' },
+        { id: 'p2', name: 'Dra. Ana Paula', color: '#10B981' },
+      ],
+      assignments: {
+        '2026-10-05': ['p1'],
+        '2026-10-20': ['p2'],
+      },
+      events: [
+        // Out of order purposely
+        { id: 'e3', date: '2026-10-20', time: '14:00', title: 'Treinamento de Equipe', description: 'Sala de reuniões 2' },
+        { id: 'e1', date: '2026-10-05', time: '08:00', title: 'Reunião Geral' },
+        { id: 'e2', date: '2026-10-15', title: 'Dia do Professor', description: 'Feriado escolar' },
+        { id: 'e_other', date: '2026-11-02', title: 'Finados - Outro mês' },
+      ],
+    });
+
+    render(<FullScreenCalendarModal />);
+
+    const printSection = screen.getByTestId('print-events-section');
+    expect(printSection).toBeInTheDocument();
+
+    // Out of month event must NOT be listed
+    expect(screen.queryByText('Finados - Outro mês')).not.toBeInTheDocument();
+
+    // Header info
+    expect(screen.getByText(/eventos do mês – outubro de 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/total: 3 eventos/i)).toBeInTheDocument();
+
+    // Check all event titles are rendered
+    expect(screen.getByText('Reunião Geral')).toBeInTheDocument();
+    expect(screen.getByText('Dia do Professor')).toBeInTheDocument();
+    expect(screen.getByText('Treinamento de Equipe')).toBeInTheDocument();
+
+    // Check chronological order of events in the table rows
+    const rows = printSection.querySelectorAll('tbody tr');
+    expect(rows).toHaveLength(3);
+
+    // Row 1: 05/10/2026
+    expect(rows[0]).toHaveTextContent('05/10/2026');
+    expect(rows[0]).toHaveTextContent('08:00');
+    expect(rows[0]).toHaveTextContent('Reunião Geral');
+    expect(rows[0]).toHaveTextContent('Dr. Roberto Alves');
+
+    // Row 2: 15/10/2026
+    expect(rows[1]).toHaveTextContent('15/10/2026');
+    expect(rows[1]).toHaveTextContent('Dia todo');
+    expect(rows[1]).toHaveTextContent('Dia do Professor');
+    expect(rows[1]).toHaveTextContent('Feriado escolar');
+
+    // Row 3: 20/10/2026
+    expect(rows[2]).toHaveTextContent('20/10/2026');
+    expect(rows[2]).toHaveTextContent('14:00');
+    expect(rows[2]).toHaveTextContent('Treinamento de Equipe');
+    expect(rows[2]).toHaveTextContent('Sala de reuniões 2');
+    expect(rows[2]).toHaveTextContent('Dra. Ana Paula');
+  });
+
+  it('does not render print events section when there are no events in current month', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      events: [
+        { id: 'e_nov', date: '2026-11-15', title: 'Proclamação da República' },
+      ],
+    });
+
+    render(<FullScreenCalendarModal />);
+    expect(screen.queryByTestId('print-events-section')).not.toBeInTheDocument();
   });
 });
+
 

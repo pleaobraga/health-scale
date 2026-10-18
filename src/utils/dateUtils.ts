@@ -130,3 +130,15 @@ export function getConsecutiveDates(dateStr: string): { prevDateStr: string; nex
   };
 }
 
+/**
+ * Formats a date string 'YYYY-MM-DD' returning 'dd/MM/yyyy' and capitalized weekday
+ */
+export function formatDateWithWeekday(dateStr: string): { formattedDate: string; weekday: string } {
+  const date = parseISO(dateStr);
+  const formattedDate = format(date, 'dd/MM/yyyy');
+  const rawWeekday = format(date, 'EEEE', { locale: ptBR });
+  const weekday = rawWeekday.charAt(0).toUpperCase() + rawWeekday.slice(1);
+  return { formattedDate, weekday };
+}
+
+

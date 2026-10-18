@@ -10,7 +10,9 @@ import {
   getWeekEndKey,
   formatDisplayDate,
   getConsecutiveDates,
+  formatDateWithWeekday,
 } from './dateUtils';
+
 
 describe('dateUtils - Utilitários de manipulação de data', () => {
   it('deve formatar mês e ano em português por extenso', () => {
@@ -81,5 +83,13 @@ describe('dateUtils - Utilitários de manipulação de data', () => {
     expect(boundary.prevDateStr).toBe('2026-10-30');
     expect(boundary.nextDateStr).toBe('2026-11-01');
   });
+
+  it('deve formatar data com dia da semana capitalizado em português', () => {
+    // 2026-10-15 é uma Quinta-feira
+    const result = formatDateWithWeekday('2026-10-15');
+    expect(result.formattedDate).toBe('15/10/2026');
+    expect(result.weekday).toBe('Quinta-feira');
+  });
 });
+
 
