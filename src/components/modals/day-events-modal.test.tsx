@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { DayEventsModal } from './day-events-modal'
 import { useScheduleStore } from '../../store/use-schedule-store'
@@ -335,6 +335,75 @@ describe('DayEventsModal', () => {
     expect(badge).toBeInTheDocument()
     expect(badge).toHaveTextContent('Joana Santos')
     expect(badge).toHaveStyle({ backgroundColor: '#10B981' })
+  })
+
+  it('deve permitir copiar o endereço do evento cadastrado na lista', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      writable: true,
+      configurable: true,
+    })
+
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      events: [
+        {
+          id: 'ev-1',
+          date: '2026-10-15',
+          title: 'Visita Técnica',
+          address: 'Rua das Palmeiras, 250 - Apto 31',
+        },
+      ],
+    })
+
+    render(<DayEventsModal />)
+
+    const copyBtn = screen.getByRole('button', { name: /Copiar endereço do evento/i })
+    expect(copyBtn).toBeInTheDocument()
+    expect(copyBtn).toHaveTextContent('Copiar')
+
+    fireEvent.click(copyBtn)
+
+    expect(writeTextMock).toHaveBeenCalledWith('Rua das Palmeiras, 250 - Apto 31')
+    expect(await screen.findByText('Copiado!')).toBeInTheDocument()
+  })
+
+  it('deve permitir copiar o endereço a partir do preview no formulário', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      writable: true,
+      configurable: true,
+    })
+
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      events: [],
+      addresses: [
+        {
+          id: 'addr-1',
+          name: 'Clínica Paulista',
+          street: 'Av Paulista',
+          number: '1000',
+          neighborhood: 'Bela Vista',
+          city: 'São Paulo',
+        },
+      ],
+    })
+
+    render(<DayEventsModal />)
+
+    const addressSelect = screen.getByLabelText('Selecionar endereço do evento')
+    fireEvent.change(addressSelect, { target: { value: 'addr-1' } })
+
+    const copyPreviewBtn = screen.getByRole('button', { name: /Copiar endereço selecionado/i })
+    expect(copyPreviewBtn).toBeInTheDocument()
+
+    fireEvent.click(copyPreviewBtn)
+
+    expect(writeTextMock).toHaveBeenCalledWith('Clínica Paulista\nAv Paulista, 1000\nBela Vista - São Paulo')
+    expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
 })
 

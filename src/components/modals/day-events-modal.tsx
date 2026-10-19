@@ -3,6 +3,7 @@ import {
   Calendar,
   Check,
   Clock,
+  Copy,
   MapPin,
   Pencil,
   Plus,
@@ -16,6 +17,7 @@ import { createPortal } from 'react-dom'
 
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatAddress } from '../../utils/address-utils'
+import { copyToClipboard } from '../../utils/clipboard-utils'
 import { formatDisplayDate } from '../../utils/date-utils'
 
 import type { CalendarEvent, Person } from '../../types'
@@ -42,6 +44,17 @@ export function DayEventsModal() {
   const [manualAddress, setManualAddress] = useState('')
   const [selectedPersonId, setSelectedPersonId] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [copiedEventAddressId, setCopiedEventAddressId] = useState<string | null>(null)
+
+  const handleCopyAddress = async (id: string, text: string) => {
+    const success = await copyToClipboard(text.trim())
+    if (success) {
+      setCopiedEventAddressId(id)
+      setTimeout(() => {
+        setCopiedEventAddressId((curr) => (curr === id ? null : curr))
+      }, 2000)
+    }
+  }
 
   // Reset form when modal opens or date changes
   useEffect(() => {
@@ -292,12 +305,34 @@ export function DayEventsModal() {
                         {(() => {
                           const displayAddr = ev.address || ev.description
                           if (!displayAddr) return null
+                          const isCopied = copiedEventAddressId === ev.id
                           return (
-                            <div className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300 mt-1">
-                              <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
-                              <p className="break-words whitespace-pre-line flex-1">
-                                {displayAddr}
-                              </p>
+                            <div className="flex items-start justify-between gap-2 p-2 bg-slate-100/70 dark:bg-slate-800/60 rounded-lg border border-slate-200/60 dark:border-slate-700/60 mt-1">
+                              <div className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300 min-w-0 flex-1">
+                                <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+                                <p className="break-words whitespace-pre-line flex-1">
+                                  {displayAddr}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyAddress(ev.id, displayAddr)}
+                                title={isCopied ? 'Endereço copiado!' : 'Copiar endereço'}
+                                aria-label="Copiar endereço do evento"
+                                className="shrink-0 flex items-center gap-1 px-1.5 py-1 rounded text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
+                              >
+                                {isCopied ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                    <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">Copiado!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5" />
+                                    <span className="text-[10px]">Copiar</span>
+                                  </>
+                                )}
+                              </button>
                             </div>
                           )
                         })()}
@@ -499,28 +534,50 @@ export function DayEventsModal() {
                   return null
                 const addr = addresses.find((a) => a.id === addressSelection)
                 if (!addr) return null
+                const isCopied = copiedEventAddressId === 'form-preview'
                 return (
                   <div
                     data-testid="selected-address-preview"
-                    className="p-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line flex items-start gap-2 animate-fadeIn"
+                    className="p-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line flex items-start justify-between gap-2 animate-fadeIn"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">
-                        {addr.name}
-                      </div>
-                      <div>
-                        {addr.street}, {addr.number}
-                        {addr.complement ? ` (${addr.complement})` : ''}
-                      </div>
-                      {(addr.neighborhood || addr.city) && (
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {[addr.neighborhood, addr.city]
-                            .filter(Boolean)
-                            .join(' - ')}
+                    <div className="flex items-start gap-2 flex-1 min-w-0">
+                      <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                          {addr.name}
                         </div>
-                      )}
+                        <div>
+                          {addr.street}, {addr.number}
+                          {addr.complement ? ` (${addr.complement})` : ''}
+                        </div>
+                        {(addr.neighborhood || addr.city) && (
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {[addr.neighborhood, addr.city]
+                              .filter(Boolean)
+                              .join(' - ')}
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyAddress('form-preview', formatAddress(addr))}
+                      title={isCopied ? 'Endereço copiado!' : 'Copiar endereço'}
+                      aria-label="Copiar endereço selecionado"
+                      className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 transition border border-slate-200/60 dark:border-slate-700/60 bg-white/70 dark:bg-slate-800 shadow-2xs"
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                          <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">Copiado!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span className="text-[10px]">Copiar</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 )
               })()}

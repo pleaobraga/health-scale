@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { AddressManagementView } from './address-management-view'
 import { useScheduleStore } from '../store/use-schedule-store'
@@ -172,5 +172,24 @@ describe('AddressManagementView', () => {
 
     expect(screen.getByText('Nenhum endereço cadastrado.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Adicionar Primeiro Endereço/i })).toBeInTheDocument()
+  })
+
+  it('deve copiar o endereço para a área de transferência ao clicar em Copiar', async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: writeTextMock },
+      writable: true,
+      configurable: true,
+    })
+
+    render(<AddressManagementView />)
+
+    const copyBtn = screen.getByRole('button', { name: /Copiar endereço Residência Flores/i })
+    expect(copyBtn).toHaveTextContent('Copiar')
+
+    fireEvent.click(copyBtn)
+
+    expect(writeTextMock).toHaveBeenCalledWith('Residência Flores - Rua das Flores, 123 - Apto 45 - Jardins - São Paulo')
+    expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
 })
