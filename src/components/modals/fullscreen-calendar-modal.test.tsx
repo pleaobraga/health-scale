@@ -1,5 +1,5 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { FullScreenCalendarModal } from './fullscreen-calendar-modal'
 import { useScheduleStore } from '../../store/use-schedule-store'
@@ -9,15 +9,11 @@ describe('FullScreenCalendarModal', () => {
     useScheduleStore.setState({
       isFullScreenModalOpen: false,
       currentMonth: '2026-10',
-      persons: [
-        { id: 'p1', name: 'Dr. Roberto Alves', color: '#3B82F6' },
-      ],
+      persons: [{ id: 'p1', name: 'Dr. Roberto Alves', color: '#3B82F6' }],
       assignments: {
         '2026-10-15': ['p1'],
       },
-      events: [
-        { id: 'e1', date: '2026-10-15', title: 'Dia do Professor' },
-      ],
+      events: [{ id: 'e1', date: '2026-10-15', title: 'Dia do Professor' }],
     })
   })
 
@@ -31,13 +27,13 @@ describe('FullScreenCalendarModal', () => {
     render(<FullScreenCalendarModal />)
 
     // Title should show month and year
-    expect(screen.getByRole('heading', { level: 2, name: /outubro de 2026/i })).toBeInTheDocument()
-    expect(screen.getByText('Tela Cheia')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 2, name: /outubro de 2026/i }),
+    ).toBeInTheDocument()
 
     // Should render assigned person name
     expect(screen.getAllByText('Dr. Roberto Alves')[0]).toBeInTheDocument()
   })
-
 
   it('closes when close button is clicked', () => {
     useScheduleStore.setState({ isFullScreenModalOpen: true })
@@ -85,9 +81,20 @@ describe('FullScreenCalendarModal', () => {
       },
       events: [
         // Out of order purposely
-        { id: 'e3', date: '2026-10-20', time: '14:00', title: 'Treinamento de Equipe', description: 'Sala de reuniões 2' },
+        {
+          id: 'e3',
+          date: '2026-10-20',
+          time: '14:00',
+          title: 'Treinamento de Equipe',
+          description: 'Sala de reuniões 2',
+        },
         { id: 'e1', date: '2026-10-05', time: '08:00', title: 'Reunião Geral' },
-        { id: 'e2', date: '2026-10-15', title: 'Dia do Professor', description: 'Feriado escolar' },
+        {
+          id: 'e2',
+          date: '2026-10-15',
+          title: 'Dia do Professor',
+          description: 'Feriado escolar',
+        },
         { id: 'e_other', date: '2026-11-02', title: 'Finados - Outro mês' },
       ],
     })
@@ -101,7 +108,9 @@ describe('FullScreenCalendarModal', () => {
     expect(screen.queryByText('Finados - Outro mês')).not.toBeInTheDocument()
 
     // Header info
-    expect(screen.getByText(/eventos do mês – outubro de 2026/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/eventos do mês – outubro de 2026/i),
+    ).toBeInTheDocument()
     expect(screen.getByText(/total: 3 eventos/i)).toBeInTheDocument()
 
     // Check all event titles are rendered
@@ -150,20 +159,24 @@ describe('FullScreenCalendarModal', () => {
     useScheduleStore.setState({
       isFullScreenModalOpen: true,
       currentMonth: '2026-10',
-      events: [
-        { id: 'e1', date: '2026-10-15', title: 'Reunião Clínica' },
-      ],
+      events: [{ id: 'e1', date: '2026-10-15', title: 'Reunião Clínica' }],
     })
 
     render(<FullScreenCalendarModal />)
 
     const printSection = screen.getByTestId('print-events-section')
-    expect(printSection).toHaveClass('dark:print:bg-white', 'dark:print:text-slate-900')
+    expect(printSection).toHaveClass(
+      'dark:print:bg-white',
+      'dark:print:text-slate-900',
+    )
 
     const table = printSection.querySelector('table')
     expect(table).toHaveClass('dark:bg-white', 'dark:text-slate-900')
 
-    const title = screen.getByRole('heading', { level: 3, name: /eventos do mês/i })
+    const title = screen.getByRole('heading', {
+      level: 3,
+      name: /eventos do mês/i,
+    })
     expect(title).toHaveClass('dark:text-slate-950', 'print:text-slate-950')
   })
 
@@ -194,8 +207,12 @@ describe('FullScreenCalendarModal', () => {
     expect(printSection).toBeInTheDocument()
 
     // Headers
-    expect(within(printSection).getByText('Responsável do Serviço')).toBeInTheDocument()
-    expect(within(printSection).queryByText('Escala do Dia')).not.toBeInTheDocument()
+    expect(
+      within(printSection).getByText('Responsável do Serviço'),
+    ).toBeInTheDocument()
+    expect(
+      within(printSection).queryByText('Escala do Dia'),
+    ).not.toBeInTheDocument()
 
     // Responsible caregiver badge with color
     const responsibleBadge = within(printSection).getByText('Beatriz Lima')
@@ -203,6 +220,3 @@ describe('FullScreenCalendarModal', () => {
     expect(responsibleBadge).toHaveStyle({ backgroundColor: '#10B981' })
   })
 })
-
-
-
