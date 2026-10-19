@@ -8,6 +8,7 @@ import { useScheduleStore } from '../store/use-schedule-store'
 describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     vi.restoreAllMocks()
   })
 
@@ -119,6 +120,27 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     await waitFor(() => {
       expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
       expect(useScheduleStore.getState().currentView).toBe('import')
+    })
+  })
+
+  it('deve permitir navegar para o calendário mesmo sem dados locais após o onboarding inicial', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false)
+
+    render(<TestAppRouter initialEntries={['/']} />)
+
+    // Aguarda o redirecionamento inicial para /importar
+    await waitFor(() => {
+      expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+    })
+
+    // Usuário clica no link do Calendário na barra lateral
+    const calendarLink = screen.getByRole('link', { name: /calendário de escalas/i })
+    fireEvent.click(calendarLink)
+
+    // Deve renderizar a visualização do calendário sem redirecionar de volta para /importar
+    await waitFor(() => {
+      expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
+      expect(useScheduleStore.getState().currentView).toBe('calendar')
     })
   })
 })

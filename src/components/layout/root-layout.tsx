@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { useCloudSync } from '../../hooks/use-cloud-sync'
 import { hasExistingLocalData } from '../../services/backup-service'
+import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { ErrorBoundary } from '../common/error-boundary'
 import { DayEventsModal } from '../modals/day-events-modal'
@@ -41,16 +42,29 @@ export function RootLayout() {
     const isRootOrCalendar =
       location.pathname === '/' || location.pathname === '/calendario'
 
-    if (isRootOrCalendar) {
-      let isMounted = true
-      hasExistingLocalData().then((hasData) => {
-        if (isMounted && !hasData) {
-          navigate('/importar', { replace: true })
-        }
-      })
-      return () => {
-        isMounted = false
+    const hasChecked = StorageService.hasCheckedOnboarding()
+
+    if (!isRootOrCalendar) {
+      if (!hasChecked) {
+        StorageService.setCheckedOnboarding(true)
       }
+      return
+    }
+
+    if (hasChecked) {
+      return
+    }
+
+    StorageService.setCheckedOnboarding(true)
+
+    let isMounted = true
+    hasExistingLocalData().then((hasData) => {
+      if (isMounted && !hasData) {
+        navigate('/importar', { replace: true })
+      }
+    })
+    return () => {
+      isMounted = false
     }
   }, [location.pathname, navigate])
 

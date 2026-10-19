@@ -1,7 +1,9 @@
 import {
   CalendarDays,
+  Check,
   ChevronLeft,
   ChevronRight,
+  CloudDownload,
   Edit3,
   Eye,
   FileSpreadsheet,
@@ -10,16 +12,24 @@ import {
   Trash2,
   Wand2,
 } from 'lucide-react'
+import { use, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CalendarHeader } from './calendar-header'
 import { DayCell } from './day-cell'
+import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear, getMonthCalendarGrid } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
 
 export function CalendarGrid() {
   const { t, i18n } = useTranslation(['calendar', 'common'])
+  const auth = use(AuthContext)
+  const isAdmin = auth?.isAdmin ?? false
+
+  const [isPullingCloud, setIsPullingCloud] = useState(false)
+  const [pullSuccess, setPullSuccess] = useState(false)
+
   const {
     currentMonth,
     goToPreviousMonth,
@@ -41,7 +51,23 @@ export function CalendarGrid() {
     saveSchedule,
     discardChanges,
     hasUnsavedChanges,
+    pullCloudData,
   } = useScheduleStore()
+
+  const handlePullCloud = async () => {
+    try {
+      setIsPullingCloud(true)
+      const res = await pullCloudData(currentMonth, isAdmin)
+      if (res.success) {
+        setPullSuccess(true)
+        setTimeout(() => setPullSuccess(false), 2500)
+      }
+    } catch (err) {
+      console.error('Erro ao puxar dados da nuvem:', err)
+    } finally {
+      setIsPullingCloud(false)
+    }
+  }
 
   const daysGrid = getMonthCalendarGrid(currentMonth)
 
@@ -184,6 +210,33 @@ export function CalendarGrid() {
               <span>{t('calendar:editMode')}</span>
             </button>
           </div>
+
+          {/* Pull from Cloud Button */}
+          <button
+            type="button"
+            onClick={handlePullCloud}
+            disabled={isPullingCloud}
+            title={t('common:actions.pullCloudTooltip')}
+            aria-label={t('common:actions.pullCloud')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-xs font-bold transition shadow-2xs disabled:opacity-50"
+          >
+            {pullSuccess ? (
+              <Check className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <CloudDownload
+                className={`w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 ${
+                  isPullingCloud ? 'animate-bounce' : ''
+                }`}
+              />
+            )}
+            <span className="hidden sm:inline">
+              {pullSuccess
+                ? t('common:actions.pullSuccess')
+                : isPullingCloud
+                  ? t('common:actions.pullingCloud')
+                  : t('common:actions.pullCloud')}
+            </span>
+          </button>
 
           {/* Export to Excel Button */}
           <button

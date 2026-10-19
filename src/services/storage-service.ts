@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   GUEST_PROFILES: 'scale_manager_guest_profiles_v1',
   ACTIVE_GUEST_ID: 'scale_manager_active_guest_id_v1',
   GUEST_DATA_PREFIX: 'scale_manager_guest_data_v1_',
+  ONBOARDING_CHECKED: 'health-schedule:onboarding-checked',
 }
 
 let isRestoringDataset = false
@@ -310,6 +311,25 @@ export class StorageService {
       const dataset = StorageService.getCurrentDataset()
       StorageService.saveGuestDataset(activeId, dataset)
     }
+  }
+
+  static hasCheckedOnboarding(): boolean {
+    if (typeof sessionStorage === 'undefined') return false
+    return sessionStorage.getItem(STORAGE_KEYS.ONBOARDING_CHECKED) === 'true'
+  }
+
+  static setCheckedOnboarding(checked = true): void {
+    if (typeof sessionStorage === 'undefined') return
+    if (checked) {
+      sessionStorage.setItem(STORAGE_KEYS.ONBOARDING_CHECKED, 'true')
+    } else {
+      sessionStorage.removeItem(STORAGE_KEYS.ONBOARDING_CHECKED)
+    }
+  }
+
+  static clearCheckedOnboarding(): void {
+    if (typeof sessionStorage === 'undefined') return
+    sessionStorage.removeItem(STORAGE_KEYS.ONBOARDING_CHECKED)
   }
 }
 

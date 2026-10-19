@@ -137,6 +137,7 @@ export function AuthProvider({
       StorageService.resetToDefault()
       useScheduleStore.getState().reloadFromStorage()
     }
+    StorageService.clearCheckedOnboarding()
     setIsGuest(false)
     await signInWithEmailAndPassword(auth, email, password)
   }
@@ -145,6 +146,7 @@ export function AuthProvider({
     name: string,
     existingId?: string
   ): Promise<void> => {
+    StorageService.clearCheckedOnboarding()
     if (StorageService.getActiveGuestId()) {
       StorageService.snapshotActiveGuest()
     }
@@ -218,6 +220,7 @@ export function AuthProvider({
   }
 
   const logout = async (): Promise<void> => {
+    StorageService.clearCheckedOnboarding()
     if (isGuest || StorageService.getActiveGuestId()) {
       StorageService.snapshotActiveGuest()
       StorageService.setActiveGuestId(null)
