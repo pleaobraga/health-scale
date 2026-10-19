@@ -6,19 +6,19 @@ import { TAILWIND_PALETTE } from '../../constants/tailwindColors';
 
 import type { Person } from '../../types';
 
-interface GlobalPersonModalProps {
+export interface GlobalPersonModalProps {
   isOpen: boolean;
   onClose: () => void;
   personToEdit?: Person | null;
   onSave: (name: string, color: string) => void;
 }
 
-export const GlobalPersonModal: React.FC<GlobalPersonModalProps> = ({
+export function GlobalPersonModal({
   isOpen,
   onClose,
   personToEdit,
   onSave,
-}) => {
+}: GlobalPersonModalProps) {
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex);
   const [error, setError] = useState<string | null>(null);

@@ -80,3 +80,6 @@ dist-ssr
 
 *storybook.log
 storybook-static
+
+# AI Rules
+.ai-rules.md

@@ -15,7 +15,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import React, { useContext, useState } from 'react';
+import React, { use, useState } from 'react';
 import { NavLink, useInRouterContext } from 'react-router-dom';
 
 import { AuthContext } from '../../context/AuthContext';
@@ -25,7 +25,7 @@ import { useScheduleStore } from '../../store/useScheduleStore';
 
 import type { NavigationTab } from '../../types';
 
-export const HoverSidebar: React.FC = () => {
+export function HoverSidebar() {
   const { currentView, setCurrentView, isDarkMode, toggleDarkMode } =
     useScheduleStore();
   const [isExporting, setIsExporting] = useState(false);
@@ -33,7 +33,7 @@ export const HoverSidebar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const inRouter = useInRouterContext();
 
-  const auth = useContext(AuthContext);
+  const auth = use(AuthContext);
   const user = auth?.user;
   const isAdmin = auth?.isAdmin ?? false;
   const isGuest = auth?.isGuest ?? false;
@@ -43,7 +43,7 @@ export const HoverSidebar: React.FC = () => {
     id: NavigationTab;
     path: string;
     label: string;
-    icon: React.FC<{ className?: string }>;
+    icon: React.ComponentType<{ className?: string }>;
     end?: boolean;
   }[] = [
     {

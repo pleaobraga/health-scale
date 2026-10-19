@@ -1,5 +1,3 @@
-import React from 'react';
-
 const WEEKDAYS = [
   { short: 'Dom', full: 'Domingo', isWeekend: true },
   { short: 'Seg', full: 'Segunda-feira', isWeekend: false },
@@ -10,7 +8,7 @@ const WEEKDAYS = [
   { short: 'Sáb', full: 'Sábado', isWeekend: true },
 ];
 
-export const CalendarHeader: React.FC = () => {
+export function CalendarHeader() {
   return (
     <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors">
       {WEEKDAYS.map((day) => (

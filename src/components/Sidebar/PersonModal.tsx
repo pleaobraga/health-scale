@@ -7,7 +7,7 @@ import { TAILWIND_PALETTE } from '../../constants/tailwindColors';
 
 import type { Person } from '../../types';
 
-interface PersonModalProps {
+export interface PersonModalProps {
   isOpen: boolean;
   onClose: () => void;
   personToEdit?: Person | null;
@@ -17,7 +17,7 @@ interface PersonModalProps {
   onDelete?: (id: string) => void;
 }
 
-export const PersonModal: React.FC<PersonModalProps> = ({
+export function PersonModal({
   isOpen,
   onClose,
   personToEdit,
@@ -25,7 +25,7 @@ export const PersonModal: React.FC<PersonModalProps> = ({
   initialAvailableDays = [],
   onSave,
   onDelete,
-}) => {
+}: PersonModalProps) {
   const [name, setName] = useState('');
   const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex);
   const [availableDays, setAvailableDays] = useState<number[]>([]);

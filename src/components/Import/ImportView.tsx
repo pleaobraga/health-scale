@@ -13,7 +13,7 @@ import {
   Cloud,
   RefreshCw,
 } from 'lucide-react';
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ConfirmOverwriteModal } from './ConfirmOverwriteModal';
@@ -29,12 +29,11 @@ import { useScheduleStore } from '../../store/useScheduleStore';
 
 import type { AppDataSnapshot } from '../../types';
 
-
-export const ImportView: React.FC = () => {
+export function ImportView() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const auth = useContext(AuthContext);
+  const auth = use(AuthContext);
   const isAdmin = auth?.isAdmin ?? false;
 
   const { pullCloudData } = useScheduleStore();

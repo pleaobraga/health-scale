@@ -1,22 +1,22 @@
 import { AlertTriangle, Trash2, X } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { Person } from '../../types';
 
-interface ConfirmDeleteModalProps {
+export interface ConfirmDeleteModalProps {
   isOpen: boolean;
   person: Person | null;
   onClose: () => void;
   onConfirm: () => void;
 }
 
-export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
+export function ConfirmDeleteModal({
   isOpen,
   person,
   onClose,
   onConfirm,
-}) => {
+}: ConfirmDeleteModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {

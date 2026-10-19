@@ -1,6 +1,4 @@
 import { AlertTriangle, X } from 'lucide-react';
-import React from 'react';
-
 export interface ConfirmOverwriteModalProps {
   isOpen: boolean;
   onConfirm: () => void;
@@ -8,12 +6,12 @@ export interface ConfirmOverwriteModalProps {
   isRestoring?: boolean;
 }
 
-export const ConfirmOverwriteModal: React.FC<ConfirmOverwriteModalProps> = ({
+export function ConfirmOverwriteModal({
   isOpen,
   onConfirm,
   onCancel,
   isRestoring = false,
-}) => {
+}: ConfirmOverwriteModalProps) {
   if (!isOpen) return null;
 
   return (

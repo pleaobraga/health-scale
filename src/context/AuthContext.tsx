@@ -42,10 +42,10 @@ export interface AuthProviderProps {
   value?: Partial<AuthContextType>
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({
+export function AuthProvider({
   children,
   value,
-}) => {
+}: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [role, setRole] = useState<UserRole | null>(null)
   const [isGuest, setIsGuest] = useState<boolean>(false)
@@ -269,7 +269,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   }
 
   return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+    <AuthContext value={contextValue}>{children}</AuthContext>
   )
 }
 

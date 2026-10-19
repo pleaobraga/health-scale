@@ -14,11 +14,11 @@ export interface CreateUserModalProps {
   onUserCreated: () => void;
 }
 
-export const CreateUserModal: React.FC<CreateUserModalProps> = ({
+export function CreateUserModal({
   isOpen,
   onClose,
   onUserCreated,
-}) => {
+}: CreateUserModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [tempPassword, setTempPassword] = useState('');

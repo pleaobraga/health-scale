@@ -12,7 +12,7 @@ export interface AdminRouteProps {
  * Redirects unauthenticated users to #/login,
  * and non-admin authenticated users to #/calendario.
  */
-export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
+export function AdminRoute({ children }: AdminRouteProps) {
   const { user, isAdmin, loading } = useAuth()
 
   if (loading) {

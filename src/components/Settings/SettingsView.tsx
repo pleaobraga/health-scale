@@ -15,7 +15,7 @@ import {
   Upload,
   Users,
 } from 'lucide-react'
-import React, { useContext, useState } from 'react'
+import { use, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 
 import { AuthContext } from '../../context/AuthContext'
@@ -23,7 +23,7 @@ import { exportAppData } from '../../services/backupService'
 import { CloudSyncService } from '../../services/cloudSyncService'
 import { useScheduleStore } from '../../store/useScheduleStore'
 
-export const SettingsView: React.FC = () => {
+export function SettingsView() {
   const {
     isDarkMode,
     toggleDarkMode,
@@ -40,7 +40,7 @@ export const SettingsView: React.FC = () => {
     message: string
   } | null>(null)
 
-  const auth = useContext(AuthContext)
+  const auth = use(AuthContext)
   // Show admin cloud sync controls if authenticated as admin (or in isolated test/dev)
   const isAdmin = auth ? auth.isAdmin : true
 

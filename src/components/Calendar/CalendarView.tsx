@@ -1,10 +1,8 @@
-import React from 'react';
-
 import { CalendarGrid } from './CalendarGrid';
 import { Sidebar } from '../Sidebar/Sidebar';
 import { ValidationPanel } from '../Validation/ValidationPanel';
 
-export const CalendarView: React.FC = () => {
+export function CalendarView() {
   return (
     <main
       data-testid="calendar-view"

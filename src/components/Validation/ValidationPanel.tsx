@@ -6,11 +6,10 @@ import {
   ShieldCheck,
   RotateCcw,
 } from 'lucide-react';
-import React from 'react';
 
 import { useScheduleStore } from '../../store/useScheduleStore';
 
-export const ValidationPanel: React.FC = () => {
+export function ValidationPanel() {
   const {
     validateCurrentSchedule,
     saveSchedule,

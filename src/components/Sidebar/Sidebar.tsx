@@ -1,5 +1,5 @@
 import { UserPlus, Users, Sparkles, Search, ChevronDown, ChevronUp } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { AddMonthParticipantsModal } from './AddMonthParticipantsModal';
@@ -10,7 +10,7 @@ import { formatMonthYear } from '../../utils/dateUtils';
 
 import type { Person } from '../../types';
 
-export const Sidebar: React.FC = () => {
+export function Sidebar() {
   const navigate = useNavigate();
   const {
     persons,

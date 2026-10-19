@@ -26,11 +26,11 @@ const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
   };
 
   return render(
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext value={contextValue}>
       <MemoryRouter>
         <ImportView />
       </MemoryRouter>
-    </AuthContext.Provider>,
+    </AuthContext>,
   );
 };
 

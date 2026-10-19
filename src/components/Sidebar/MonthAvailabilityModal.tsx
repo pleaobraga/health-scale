@@ -1,5 +1,5 @@
 import { Calendar, X } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import { AvailabilityMiniCalendar } from './AvailabilityMiniCalendar';
@@ -7,7 +7,7 @@ import { formatMonthYear } from '../../utils/dateUtils';
 
 import type { Person } from '../../types';
 
-interface MonthAvailabilityModalProps {
+export interface MonthAvailabilityModalProps {
   isOpen: boolean;
   onClose: () => void;
   person: Person | null;
@@ -16,14 +16,14 @@ interface MonthAvailabilityModalProps {
   onSave: (personId: string, availableDays: number[]) => void;
 }
 
-export const MonthAvailabilityModal: React.FC<MonthAvailabilityModalProps> = ({
+export function MonthAvailabilityModal({
   isOpen,
   onClose,
   person,
   currentMonth,
   initialAvailableDays,
   onSave,
-}) => {
+}: MonthAvailabilityModalProps) {
   const [availableDays, setAvailableDays] = useState<number[]>([]);
 
   useEffect(() => {

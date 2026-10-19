@@ -1,9 +1,9 @@
 import { Plus, Check } from 'lucide-react';
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import type { Person } from '../../types';
 
-interface CandidatePickerProps {
+export interface CandidatePickerProps {
   dateStr: string;
   dayNumber: number;
   month: string;
@@ -13,13 +13,13 @@ interface CandidatePickerProps {
   onSelectPerson: (personId: string) => void;
 }
 
-export const CandidatePicker: React.FC<CandidatePickerProps> = ({
+export function CandidatePicker({
   dayNumber,
   assignedPersonIds,
   allPersons,
   isPersonAvailable,
   onSelectPerson,
-}) => {
+}: CandidatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 

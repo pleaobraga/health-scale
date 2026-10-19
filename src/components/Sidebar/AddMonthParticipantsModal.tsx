@@ -1,12 +1,12 @@
 import { UserPlus, Check, X, Users, CheckSquare, Square, Search } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import { formatMonthYear } from '../../utils/dateUtils';
 
 import type { Person } from '../../types';
 
-interface AddMonthParticipantsModalProps {
+export interface AddMonthParticipantsModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentMonth: string;
@@ -16,7 +16,7 @@ interface AddMonthParticipantsModalProps {
   onGoToGlobalManagement?: () => void;
 }
 
-export const AddMonthParticipantsModal: React.FC<AddMonthParticipantsModalProps> = ({
+export function AddMonthParticipantsModal({
   isOpen,
   onClose,
   currentMonth,
@@ -24,7 +24,7 @@ export const AddMonthParticipantsModal: React.FC<AddMonthParticipantsModalProps>
   currentParticipantIds,
   onAddParticipants,
   onGoToGlobalManagement,
-}) => {
+}: AddMonthParticipantsModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [modalSearch, setModalSearch] = useState('');
 

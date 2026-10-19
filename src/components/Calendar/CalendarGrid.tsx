@@ -1,25 +1,24 @@
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Edit3,
   Eye,
-  Wand2,
-  CalendarDays,
-  Maximize2,
-  Trash2,
   FileSpreadsheet,
-  Save,
+  Maximize2,
   RotateCcw,
-} from 'lucide-react';
-import React from 'react';
+  Save,
+  Trash2,
+  Wand2,
+} from 'lucide-react'
 
-import { CalendarHeader } from './CalendarHeader';
-import { DayCell } from './DayCell';
-import { useScheduleStore } from '../../store/useScheduleStore';
-import { getMonthCalendarGrid, formatMonthYear } from '../../utils/dateUtils';
-import { exportScheduleToExcel } from '../../utils/exportToExcel';
+import { CalendarHeader } from './CalendarHeader'
+import { DayCell } from './DayCell'
+import { useScheduleStore } from '../../store/useScheduleStore'
+import { formatMonthYear, getMonthCalendarGrid } from '../../utils/dateUtils'
+import { exportScheduleToExcel } from '../../utils/exportToExcel'
 
-export const CalendarGrid: React.FC = () => {
+export function CalendarGrid() {
   const {
     currentMonth,
     goToPreviousMonth,
@@ -41,23 +40,25 @@ export const CalendarGrid: React.FC = () => {
     saveSchedule,
     discardChanges,
     hasUnsavedChanges,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
-  const daysGrid = getMonthCalendarGrid(currentMonth);
+  const daysGrid = getMonthCalendarGrid(currentMonth)
 
-  const currentMonthParticipantIds = monthParticipants[currentMonth] || [];
-  const monthPersons = persons.filter((p) => currentMonthParticipantIds.includes(p.id));
+  const currentMonthParticipantIds = monthParticipants[currentMonth] || []
+  const monthPersons = persons.filter((p) =>
+    currentMonthParticipantIds.includes(p.id),
+  )
 
   const highlightedPerson = highlightedPersonId
     ? persons.find((p) => p.id === highlightedPersonId) || null
-    : null;
+    : null
 
   const isPersonAvailable = (personId: string, dayNumber: number): boolean => {
     const avail = availabilities.find(
-      (a) => a.personId === personId && a.month === currentMonth
-    );
-    return avail ? avail.availableDays.includes(dayNumber) : false;
-  };
+      (a) => a.personId === personId && a.month === currentMonth,
+    )
+    return avail ? avail.availableDays.includes(dayNumber) : false
+  }
 
   return (
     <div className="w-full bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors shrink-0">
@@ -101,7 +102,9 @@ export const CalendarGrid: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => populateMonthWithAvailableCandidates(currentMonth)}
+                onClick={() =>
+                  populateMonthWithAvailableCandidates(currentMonth)
+                }
                 title="Preenche dias vagos com as pessoas disponíveis"
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition shadow-2xs"
               >
@@ -113,10 +116,10 @@ export const CalendarGrid: React.FC = () => {
                 type="button"
                 onClick={() => {
                   const confirmed = window.confirm(
-                    `Deseja realmente limpar todas as escalas de ${formatMonthYear(currentMonth)}?`
-                  );
+                    `Deseja realmente limpar todas as escalas de ${formatMonthYear(currentMonth)}?`,
+                  )
                   if (confirmed) {
-                    clearMonthAssignments(currentMonth);
+                    clearMonthAssignments(currentMonth)
                   }
                 }}
                 title="Limpar todas as escalas do mês atual"
@@ -157,7 +160,7 @@ export const CalendarGrid: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                if (isEditMode) toggleEditMode();
+                if (isEditMode) toggleEditMode()
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                 !isEditMode
@@ -171,7 +174,7 @@ export const CalendarGrid: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                if (!isEditMode) toggleEditMode();
+                if (!isEditMode) toggleEditMode()
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                 isEditMode
@@ -223,7 +226,9 @@ export const CalendarGrid: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span>
-              <strong>Modo Edição Ativo:</strong> As alterações só são gravadas ao clicar em <strong>Salvar</strong>. Se sair do modo de edição sem salvar, o calendário reverte ao estado original.
+              <strong>Modo Edição Ativo:</strong> As alterações só são gravadas
+              ao clicar em <strong>Salvar</strong>. Se sair do modo de edição
+              sem salvar, o calendário reverte ao estado original.
             </span>
           </div>
           {hasUnsavedChanges && (
@@ -251,7 +256,9 @@ export const CalendarGrid: React.FC = () => {
               style={{ backgroundColor: highlightedPerson.color }}
             />
             <span>
-              Exibindo disponibilidade de: <strong>{highlightedPerson.name}</strong> (dias destacados em amarelo)
+              Exibindo disponibilidade de:{' '}
+              <strong>{highlightedPerson.name}</strong> (dias destacados em
+              amarelo)
             </span>
           </div>
         </div>
@@ -262,11 +269,11 @@ export const CalendarGrid: React.FC = () => {
         <CalendarHeader />
         <div className="grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 flex-1 auto-rows-fr">
           {daysGrid.map((dayInfo) => {
-            const assigned = assignments[dayInfo.dateStr] || [];
-            const dayEvents = events.filter((e) => e.date === dayInfo.dateStr);
+            const assigned = assignments[dayInfo.dateStr] || []
+            const dayEvents = events.filter((e) => e.date === dayInfo.dateStr)
             const isHighlightedAvail = highlightedPerson
               ? isPersonAvailable(highlightedPerson.id, dayInfo.dayNumber)
-              : false;
+              : false
 
             return (
               <DayCell
@@ -282,17 +289,19 @@ export const CalendarGrid: React.FC = () => {
                 isHighlightedPersonAvailable={isHighlightedAvail}
                 isPersonAvailable={isPersonAvailable}
                 onOpenEvents={() => setSelectedDateForEvents(dayInfo.dateStr)}
-                onRemovePerson={(personId) => removePersonFromDay(dayInfo.dateStr, personId)}
+                onRemovePerson={(personId) =>
+                  removePersonFromDay(dayInfo.dateStr, personId)
+                }
                 onAddPerson={(personId) => {
                   if (isPersonAvailable(personId, dayInfo.dayNumber)) {
-                    addPersonToDay(dayInfo.dateStr, personId);
+                    addPersonToDay(dayInfo.dateStr, personId)
                   }
                 }}
               />
-            );
+            )
           })}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

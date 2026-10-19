@@ -1,5 +1,5 @@
 import { AlertTriangle, UserX, X, ShieldAlert } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { Person } from '../../types';
@@ -11,12 +11,12 @@ export interface DeactivatePersonModalProps {
   onConfirm: () => void;
 }
 
-export const DeactivatePersonModal: React.FC<DeactivatePersonModalProps> = ({
+export function DeactivatePersonModal({
   isOpen,
   person,
   onClose,
   onConfirm,
-}) => {
+}: DeactivatePersonModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {

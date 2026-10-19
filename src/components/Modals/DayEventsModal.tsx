@@ -17,7 +17,7 @@ import { formatDisplayDate } from '../../utils/dateUtils';
 
 import type { CalendarEvent } from '../../types';
 
-export const DayEventsModal: React.FC = () => {
+export function DayEventsModal() {
   const {
     selectedDateForEvents,
     setSelectedDateForEvents,

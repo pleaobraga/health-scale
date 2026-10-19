@@ -34,7 +34,7 @@ const formatLastActive = (isoString?: string): string => {
   }
 }
 
-export const LoginPage: React.FC = () => {
+export function LoginPage() {
   const { user, login, loginAsGuest, guestProfiles, deleteGuestProfile } =
     useAuth()
   const navigate = useNavigate()

@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import { useCloudSync } from '../../hooks/useCloudSync';
 import { hasExistingLocalData } from '../../services/backupService';
 import { useScheduleStore } from '../../store/useScheduleStore';
+import { ErrorBoundary } from '../common/error-boundary';
 import { DayEventsModal } from '../Modals/DayEventsModal';
 import { FullScreenCalendarModal } from '../Modals/FullScreenCalendarModal';
 import { UnsavedChangesModal } from '../Modals/UnsavedChangesModal';
 import { HoverSidebar } from '../Navigation/HoverSidebar';
 
-export const RootLayout: React.FC = () => {
+export function RootLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const setCurrentView = useScheduleStore((state) => state.setCurrentView);
@@ -61,7 +62,9 @@ export const RootLayout: React.FC = () => {
 
       {/* 2. Main Content Area: Renders the active route through Outlet */}
       <div className="flex-1 min-h-screen lg:h-full overflow-y-auto lg:overflow-hidden flex flex-col min-w-0 custom-scrollbar">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </div>
 
       {/* 3. Global Modals */}

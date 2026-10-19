@@ -12,7 +12,7 @@ export interface PrivateRouteProps {
  * Displays a loading state while authentication status resolves,
  * redirects unauthenticated users to #/login, preserving location state.
  */
-export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+export function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
 

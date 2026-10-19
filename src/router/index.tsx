@@ -1,9 +1,9 @@
-import React from 'react';
 import { Routes, Route, Navigate, MemoryRouter, HashRouter } from 'react-router-dom';
 
 import { AdminRoute } from '../components/Auth/AdminRoute';
 import { PrivateRoute } from '../components/Auth/PrivateRoute';
 import { CalendarView } from '../components/Calendar/CalendarView';
+import { ErrorBoundary } from '../components/common/error-boundary';
 import { ImportView } from '../components/Import/ImportView';
 import { RootLayout } from '../components/Layout/RootLayout';
 import { PeopleManagementView } from '../components/PeopleManagement/PeopleManagementView';
@@ -18,7 +18,7 @@ import type { AuthContextType } from '../context/AuthContext';
  * Main application routes tree.
  * Enforces authentication on private routes and role-based access on admin endpoints.
  */
-export const AppRoutes: React.FC = () => {
+export function AppRoutes() {
   return (
     <Routes>
       {/* 1. Public Authentication Route */}
@@ -49,33 +49,37 @@ export const AppRoutes: React.FC = () => {
       </Route>
     </Routes>
   );
-};
+}
 
 /**
  * Production HashRouter wrapper component.
  * URLs follow /#/rota pattern, preventing 404s on GitHub Pages static hosting.
  */
-export const AppRouter: React.FC = () => {
+export function AppRouter() {
   return (
-    <AuthProvider>
-      <HashRouter>
-        <AppRoutes />
-      </HashRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <HashRouter>
+          <AppRoutes />
+        </HashRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
-};
+}
+
+export interface TestAppRouterProps {
+  initialEntries?: string[];
+  authValue?: Partial<AuthContextType>;
+}
 
 /**
  * Test wrapper using MemoryRouter for deterministic testing with Vitest.
  * Defaults to an authenticated admin mock to maintain test compatibility unless specified.
  */
-export const TestAppRouter: React.FC<{
-  initialEntries?: string[];
-  authValue?: Partial<AuthContextType>;
-}> = ({
+export function TestAppRouter({
   initialEntries = ['/'],
   authValue,
-}) => {
+}: TestAppRouterProps) {
   const defaultAuth: Partial<AuthContextType> = {
     user: {
       uid: 'test-admin-uid',
@@ -89,12 +93,14 @@ export const TestAppRouter: React.FC<{
   };
 
   return (
-    <AuthProvider value={authValue !== undefined ? authValue : defaultAuth}>
-      <MemoryRouter initialEntries={initialEntries}>
-        <AppRoutes />
-      </MemoryRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider value={authValue !== undefined ? authValue : defaultAuth}>
+        <MemoryRouter initialEntries={initialEntries}>
+          <AppRoutes />
+        </MemoryRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
-};
+}
 
 export default AppRouter;

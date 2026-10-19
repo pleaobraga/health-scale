@@ -7,7 +7,7 @@ import {
   FileSpreadsheet,
   Calendar as CalendarIcon,
 } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useScheduleStore } from '../../store/useScheduleStore';
@@ -24,7 +24,7 @@ const WEEKDAYS = [
   { short: 'Sáb', full: 'Sábado', isWeekend: true },
 ];
 
-export const FullScreenCalendarModal: React.FC = () => {
+export function FullScreenCalendarModal() {
   const {
     isFullScreenModalOpen,
     setFullScreenModalOpen,

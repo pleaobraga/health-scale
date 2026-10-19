@@ -1,21 +1,20 @@
 import { Sparkles, Eraser, CheckSquare, Calendar } from 'lucide-react';
-import React from 'react';
 
-import { getDaysCountInMonth, formatMonthYear } from '../../utils/dateUtils';
+import { formatMonthYear, getDaysCountInMonth } from '../../utils/dateUtils';
 
-interface AvailabilityMiniCalendarProps {
+export interface AvailabilityMiniCalendarProps {
   month: string; // 'YYYY-MM'
   selectedDays: number[];
   onChange: (days: number[]) => void;
   accentColor?: string;
 }
 
-export const AvailabilityMiniCalendar: React.FC<AvailabilityMiniCalendarProps> = ({
+export function AvailabilityMiniCalendar({
   month,
   selectedDays,
   onChange,
   accentColor = '#3b82f6',
-}) => {
+}: AvailabilityMiniCalendarProps) {
   const totalDays = getDaysCountInMonth(month);
   const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1);
 

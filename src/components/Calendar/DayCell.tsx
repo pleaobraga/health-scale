@@ -1,12 +1,11 @@
 import { Calendar as CalendarIcon, X, Sparkles } from 'lucide-react';
-import React from 'react';
 
 import { CandidatePicker } from './CandidatePicker';
 
 import type { Person, CalendarEvent } from '../../types';
 import type { CalendarDayInfo } from '../../utils/dateUtils';
 
-interface DayCellProps {
+export interface DayCellProps {
   dayInfo: CalendarDayInfo;
   currentMonth: string;
   isEditMode: boolean;
@@ -22,7 +21,7 @@ interface DayCellProps {
   onAddPerson: (personId: string) => void;
 }
 
-export const DayCell: React.FC<DayCellProps> = ({
+export function DayCell({
   dayInfo,
   currentMonth,
   isEditMode,
@@ -36,7 +35,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   onOpenEvents,
   onRemovePerson,
   onAddPerson,
-}) => {
+}: DayCellProps) {
   const { dayNumber, isCurrentMonth, isToday, dateStr } = dayInfo;
   const hasEvents = events.length > 0;
   const personMap = new Map<string, Person>(allPersons.map((p) => [p.id, p]));

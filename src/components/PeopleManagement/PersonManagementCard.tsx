@@ -1,5 +1,4 @@
 import { Edit2, Trash2, CalendarCheck2, RotateCcw, UserX, CheckCircle, ShieldAlert } from 'lucide-react';
-import React from 'react';
 
 import type { Person } from '../../types';
 
@@ -14,7 +13,7 @@ export interface PersonManagementCardProps {
   onReactivate: (personId: string) => void;
 }
 
-export const PersonManagementCard: React.FC<PersonManagementCardProps> = ({
+export function PersonManagementCard({
   person,
   monthsCount,
   isInCurrentMonth,
@@ -23,7 +22,7 @@ export const PersonManagementCard: React.FC<PersonManagementCardProps> = ({
   onDeactivate,
   onDeleteRequest,
   onReactivate,
-}) => {
+}: PersonManagementCardProps) {
   const isActive = person.active !== false;
 
   return (

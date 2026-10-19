@@ -1,5 +1,5 @@
 import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { DeactivatePersonModal } from './DeactivatePersonModal';
@@ -9,7 +9,7 @@ import { useScheduleStore } from '../../store/useScheduleStore';
 
 import type { Person } from '../../types';
 
-export const PeopleManagementView: React.FC = () => {
+export function PeopleManagementView() {
   const {
     persons,
     monthParticipants,

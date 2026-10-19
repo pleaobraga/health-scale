@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 import type { Person } from '../../types';
 
-interface PersonCardProps {
+export interface PersonCardProps {
   person: Person;
   availableDaysCount: number;
   workingDaysCount?: number;
@@ -15,7 +15,7 @@ interface PersonCardProps {
   onRemoveFromMonth?: () => void;
 }
 
-export const PersonCard: React.FC<PersonCardProps> = ({
+export function PersonCard({
   person,
   availableDaysCount,
   workingDaysCount = 0,
@@ -25,7 +25,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
   onEdit,
   onInsertAllDays,
   onRemoveFromMonth,
-}) => {
+}: PersonCardProps) {
   const [justInserted, setJustInserted] = useState(false);
 
   const canInsertAllDays = isEditMode && availableDaysCount > 0;

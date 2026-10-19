@@ -6,7 +6,7 @@ import {
   Search,
   User as UserIcon,
 } from 'lucide-react';
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CreateUserModal } from '../components/Users/CreateUserModal';
 import { db } from '../services/firebase';
@@ -21,14 +21,14 @@ export interface AppUserRecord {
   createdAt?: unknown;
 }
 
-export const UserManagementView: React.FC = () => {
+export function UserManagementView() {
   const [users, setUsers] = useState<AppUserRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorFeedback, setErrorFeedback] = useState<string | null>(null);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = async () => {
     try {
       setIsLoading(true);
       setErrorFeedback(null);
@@ -57,11 +57,11 @@ export const UserManagementView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    void fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((u) => {
     const term = searchTerm.toLowerCase();
