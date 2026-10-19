@@ -52,7 +52,13 @@ export const generateScheduleWorkbook = ({
 
     const dayEvents = events.filter((e) => e.date === dateStr)
     const eventDetails = dayEvents
-      .map((e) => (e.time ? `[${e.time}] ${e.title}` : e.title))
+      .map((e) => {
+        const timePrefix = e.time ? `[${e.time}] ` : ''
+        const caregiverId = e.personId || assignedIds[0]
+        const caregiver = caregiverId ? personMap.get(caregiverId) : null
+        const caregiverSuffix = caregiver ? ` (${caregiver.name})` : ''
+        return `${timePrefix}${e.title}${caregiverSuffix}`
+      })
       .join(' | ')
 
     dailyRows.push([

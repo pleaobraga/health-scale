@@ -212,5 +212,82 @@ describe('DayEventsModal', () => {
     expect(clockIcon).toHaveClass('dark:text-indigo-400')
   })
 
+  it('deve associar por padrão a cuidadora escalada no dia ao abrir o modal para novo evento', () => {
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      currentMonth: '2026-10',
+      persons: [
+        { id: 'p1', name: 'Maria Silva', color: '#3B82F6', active: true },
+        { id: 'p2', name: 'Joana Santos', color: '#10B981', active: true },
+      ],
+      monthParticipants: { '2026-10': ['p1', 'p2'] },
+      assignments: { '2026-10-15': ['p1'] },
+      events: [],
+    })
+
+    render(<DayEventsModal />)
+
+    const caregiverSelect = screen.getByLabelText(/Cuidadora \/ Profissional Responsável/i) as HTMLSelectElement
+    expect(caregiverSelect.value).toBe('p1')
+
+    const colorPreview = screen.getByTestId('selected-caregiver-color-preview')
+    expect(colorPreview).toHaveStyle({ backgroundColor: '#3B82F6' })
+  })
+
+  it('deve permitir associar outra cuidadora cadastrada no mês e persistir o personId', () => {
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      currentMonth: '2026-10',
+      persons: [
+        { id: 'p1', name: 'Maria Silva', color: '#3B82F6', active: true },
+        { id: 'p2', name: 'Joana Santos', color: '#10B981', active: true },
+      ],
+      monthParticipants: { '2026-10': ['p1', 'p2'] },
+      assignments: { '2026-10-15': ['p1'] },
+      events: [],
+    })
+
+    render(<DayEventsModal />)
+
+    const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
+    fireEvent.change(titleInput, { target: { value: 'Curativo Especial' } })
+
+    const caregiverSelect = screen.getByLabelText(/Cuidadora \/ Profissional Responsável/i)
+    fireEvent.change(caregiverSelect, { target: { value: 'p2' } })
+
+    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    fireEvent.click(submitBtn)
+
+    const storeEvents = useScheduleStore.getState().events
+    expect(storeEvents).toHaveLength(1)
+    expect(storeEvents[0].personId).toBe('p2')
+  })
+
+  it('deve exibir o badge colorido da cuidadora associada na lista de eventos existentes', () => {
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      currentMonth: '2026-10',
+      persons: [
+        { id: 'p2', name: 'Joana Santos', color: '#10B981', active: true },
+      ],
+      monthParticipants: { '2026-10': ['p2'] },
+      assignments: {},
+      events: [
+        {
+          id: 'ev-1',
+          date: '2026-10-15',
+          title: 'Fisioterapia Respiratória',
+          personId: 'p2',
+        },
+      ],
+    })
+
+    render(<DayEventsModal />)
+
+    const badge = screen.getByTestId('event-caregiver-badge')
+    expect(badge).toBeInTheDocument()
+    expect(badge).toHaveTextContent('Joana Santos')
+    expect(badge).toHaveStyle({ backgroundColor: '#10B981' })
+  })
 })
 

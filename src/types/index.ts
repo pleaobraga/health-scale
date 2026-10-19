@@ -19,11 +19,12 @@ export interface DayAssignment {
 }
 
 export interface CalendarEvent {
-  id: string;
-  date: string; // 'YYYY-MM-DD'
-  title: string;
-  time?: string; // 'HH:mm'
-  description?: string;
+  id: string
+  date: string // 'YYYY-MM-DD'
+  title: string
+  time?: string // 'HH:mm'
+  description?: string
+  personId?: string // Cuidadora / Profissional associada ao evento
 }
 
 export type ValidationSeverity = 'error' | 'warning' | 'info';

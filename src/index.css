@@ -129,6 +129,13 @@
     border-color: #e2e8f0 !important;
   }
 
+  html.dark [data-testid="print-events-section"] .print-person-chip,
+  [data-testid="print-events-section"] .print-person-chip {
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   html.dark [data-testid="print-events-section"] tbody tr:nth-child(odd),
   [data-testid="print-events-section"] tbody tr:nth-child(odd) {
     background-color: #ffffff !important;

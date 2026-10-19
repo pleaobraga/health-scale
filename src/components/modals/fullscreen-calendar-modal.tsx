@@ -293,16 +293,15 @@ export function FullScreenCalendarModal() {
                   <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-24 text-slate-900 dark:text-slate-900 print:text-slate-900">Horário</th>
                   <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-1/4 text-slate-900 dark:text-slate-900 print:text-slate-900">Evento</th>
                   <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 text-slate-900 dark:text-slate-900 print:text-slate-900">Descrição / Observações</th>
-                  <th className="py-2.5 px-3 w-48 text-slate-900 dark:text-slate-900 print:text-slate-900">Escala do Dia</th>
+                  <th className="py-2.5 px-3 w-48 text-slate-900 dark:text-slate-900 print:text-slate-900">Responsável do Serviço</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-200 print:divide-slate-200">
                 {monthEvents.map((event) => {
                   const { formattedDate, weekday } = formatDateWithWeekday(event.date)
                   const assignedIds = assignments[event.date] || []
-                  const assignedNames = assignedIds
-                    .map((id) => personMap.get(id)?.name)
-                    .filter(Boolean)
+                  const servicePersonId = event.personId || assignedIds[0]
+                  const servicePerson = servicePersonId ? personMap.get(servicePersonId) : null
 
                   return (
                     <tr
@@ -327,19 +326,21 @@ export function FullScreenCalendarModal() {
                         {event.description || <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">-</span>}
                       </td>
                       <td className="py-2 px-3 text-slate-700 dark:text-slate-700 print:text-slate-700">
-                        {assignedNames.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {assignedNames.map((name) => (
-                              <span
-                                key={name}
-                                className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-100 print:bg-slate-100 border border-slate-300 dark:border-slate-300 print:border-slate-300 rounded text-[11px] font-medium text-slate-800 dark:text-slate-800 print:text-slate-800"
-                              >
-                                {name}
-                              </span>
-                            ))}
-                          </div>
+                        {servicePerson ? (
+                          <span
+                            style={{
+                              backgroundColor: servicePerson.color,
+                              borderColor: servicePerson.color,
+                              color: '#ffffff',
+                              WebkitPrintColorAdjust: 'exact',
+                              printColorAdjust: 'exact',
+                            }}
+                            className="inline-block px-2 py-0.5 rounded text-[11px] font-bold text-white print:text-white print-person-chip shadow-2xs"
+                          >
+                            {servicePerson.name}
+                          </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">Vago</span>
+                          <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">-</span>
                         )}
                       </td>
                     </tr>
@@ -353,8 +354,7 @@ export function FullScreenCalendarModal() {
       </div>
     </div>,
 
-
     document.body
   )
-};
+}
 

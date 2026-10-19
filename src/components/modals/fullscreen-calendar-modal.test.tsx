@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { FullScreenCalendarModal } from './fullscreen-calendar-modal'
@@ -165,6 +165,42 @@ describe('FullScreenCalendarModal', () => {
 
     const title = screen.getByRole('heading', { level: 3, name: /eventos do mês/i })
     expect(title).toHaveClass('dark:text-slate-950', 'print:text-slate-950')
+  })
+
+  it('deve listar a coluna de Responsável do Serviço com a cor associada e não exibir Escala do Dia na impressão', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      persons: [
+        { id: 'p1', name: 'Ana Souza', color: '#EF4444', active: true },
+        { id: 'p2', name: 'Beatriz Lima', color: '#10B981', active: true },
+      ],
+      assignments: {
+        '2026-10-15': ['p1'],
+      },
+      events: [
+        {
+          id: 'e1',
+          date: '2026-10-15',
+          title: 'Curativo Complexo',
+          personId: 'p2',
+        },
+      ],
+    })
+
+    render(<FullScreenCalendarModal />)
+
+    const printSection = screen.getByTestId('print-events-section')
+    expect(printSection).toBeInTheDocument()
+
+    // Headers
+    expect(within(printSection).getByText('Responsável do Serviço')).toBeInTheDocument()
+    expect(within(printSection).queryByText('Escala do Dia')).not.toBeInTheDocument()
+
+    // Responsible caregiver badge with color
+    const responsibleBadge = within(printSection).getByText('Beatriz Lima')
+    expect(responsibleBadge).toHaveClass('print-person-chip')
+    expect(responsibleBadge).toHaveStyle({ backgroundColor: '#10B981' })
   })
 })
 

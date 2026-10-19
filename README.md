@@ -219,7 +219,7 @@ graph TD
 | **Routing** | [React Router 7](https://reactrouter.com/) | Declarative client-side Hash routing (`createHashRouter`) |
 | **Icons** | [Lucide React](https://lucide.dev/) | Lightweight, customizable SVG icons |
 | **Spreadsheets** | [SheetJS (xlsx)](https://sheetjs.com/) | Client-side Excel workbook and sheet generation |
-| **Testing** | [Vitest 5](https://vitest.dev/) + Testing Library | 29 test suites with 194 unit and integration tests |
+| **Testing** | [Vitest 5](https://vitest.dev/) + Testing Library | 29 test suites with 198 unit and integration tests |
 | **Linter & Hooks** | [ESLint 10](https://eslint.org/) + [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) | Flat config, semicolon-free formatting, named exports, and pre-commit auto-fix |
 | **Documentation** | [Storybook 10](https://storybook.js.org/) | Isolated stories for every UI component and modal |
 | **CI/CD** | [GitHub Actions](https://github.com/features/actions) | Automatic test validation and GitHub Pages deployment |
@@ -347,7 +347,7 @@ The project features a comprehensive test suite covering utilities, services, st
 ```bash
 pnpm test:run
 ```
-*Current test metrics: **29 test files, 194 tests passing** (100% pass rate).*
+*Current test metrics: **29 test files, 198 tests passing** (100% pass rate).*
 
 ### ESLint Flat Config & Code Quality
 Configured in `eslint.config.js` using the modern ESLint Flat Config format:
