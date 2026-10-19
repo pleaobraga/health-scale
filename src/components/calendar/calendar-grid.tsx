@@ -7,7 +7,6 @@ import {
   FileSpreadsheet,
   Maximize2,
   RotateCcw,
-  Save,
   Trash2,
   Wand2,
 } from 'lucide-react'
@@ -128,17 +127,6 @@ export function CalendarGrid() {
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Limpar Mês</span>
-              </button>
-
-              {/* Save & Discard Buttons in Edit Toolbar */}
-              <button
-                type="button"
-                onClick={saveSchedule}
-                title="Salvar alterações na escala"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs transition"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>Salvar</span>
               </button>
 
               {hasUnsavedChanges && (

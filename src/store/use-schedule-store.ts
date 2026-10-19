@@ -94,6 +94,7 @@ interface ScheduleStore {
   forcePushCloudData: (isAdmin?: boolean) => Promise<{ success: boolean; message: string }>;
   dismissValidation: () => void;
   reloadFromStorage: () => void;
+  clearAllLocalData: () => void;
 
   // Theme
   isDarkMode: boolean;
@@ -915,6 +916,22 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       savedAssignments: { ...assignments },
       events,
       addresses,
+      validationErrors: [],
+      hasValidated: false,
+      hasUnsavedChanges: false,
+    })
+  },
+
+  clearAllLocalData: () => {
+    StorageService.clearAllLocalData()
+    set({
+      persons: [],
+      monthParticipants: {},
+      availabilities: [],
+      assignments: {},
+      savedAssignments: {},
+      events: [],
+      addresses: [],
       validationErrors: [],
       hasValidated: false,
       hasUnsavedChanges: false,

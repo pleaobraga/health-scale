@@ -194,6 +194,18 @@ export class StorageService {
   }
 
   /**
+   * Clears all local application data for the current user/session.
+   * If an active guest session is present, also removes the guest's saved dataset snapshot.
+   */
+  static clearAllLocalData(): void {
+    const activeGuestId = StorageService.getActiveGuestId()
+    if (activeGuestId) {
+      StorageService.deleteGuestDataset(activeGuestId)
+    }
+    StorageService.resetToDefault()
+  }
+
+  /**
    * Guest Profiles & Dataset Management
    */
   static getGuestProfiles(): GuestProfile[] {

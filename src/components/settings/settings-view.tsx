@@ -12,12 +12,14 @@ import {
   Settings,
   ShieldCheck,
   Sun,
+  Trash2,
   Upload,
   Users,
 } from 'lucide-react'
 import { use, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 
+import { ConfirmClearLocalDataModal } from './confirm-clear-local-data-modal'
 import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
@@ -31,6 +33,7 @@ export function SettingsView() {
     assignments,
     events,
     pullCloudData,
+    clearAllLocalData,
   } = useScheduleStore()
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
@@ -39,6 +42,9 @@ export function SettingsView() {
     type: 'success' | 'error'
     message: string
   } | null>(null)
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false)
+  const [isClearingLocalData, setIsClearingLocalData] = useState(false)
+  const [clearFeedback, setClearFeedback] = useState<string | null>(null)
 
   const auth = use(AuthContext)
   // Show admin cloud sync controls if authenticated as admin (or in isolated test/dev)
@@ -90,6 +96,20 @@ export function SettingsView() {
       console.error('Erro ao exportar backup nas configurações:', err)
     } finally {
       setIsExporting(false)
+    }
+  }
+
+  const handleConfirmClear = () => {
+    try {
+      setIsClearingLocalData(true)
+      clearAllLocalData()
+      setIsClearModalOpen(false)
+      setClearFeedback('Todos os dados locais foram apagados com sucesso!')
+      setTimeout(() => setClearFeedback(null), 5000)
+    } catch (err) {
+      console.error('Erro ao limpar dados locais:', err)
+    } finally {
+      setIsClearingLocalData(false)
     }
   }
 
@@ -367,7 +387,49 @@ export function SettingsView() {
           </div>
         </div>
 
-        {/* Section 5: System Information */}
+        {/* Section 5: Gerenciamento e Limpeza de Dados Locais (Visível para Todos os Usuários) */}
+        <div
+          data-testid="clear-local-data-card"
+          className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-rose-200/80 dark:border-rose-900/60 shadow-xs space-y-4"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
+                  Redefinir Armazenamento Local
+                </h2>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Apaga todas as escalas, pessoas, endereços e disponibilidades salvos localmente neste navegador para o seu usuário.
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Esta ação não altera nem remove nenhum dado salvo na nuvem (Firestore).
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsClearModalOpen(true)}
+              aria-label="Limpar todos os dados locais"
+              className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2 shrink-0 self-start sm:self-center"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Limpar Todos os Dados Locais</span>
+            </button>
+          </div>
+
+          {clearFeedback && (
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{clearFeedback}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Section 6: System Information */}
         <div className="bg-slate-100 dark:bg-slate-900/60 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 flex items-start gap-3 text-xs text-slate-600 dark:text-slate-400">
           <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
@@ -383,6 +445,14 @@ export function SettingsView() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmClearLocalDataModal
+        isOpen={isClearModalOpen}
+        onClose={() => setIsClearModalOpen(false)}
+        onConfirm={handleConfirmClear}
+        isClearing={isClearingLocalData}
+      />
     </div>
   )
 }

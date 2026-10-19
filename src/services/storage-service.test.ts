@@ -70,6 +70,22 @@ describe('StorageService - Persistência Local-First', () => {
     expect(reloaded).toEqual([])
   })
 
+  it('deve limpar dados locais e o dataset do convidado ativo ao chamar clearAllLocalData', () => {
+    StorageService.setActiveGuestId('guest_999')
+    StorageService.savePersons([{ id: 'g_p1', name: 'Dr. Convidado', color: '#ff0000' }])
+    StorageService.saveAddresses([{ id: 'g_a1', name: 'Endereço 1', street: 'Rua A', number: '10' }])
+
+    // Should have snapshot in guest dataset
+    expect(StorageService.getGuestDataset('guest_999')).toBeDefined()
+
+    // Clear all
+    StorageService.clearAllLocalData()
+
+    expect(StorageService.getPersons()).toEqual([])
+    expect(StorageService.getAddresses()).toEqual([])
+    expect(StorageService.getGuestDataset('guest_999')).toBeNull()
+  })
+
 
   it('deve persistir e recuperar participantes mensais', () => {
     const participants = { '2026-10': ['p1', 'p2'] }
