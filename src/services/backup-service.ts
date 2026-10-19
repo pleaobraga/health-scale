@@ -63,6 +63,7 @@ export async function exportAppData(): Promise<void> {
   const availabilities = StorageService.getAvailabilities()
   const assignments = StorageService.getAssignments()
   const events = StorageService.getEvents()
+  const addresses = StorageService.getAddresses()
   const theme = localStorage.getItem('theme') || 'light'
 
   const snapshot: AppDataSnapshot = {
@@ -72,6 +73,7 @@ export async function exportAppData(): Promise<void> {
     availabilities,
     assignments,
     events,
+    addresses,
     theme,
   }
 
@@ -140,6 +142,7 @@ export async function validateAndParseBackup(file: File): Promise<AppDataSnapsho
       : {}
 
   const events = Array.isArray(raw.events) ? raw.events : []
+  const addresses = Array.isArray(raw.addresses) ? raw.addresses : []
   const availabilities = raw.availabilities ?? []
 
   return {
@@ -150,6 +153,7 @@ export async function validateAndParseBackup(file: File): Promise<AppDataSnapsho
     availabilities: availabilities as AppDataSnapshot['availabilities'],
     assignments,
     events,
+    addresses,
   }
 }
 
@@ -183,6 +187,9 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
 
   const events = Array.isArray(data.events) ? data.events : []
   StorageService.saveEvents(events)
+
+  const addresses = Array.isArray(data.addresses) ? data.addresses : []
+  StorageService.saveAddresses(addresses)
 
   if (data.theme === 'dark' || data.theme === 'light') {
     localStorage.setItem('theme', data.theme)

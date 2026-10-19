@@ -308,5 +308,78 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     store.setEditMode(false)
     expect(useScheduleStore.getState().assignments['2026-10-28']).toEqual(['p1'])
   })
+
+  it('deve gerenciar endereços e propagar alterações/exclusões apenas para eventos futuros mantendo histórico dos passados', () => {
+    const store = useScheduleStore.getState()
+
+    // 1. Add Address
+    const address = store.addAddress({
+      name: 'Clínica Central',
+      street: 'Av. Paulista',
+      number: '1000',
+      neighborhood: 'Bela Vista',
+      city: 'São Paulo',
+    })
+    expect(address.id).toBeDefined()
+    expect(useScheduleStore.getState().addresses.some((a) => a.id === address.id)).toBe(true)
+
+    // 2. Add past event and future event associated with this address
+    store.addEvent({
+      date: '2020-01-10',
+      title: 'Atendimento Passado',
+      addressId: address.id,
+      address: 'Clínica Central - Av. Paulista, 1000 - Bela Vista - São Paulo/SP',
+    })
+
+    store.addEvent({
+      date: '2099-01-10',
+      title: 'Atendimento Futuro',
+      addressId: address.id,
+      address: 'Clínica Central - Av. Paulista, 1000 - Bela Vista - São Paulo/SP',
+    })
+
+    const initialEvents = useScheduleStore.getState().events
+    const pastEvInitial = initialEvents.find((e) => e.title === 'Atendimento Passado')!
+    const futureEvInitial = initialEvents.find((e) => e.title === 'Atendimento Futuro')!
+    expect(pastEvInitial.addressId).toBe(address.id)
+    expect(futureEvInitial.addressId).toBe(address.id)
+
+    // 3. Update Address: only future event should be updated
+    store.updateAddress(address.id, {
+      name: 'Clínica Central - Unidade 2',
+      street: 'Rua Augusta',
+      number: '500',
+    })
+
+    const eventsAfterUpdate = useScheduleStore.getState().events
+    const pastEvAfterUpdate = eventsAfterUpdate.find((e) => e.title === 'Atendimento Passado')!
+    const futureEvAfterUpdate = eventsAfterUpdate.find((e) => e.title === 'Atendimento Futuro')!
+
+    // Past event: untouched!
+    expect(pastEvAfterUpdate.address).toBe('Clínica Central - Av. Paulista, 1000 - Bela Vista - São Paulo/SP')
+    expect(pastEvAfterUpdate.addressId).toBe(address.id)
+
+    // Future event: updated to new address!
+    expect(futureEvAfterUpdate.address).toContain('Clínica Central - Unidade 2')
+    expect(futureEvAfterUpdate.address).toContain('Rua Augusta, 500')
+    expect(futureEvAfterUpdate.addressId).toBe(address.id)
+
+    // 4. Delete Address: only future event should have address cleared
+    store.deleteAddress(address.id)
+
+    expect(useScheduleStore.getState().addresses.some((a) => a.id === address.id)).toBe(false)
+
+    const eventsAfterDelete = useScheduleStore.getState().events
+    const pastEvAfterDelete = eventsAfterDelete.find((e) => e.title === 'Atendimento Passado')!
+    const futureEvAfterDelete = eventsAfterDelete.find((e) => e.title === 'Atendimento Futuro')!
+
+    // Past event: address and addressId still preserved as history
+    expect(pastEvAfterDelete.address).toBe('Clínica Central - Av. Paulista, 1000 - Bela Vista - São Paulo/SP')
+    expect(pastEvAfterDelete.addressId).toBe(address.id)
+
+    // Future event: address and addressId removed
+    expect(futureEvAfterDelete.address).toBeUndefined()
+    expect(futureEvAfterDelete.addressId).toBeUndefined()
+  })
 })
 

@@ -13,6 +13,7 @@ import {
   Upload,
   User as UserIcon,
   Users,
+  MapPin,
   X,
 } from 'lucide-react'
 import React, { use, useState } from 'react'
@@ -58,6 +59,13 @@ export function HoverSidebar() {
       path: '/pessoas',
       label: 'Gerenciar Pessoas',
       icon: Users,
+      end: false,
+    },
+    {
+      id: 'addresses',
+      path: '/enderecos',
+      label: 'Gerenciar Endereços',
+      icon: MapPin,
       end: false,
     },
     {

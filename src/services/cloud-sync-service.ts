@@ -7,9 +7,8 @@ import {
 
 import { auth, db } from './firebase'
 
-import type { MonthlyAvailability, CalendarEvent, Person } from '../types'
-import type {
-  DocumentData} from 'firebase/firestore'
+import type { MonthlyAvailability, CalendarEvent, Person, Address } from '../types'
+import type { DocumentData } from 'firebase/firestore'
 
 export const CLOUD_SYNC_STORAGE_KEY = 'scale_manager_cloud_sync_enabled'
 
@@ -126,7 +125,32 @@ export class CloudSyncService {
   }
 
   /**
-   * Consolidated on-demand pull for both monthly schedule and personnel.
+   * Pulls master registered addresses from Firestore on-demand.
+   */
+  static async fetchAddressesFromCloud(isAdmin?: boolean): Promise<Address[] | null> {
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
+    if (!authorized || !this.isSyncEnabled()) {
+      return null
+    }
+
+    try {
+      const docRef = doc(db, 'schedules', '_master_addresses')
+      const snapshot = await getDoc(docRef)
+
+      if (!snapshot.exists()) {
+        return null
+      }
+
+      const data = snapshot.data() as DocumentData
+      return (data.addresses as Address[]) || null
+    } catch (err) {
+      console.error('Failed to fetch addresses from Firestore:', err)
+      return null
+    }
+  }
+
+  /**
+   * Consolidated on-demand pull for monthly schedule, personnel and addresses.
    */
   static async pullAllFromCloud(
     month: string,
@@ -134,12 +158,14 @@ export class CloudSyncService {
   ): Promise<{
     monthData: MonthScheduleDoc | null;
     persons: Person[] | null;
+    addresses: Address[] | null;
   }> {
-    const [monthData, persons] = await Promise.all([
+    const [monthData, persons, addresses] = await Promise.all([
       this.fetchMonthFromCloud(month, isAdmin),
       this.fetchPeopleFromCloud(isAdmin),
+      this.fetchAddressesFromCloud(isAdmin),
     ])
-    return { monthData, persons }
+    return { monthData, persons, addresses }
   }
 
   /**
@@ -201,6 +227,32 @@ export class CloudSyncService {
       return true
     } catch (err) {
       console.error('Failed to sync people with Firestore:', err)
+      return false
+    }
+  }
+
+  /**
+   * Syncs master registered addresses to Firestore when saving if sync is active.
+   */
+  static async saveAddressesToCloud(addresses: Address[], isAdmin?: boolean): Promise<boolean> {
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
+    if (!authorized || !this.isSyncEnabled()) {
+      return false
+    }
+
+    try {
+      const docRef = doc(db, 'schedules', '_master_addresses')
+      await setDoc(
+        docRef,
+        {
+          addresses,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+      return true
+    } catch (err) {
+      console.error('Failed to sync addresses with Firestore:', err)
       return false
     }
   }

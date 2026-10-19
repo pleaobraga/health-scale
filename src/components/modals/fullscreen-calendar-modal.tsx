@@ -292,7 +292,7 @@ export function FullScreenCalendarModal() {
                   <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-36 text-slate-900 dark:text-slate-900 print:text-slate-900">Data</th>
                   <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-24 text-slate-900 dark:text-slate-900 print:text-slate-900">Horário</th>
                   <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-1/4 text-slate-900 dark:text-slate-900 print:text-slate-900">Evento</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 text-slate-900 dark:text-slate-900 print:text-slate-900">Descrição / Observações</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 text-slate-900 dark:text-slate-900 print:text-slate-900">Endereço</th>
                   <th className="py-2.5 px-3 w-48 text-slate-900 dark:text-slate-900 print:text-slate-900">Responsável do Serviço</th>
                 </tr>
               </thead>
@@ -302,6 +302,7 @@ export function FullScreenCalendarModal() {
                   const assignedIds = assignments[event.date] || []
                   const servicePersonId = event.personId || assignedIds[0]
                   const servicePerson = servicePersonId ? personMap.get(servicePersonId) : null
+                  const displayAddress = event.address || event.description
 
                   return (
                     <tr
@@ -322,8 +323,8 @@ export function FullScreenCalendarModal() {
                       <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 font-bold text-slate-900 dark:text-slate-900 print:text-slate-900">
                         {event.title}
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 text-slate-600 dark:text-slate-600 print:text-slate-600">
-                        {event.description || <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">-</span>}
+                      <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 text-slate-600 dark:text-slate-600 print:text-slate-600 whitespace-pre-line">
+                        {displayAddress || <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">-</span>}
                       </td>
                       <td className="py-2 px-3 text-slate-700 dark:text-slate-700 print:text-slate-700">
                         {servicePerson ? (

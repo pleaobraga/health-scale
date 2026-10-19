@@ -26,6 +26,25 @@ export const WithEvents: Story = {
         { id: 'p3', name: 'Enf. Mariana Lima', color: '#F59E0B', active: true },
       ],
       monthParticipants: { '2026-10': ['p1', 'p2', 'p3'] },
+      addresses: [
+        {
+          id: 'addr-1',
+          name: 'Residência Dona Maria',
+          street: 'Rua das Flores',
+          number: '123',
+          complement: 'Apto 45',
+          neighborhood: 'Jardins',
+          city: 'São Paulo',
+        },
+        {
+          id: 'addr-2',
+          name: 'Clínica de Cuidados Integrados Sul',
+          street: 'Av. Santo Amaro',
+          number: '2500',
+          neighborhood: 'Moema',
+          city: 'São Paulo',
+        },
+      ],
       assignments: {
         '2026-10-12': ['p1'],
       },
@@ -33,9 +52,9 @@ export const WithEvents: Story = {
         {
           id: 'ev-1',
           date: '2026-10-12',
-          title: 'Feriado Nacional - Plantão Especial',
+          title: 'Plantão Especial de Enfermagem',
           time: '07:00',
-          description: 'Protocolo de atendimento com equipe dobrada.',
+          address: 'Residência Dona Maria\nRua das Flores, 123\nApto 45 - Jardins - São Paulo',
           personId: 'p1',
         },
         {

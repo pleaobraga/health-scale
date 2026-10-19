@@ -12,6 +12,7 @@ import {
   formatDisplayDate,
   getConsecutiveDates,
   formatDateWithWeekday,
+  isEventInPast,
 } from './date-utils'
 
 
@@ -90,6 +91,27 @@ describe('dateUtils - Utilitários de manipulação de data', () => {
     const result = formatDateWithWeekday('2026-10-15')
     expect(result.formattedDate).toBe('15/10/2026')
     expect(result.weekday).toBe('Quinta-feira')
+  })
+
+  it('deve verificar corretamente se um evento está no passado usando isEventInPast', () => {
+    // Reference now: 2026-10-15 14:30
+    const mockNow = new Date('2026-10-15T14:30:00')
+
+    // Dates before reference date are past
+    expect(isEventInPast('2026-10-14', undefined, mockNow)).toBe(true)
+    expect(isEventInPast('2026-10-14', '18:00', mockNow)).toBe(true)
+
+    // Dates after reference date are not past
+    expect(isEventInPast('2026-10-16', undefined, mockNow)).toBe(false)
+    expect(isEventInPast('2026-10-16', '08:00', mockNow)).toBe(false)
+
+    // Same date, check time
+    expect(isEventInPast('2026-10-15', '14:00', mockNow)).toBe(true)
+    expect(isEventInPast('2026-10-15', '14:29', mockNow)).toBe(true)
+    expect(isEventInPast('2026-10-15', '14:30', mockNow)).toBe(false)
+    expect(isEventInPast('2026-10-15', '15:00', mockNow)).toBe(false)
+    // Same date, no time specified defaults to false (not in past)
+    expect(isEventInPast('2026-10-15', undefined, mockNow)).toBe(false)
   })
 })
 

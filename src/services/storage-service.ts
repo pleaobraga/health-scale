@@ -1,4 +1,4 @@
-import type { Person, MonthlyAvailability, CalendarEvent, GuestProfile, GuestDataset } from '../types'
+import type { Person, MonthlyAvailability, CalendarEvent, GuestProfile, GuestDataset, Address } from '../types'
 
 const STORAGE_KEYS = {
   PERSONS: 'scale_manager_persons_v1',
@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   ASSIGNMENTS: 'scale_manager_assignments_v1',
   EVENTS: 'scale_manager_events_v1',
   MONTH_PARTICIPANTS: 'scale_manager_month_participants_v1',
+  ADDRESSES: 'scale_manager_addresses_v1',
   GUEST_PROFILES: 'scale_manager_guest_profiles_v1',
   ACTIVE_GUEST_ID: 'scale_manager_active_guest_id_v1',
   GUEST_DATA_PREFIX: 'scale_manager_guest_data_v1_',
@@ -154,6 +155,33 @@ export class StorageService {
   }
 
   /**
+   * Load registered addresses (returns empty array if storage has no data)
+   */
+  static getAddresses(): Address[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.ADDRESSES)
+      if (!data) {
+        return []
+      }
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load addresses from localStorage:', err)
+      return []
+    }
+  }
+
+  static saveAddresses(addresses: Address[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(addresses))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save addresses to localStorage:', err)
+    }
+  }
+
+  /**
    * Reset all active storage keys
    */
   static resetToDefault(): void {
@@ -162,6 +190,7 @@ export class StorageService {
     localStorage.removeItem(STORAGE_KEYS.ASSIGNMENTS)
     localStorage.removeItem(STORAGE_KEYS.EVENTS)
     localStorage.removeItem(STORAGE_KEYS.MONTH_PARTICIPANTS)
+    localStorage.removeItem(STORAGE_KEYS.ADDRESSES)
   }
 
   /**
@@ -244,6 +273,7 @@ export class StorageService {
       assignments: StorageService.getAssignments(),
       events: StorageService.getEvents(),
       monthParticipants: StorageService.getMonthParticipants(),
+      addresses: StorageService.getAddresses(),
     }
   }
 
@@ -255,6 +285,7 @@ export class StorageService {
       StorageService.saveAssignments(dataset.assignments || {})
       StorageService.saveEvents(dataset.events || [])
       StorageService.saveMonthParticipants(dataset.monthParticipants || {})
+      StorageService.saveAddresses(dataset.addresses || [])
     } finally {
       isRestoringDataset = false
       StorageService.snapshotActiveGuest()

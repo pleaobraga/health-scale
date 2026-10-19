@@ -3,14 +3,15 @@ import { create } from 'zustand'
 import { CloudSyncService } from '../services/cloud-sync-service'
 import { PersonService } from '../services/person-service'
 import { StorageService } from '../services/storage-service'
-import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/date-utils'
+import { formatAddress } from '../utils/address-utils'
+import { getPreviousMonth, getNextMonth, getMonthDaysArray, isEventInPast } from '../utils/date-utils'
 import { validateSchedule } from '../utils/validate-schedule'
 
-import type { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types'
+import type { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab, Address } from '../types'
 
 interface ScheduleStore {
   // Navigation & UI state
-  currentView: NavigationTab; // 'calendar' | 'people'
+  currentView: NavigationTab; // 'calendar' | 'people' | 'addresses'
   setCurrentView: (view: NavigationTab) => void;
   currentMonth: string; // 'YYYY-MM'
   isEditMode: boolean;
@@ -25,6 +26,7 @@ interface ScheduleStore {
   assignments: Record<string, string[]>;
   savedAssignments: Record<string, string[]>;
   events: CalendarEvent[];
+  addresses: Address[];
 
   // Validation & Save state
   validationErrors: ValidationError[];
@@ -79,6 +81,11 @@ interface ScheduleStore {
   updateEvent: (eventId: string, event: Partial<Omit<CalendarEvent, 'id'>>) => void;
   deleteEvent: (eventId: string) => void;
 
+  // Address management
+  addAddress: (address: Omit<Address, 'id'>) => Address;
+  updateAddress: (id: string, address: Partial<Omit<Address, 'id'>>) => void;
+  deleteAddress: (id: string) => void;
+
 
   // Audit and Persistence
   validateCurrentSchedule: () => ValidationError[];
@@ -128,6 +135,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   assignments: StorageService.getAssignments(),
   savedAssignments: StorageService.getAssignments(),
   events: StorageService.getEvents(),
+  addresses: StorageService.getAddresses(),
 
   validationErrors: [],
   hasValidated: false,
@@ -592,6 +600,129 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
+  addAddress: (addressData) => {
+    const id = `addr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
+    const newAddress: Address = { id, ...addressData }
+    const updated = [...get().addresses, newAddress]
+    StorageService.saveAddresses(updated)
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveAddressesToCloud(updated).catch((err) => {
+        console.error('Failed to sync addresses to cloud:', err)
+      })
+    }
+    set({ addresses: updated })
+    return newAddress
+  },
+
+  updateAddress: (id, addressData) => {
+    const oldAddress = get().addresses.find((a) => a.id === id)
+    const updated = get().addresses.map((a) => (a.id === id ? { ...a, ...addressData } : a))
+    const newAddress = updated.find((a) => a.id === id)
+    StorageService.saveAddresses(updated)
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveAddressesToCloud(updated).catch((err) => {
+        console.error('Failed to sync addresses to cloud:', err)
+      })
+    }
+
+    // Cascade address update to FUTURE events that use this address.
+    // Past events remain unchanged to preserve history.
+    let hasEventChanges = false
+    const affectedMonths = new Set<string>()
+    const updatedEvents = get().events.map((ev) => {
+      const isMatch =
+        ev.addressId === id ||
+        (!ev.addressId &&
+          oldAddress &&
+          (ev.address === formatAddress(oldAddress) ||
+            (oldAddress.name && ev.address?.startsWith(oldAddress.name))))
+
+      if (isMatch) {
+        if (!isEventInPast(ev.date, ev.time)) {
+          hasEventChanges = true
+          affectedMonths.add(ev.date.substring(0, 7))
+          return {
+            ...ev,
+            addressId: id,
+            address: newAddress ? formatAddress(newAddress) : ev.address,
+          }
+        }
+      }
+      return ev
+    })
+
+    if (hasEventChanges) {
+      StorageService.saveEvents(updatedEvents)
+      if (CloudSyncService.isSyncEnabled()) {
+        affectedMonths.forEach((month) => {
+          CloudSyncService.saveMonthToCloud(month, {
+            assignments: get().assignments,
+            monthParticipants: get().monthParticipants,
+            availabilities: get().availabilities,
+            events: updatedEvents,
+          }).catch((err) => console.error('Failed to sync updated events to cloud:', err))
+        })
+      }
+      set({ addresses: updated, events: updatedEvents })
+    } else {
+      set({ addresses: updated })
+    }
+  },
+
+  deleteAddress: (id) => {
+    const targetAddress = get().addresses.find((a) => a.id === id)
+    const updated = get().addresses.filter((a) => a.id !== id)
+    StorageService.saveAddresses(updated)
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveAddressesToCloud(updated).catch((err) => {
+        console.error('Failed to sync addresses to cloud:', err)
+      })
+    }
+
+    // Cascade address deletion to FUTURE events that use this address.
+    // Past events remain unchanged to preserve history.
+    let hasEventChanges = false
+    const affectedMonths = new Set<string>()
+    const updatedEvents = get().events.map((ev) => {
+      const isMatch =
+        ev.addressId === id ||
+        (!ev.addressId &&
+          targetAddress &&
+          (ev.address === formatAddress(targetAddress) ||
+            (targetAddress.name && ev.address?.startsWith(targetAddress.name))))
+
+      if (isMatch) {
+        if (!isEventInPast(ev.date, ev.time)) {
+          hasEventChanges = true
+          affectedMonths.add(ev.date.substring(0, 7))
+          const { address: _a, addressId: _aid, ...rest } = ev
+          return {
+            ...rest,
+            address: undefined,
+            addressId: undefined,
+          }
+        }
+      }
+      return ev
+    })
+
+    if (hasEventChanges) {
+      StorageService.saveEvents(updatedEvents)
+      if (CloudSyncService.isSyncEnabled()) {
+        affectedMonths.forEach((month) => {
+          CloudSyncService.saveMonthToCloud(month, {
+            assignments: get().assignments,
+            monthParticipants: get().monthParticipants,
+            availabilities: get().availabilities,
+            events: updatedEvents,
+          }).catch((err) => console.error('Failed to sync updated events to cloud:', err))
+        })
+      }
+      set({ addresses: updated, events: updatedEvents })
+    } else {
+      set({ addresses: updated })
+    }
+  },
 
   validateCurrentSchedule: () => {
     const errors = validateSchedule({
@@ -612,6 +743,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveAssignments(get().assignments)
     StorageService.saveEvents(get().events)
     StorageService.saveMonthParticipants(get().monthParticipants)
+    StorageService.saveAddresses(get().addresses)
 
     // Commit draft into savedAssignments
     set({
@@ -669,9 +801,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
 
     try {
-      const { monthData, persons } = await CloudSyncService.pullAllFromCloud(targetMonth)
+      const { monthData, persons, addresses } = await CloudSyncService.pullAllFromCloud(targetMonth)
 
-      if (!monthData && !persons) {
+      if (!monthData && !persons && !addresses) {
         return {
           success: false,
           message: 'Nenhum dado encontrado na nuvem para sincronizar.',
@@ -681,6 +813,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (persons && persons.length > 0) {
         StorageService.savePersons(persons)
         set({ persons })
+      }
+
+      if (addresses && addresses.length > 0) {
+        StorageService.saveAddresses(addresses)
+        set({ addresses })
       }
 
       if (monthData) {
@@ -728,6 +865,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const availabilities = StorageService.getAvailabilities()
     const assignments = StorageService.getAssignments()
     const events = StorageService.getEvents()
+    const addresses = StorageService.getAddresses()
 
     set({
       persons,
@@ -736,6 +874,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       assignments,
       savedAssignments: { ...assignments },
       events,
+      addresses,
       validationErrors: [],
       hasValidated: false,
       hasUnsavedChanges: false,

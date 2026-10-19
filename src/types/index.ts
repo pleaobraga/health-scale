@@ -18,12 +18,24 @@ export interface DayAssignment {
   personIds?: string[]; // In draft/edit mode, can have multiple or empty
 }
 
+export interface Address {
+  id: string
+  name: string // Nome / Identificação do endereço (ex: Residência Principal, Clínica Sul)
+  street: string // Logradouro (Rua, Avenida, etc.)
+  number: string // Número
+  complement?: string // Complemento (Apto, Bloco, etc.)
+  neighborhood?: string // Bairro
+  city?: string // Cidade
+}
+
 export interface CalendarEvent {
   id: string
   date: string // 'YYYY-MM-DD'
   title: string
   time?: string // 'HH:mm'
   description?: string
+  address?: string // Endereço do evento (opcional, texto multi-linha)
+  addressId?: string // ID do endereço cadastrado (opcional)
   personId?: string // Cuidadora / Profissional associada ao evento
 }
 
@@ -40,7 +52,7 @@ export interface ValidationError {
 }
 
 export type MonthParticipants = Record<string, string[]>; // 'YYYY-MM' -> personId[]
-export type NavigationTab = 'calendar' | 'people' | 'import' | 'settings' | 'users';
+export type NavigationTab = 'calendar' | 'people' | 'import' | 'settings' | 'users' | 'addresses';
 
 export interface AppDataSnapshot {
   exportedAt: string; // ISO timestamp of export time
@@ -49,6 +61,7 @@ export interface AppDataSnapshot {
   availabilities: Record<string, unknown> | MonthlyAvailability[]; // Monthly availability mapping for each person
   assignments: Record<string, unknown>; // Schedule assignments and daily allocations
   events: Array<CalendarEvent | (CalendarEvent & { [key: string]: unknown })>;
+  addresses?: Address[];
   [key: string]: unknown; // Extensible for global settings, themes, or future properties
 }
 
@@ -65,5 +78,6 @@ export interface GuestDataset {
   assignments: Record<string, string[]>;
   events: CalendarEvent[];
   monthParticipants: Record<string, string[]>;
+  addresses?: Address[];
 }
 

@@ -141,4 +141,22 @@ export function formatDateWithWeekday(dateStr: string): { formattedDate: string;
   return { formattedDate, weekday }
 }
 
+/**
+ * Checks whether an event at a given date (and optional time) has already occurred in the past.
+ * Returns true if date/time is in the past, false if it is in the future.
+ */
+export function isEventInPast(dateStr: string, timeStr?: string, referenceNow = new Date()): boolean {
+  const todayStr = format(referenceNow, 'yyyy-MM-dd')
+
+  if (dateStr < todayStr) return true
+  if (dateStr > todayStr) return false
+
+  if (timeStr) {
+    const currentTimeStr = format(referenceNow, 'HH:mm')
+    return timeStr < currentTimeStr
+  }
+
+  return false
+}
+
 

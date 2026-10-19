@@ -49,7 +49,7 @@ describe('DayEventsModal', () => {
     expect(screen.getByRole('button', { name: /Excluir evento Plantão Noturno/i })).toBeInTheDocument()
   })
 
-  it('deve permitir adicionar um novo evento com horário e descrição', () => {
+  it('deve permitir adicionar um novo evento com horário e endereço na hora via opção + Novo endereço', () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [],
@@ -63,8 +63,16 @@ describe('DayEventsModal', () => {
     const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i)
     fireEvent.change(timeInput, { target: { value: '14:30' } })
 
-    const descInput = screen.getByPlaceholderText('Detalhes adicionais...')
-    fireEvent.change(descInput, { target: { value: 'Sala de reuniões 2' } })
+    // By default, manual address textarea is hidden
+    expect(screen.queryByPlaceholderText(/Digite o endereço completo na hora/i)).not.toBeInTheDocument()
+
+    // Select + Novo endereço
+    const addressSelect = screen.getByLabelText('Selecionar endereço do evento')
+    fireEvent.change(addressSelect, { target: { value: '__new__' } })
+
+    // Textarea now appears
+    const addressInput = screen.getByPlaceholderText(/Digite o endereço completo na hora/i)
+    fireEvent.change(addressInput, { target: { value: 'Rua das Flores, 123\nBloco B' } })
 
     const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
     fireEvent.click(submitBtn)
@@ -75,8 +83,47 @@ describe('DayEventsModal', () => {
       date: '2026-10-15',
       title: 'Reunião Geral',
       time: '14:30',
-      description: 'Sala de reuniões 2',
+      address: 'Rua das Flores, 123\nBloco B',
     })
+  })
+
+  it('deve permitir selecionar um endereço pré-cadastrado no dropdown de eventos', () => {
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      events: [],
+      addresses: [
+        {
+          id: 'addr-1',
+          name: 'Clínica Paulista',
+          street: 'Av Paulista',
+          number: '1000',
+          neighborhood: 'Bela Vista',
+          city: 'São Paulo',
+        },
+      ],
+    })
+
+    render(<DayEventsModal />)
+
+    const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
+    fireEvent.change(titleInput, { target: { value: 'Visita Domiciliar' } })
+
+    const addressSelect = screen.getByLabelText('Selecionar endereço do evento')
+    fireEvent.change(addressSelect, { target: { value: 'addr-1' } })
+
+    // Preview should appear with address details
+    expect(screen.getByTestId('selected-address-preview')).toBeInTheDocument()
+    expect(screen.getByText('Clínica Paulista')).toBeInTheDocument()
+
+    // Manual textarea should not be visible when registered address is selected
+    expect(screen.queryByPlaceholderText(/Digite o endereço completo na hora/i)).not.toBeInTheDocument()
+
+    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    fireEvent.click(submitBtn)
+
+    const storeEvents = useScheduleStore.getState().events
+    expect(storeEvents).toHaveLength(1)
+    expect(storeEvents[0].address).toBe('Clínica Paulista\nAv Paulista, 1000\nBela Vista - São Paulo')
   })
 
   it('deve preencher o formulário ao clicar no botão de editar e atualizar o evento com sucesso', () => {
@@ -88,7 +135,7 @@ describe('DayEventsModal', () => {
           date: '2026-10-15',
           title: 'Plantão Manhã',
           time: '07:00',
-          description: 'Troca de turno',
+          address: 'Rua Antiga, 50',
         },
       ],
     })
@@ -110,13 +157,13 @@ describe('DayEventsModal', () => {
     const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i)
     expect(timeInput).toHaveValue('07:00')
 
-    const descInput = screen.getByPlaceholderText('Detalhes adicionais...')
-    expect(descInput).toHaveValue('Troca de turno')
+    const addressInput = screen.getByPlaceholderText(/Digite o endereço completo na hora/i)
+    expect(addressInput).toHaveValue('Rua Antiga, 50')
 
-    // Modify title and time
+    // Modify title and time and address
     fireEvent.change(titleInput, { target: { value: 'Plantão Noturno Extra' } })
     fireEvent.change(timeInput, { target: { value: '22:00' } })
-    fireEvent.change(descInput, { target: { value: 'Equipe ampliada' } })
+    fireEvent.change(addressInput, { target: { value: 'Rua Nova, 100\nApto 4' } })
 
     const saveBtn = screen.getByRole('button', { name: /Salvar Alterações/i })
     fireEvent.click(saveBtn)
@@ -124,7 +171,7 @@ describe('DayEventsModal', () => {
     const storeEvents = useScheduleStore.getState().events
     expect(storeEvents[0].title).toBe('Plantão Noturno Extra')
     expect(storeEvents[0].time).toBe('22:00')
-    expect(storeEvents[0].description).toBe('Equipe ampliada')
+    expect(storeEvents[0].address).toBe('Rua Nova, 100\nApto 4')
 
     // Form should return to initial state for new event
     expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()

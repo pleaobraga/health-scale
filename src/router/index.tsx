@@ -9,6 +9,7 @@ import { RootLayout } from '../components/layout/root-layout'
 import { PeopleManagementView } from '../components/people-management/people-management-view'
 import { SettingsView } from '../components/settings/settings-view'
 import { AuthProvider } from '../context/auth-context'
+import { AddressManagementView } from '../pages/address-management-view'
 import { LoginPage } from '../pages/login-page'
 import { UserManagementView } from '../pages/user-management-view'
 
@@ -33,6 +34,8 @@ export function AppRoutes() {
           <Route path="calendario" element={<CalendarView />} />
           {/* Global People Management Route */}
           <Route path="pessoas" element={<PeopleManagementView />} />
+          {/* Address Management Route */}
+          <Route path="enderecos" element={<AddressManagementView />} />
           {/* Data Import Route */}
           <Route path="importar" element={<ImportView />} />
           {/* Extensible Route: General Settings */}
