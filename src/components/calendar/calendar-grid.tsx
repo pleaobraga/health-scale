@@ -156,7 +156,7 @@ export function CalendarGrid() {
               <CalendarDays className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               {formatMonthYear(currentMonth, i18n.language)}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400">
               {t('calendar:subtitle')}
             </p>
           </div>

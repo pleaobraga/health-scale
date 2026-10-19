@@ -57,14 +57,14 @@ describe('FullScreenCalendarModal', () => {
     expect(useScheduleStore.getState().isFullScreenModalOpen).toBe(false)
   })
 
-  it('renders print and excel export buttons and triggers print on click', () => {
+  it('renders print button and triggers print on click', () => {
     const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {})
     useScheduleStore.setState({ isFullScreenModalOpen: true })
     render(<FullScreenCalendarModal />)
 
     const printBtn = screen.getByTitle(/imprimir escala do mês/i)
     expect(printBtn).toBeInTheDocument()
-    expect(screen.getByTitle(/exportar para excel/i)).toBeInTheDocument()
+    expect(screen.queryByTitle(/exportar para excel/i)).not.toBeInTheDocument()
 
     fireEvent.click(printBtn)
     expect(printSpy).toHaveBeenCalledTimes(1)

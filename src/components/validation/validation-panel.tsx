@@ -79,7 +79,7 @@ export function ValidationPanel() {
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
               {t('calendar:validation.title')}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400">
               {t('calendar:validation.subtitle')}
             </p>
           </div>

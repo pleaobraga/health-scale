@@ -59,10 +59,11 @@ export function CandidatePicker({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         title={t('calendar:dayCell.addPersonTooltip')}
-        className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition"
+        aria-label={t('calendar:dayCell.addPerson')}
+        className="flex items-center gap-1 text-[11px] font-medium p-1 sm:px-2 sm:py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition"
       >
-        <Plus className="w-3 h-3 text-slate-600 dark:text-slate-400" />
-        <span>{t('calendar:dayCell.addPerson')}</span>
+        <Plus className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-slate-600 dark:text-slate-400" />
+        <span className="hidden sm:inline">{t('calendar:dayCell.addPerson')}</span>
       </button>
 
       {isOpen && (
