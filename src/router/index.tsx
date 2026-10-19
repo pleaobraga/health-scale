@@ -1,18 +1,18 @@
 import { Routes, Route, Navigate, MemoryRouter, HashRouter } from 'react-router-dom';
 
-import { AdminRoute } from '../components/Auth/AdminRoute';
-import { PrivateRoute } from '../components/Auth/PrivateRoute';
-import { CalendarView } from '../components/Calendar/CalendarView';
+import { AdminRoute } from '../components/auth/admin-route';
+import { PrivateRoute } from '../components/auth/private-route';
+import { CalendarView } from '../components/calendar/calendar-view';
 import { ErrorBoundary } from '../components/common/error-boundary';
-import { ImportView } from '../components/Import/ImportView';
-import { RootLayout } from '../components/Layout/RootLayout';
-import { PeopleManagementView } from '../components/PeopleManagement/PeopleManagementView';
-import { SettingsView } from '../components/Settings/SettingsView';
-import { AuthProvider } from '../context/AuthContext';
-import { LoginPage } from '../pages/LoginPage';
-import { UserManagementView } from '../pages/UserManagementView';
+import { ImportView } from '../components/import/import-view';
+import { RootLayout } from '../components/layout/root-layout';
+import { PeopleManagementView } from '../components/people-management/people-management-view';
+import { SettingsView } from '../components/settings/settings-view';
+import { AuthProvider } from '../context/auth-context';
+import { LoginPage } from '../pages/login-page';
+import { UserManagementView } from '../pages/user-management-view';
 
-import type { AuthContextType } from '../context/AuthContext';
+import type { AuthContextType } from '../context/auth-context';
 
 /**
  * Main application routes tree.

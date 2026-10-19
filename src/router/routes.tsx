@@ -5,4 +5,4 @@ export {
   TestAppRouter,
 } from './index';
 
-export { routeConfig, type RouteItemConfig } from './routeConfig';
+export { routeConfig, type RouteItemConfig } from './route-config';

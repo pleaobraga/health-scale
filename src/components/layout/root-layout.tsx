@@ -1,0 +1,79 @@
+import { useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+
+import { useCloudSync } from '../../hooks/use-cloud-sync';
+import { hasExistingLocalData } from '../../services/backup-service';
+import { useScheduleStore } from '../../store/use-schedule-store';
+import { ErrorBoundary } from '../common/error-boundary';
+import { DayEventsModal } from '../modals/day-events-modal';
+import { FullScreenCalendarModal } from '../modals/fullscreen-calendar-modal';
+import { UnsavedChangesModal } from '../modals/unsaved-changes-modal';
+import { HoverSidebar } from '../navigation/hover-sidebar';
+
+export function RootLayout() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const setCurrentView = useScheduleStore((state) => state.setCurrentView);
+
+  // Mount admin-conditional cloud sync
+  useCloudSync();
+
+  // Sync store's currentView with route changes
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/' || path === '/calendario') {
+      setCurrentView('calendar');
+    } else if (path.startsWith('/pessoas')) {
+      setCurrentView('people');
+    } else if (path.startsWith('/importar')) {
+      setCurrentView('import');
+    } else if (path.startsWith('/configuracoes')) {
+      setCurrentView('settings');
+    } else if (path.startsWith('/usuarios')) {
+      setCurrentView('users');
+    }
+  }, [location.pathname, setCurrentView]);
+
+  // Onboarding redirection check for empty storage on initial root route
+  useEffect(() => {
+    const isRootOrCalendar =
+      location.pathname === '/' || location.pathname === '/calendario';
+
+    if (isRootOrCalendar) {
+      let isMounted = true;
+      hasExistingLocalData().then((hasData) => {
+        if (isMounted && !hasData) {
+          navigate('/importar', { replace: true });
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [location.pathname, navigate]);
+
+  return (
+    <div
+      data-testid="root-layout"
+      className="min-h-screen lg:h-screen w-screen overflow-x-hidden lg:overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-colors pt-14 md:pt-0 md:pl-16"
+    >
+      {/* 1. Global Navigation: Hover Sidebar (Desktop fixed left / Mobile top header + fullscreen menu) */}
+      <HoverSidebar />
+
+      {/* 2. Main Content Area: Renders the active route through Outlet */}
+      <div className="flex-1 min-h-screen lg:h-full overflow-y-auto lg:overflow-hidden flex flex-col min-w-0 custom-scrollbar">
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
+      </div>
+
+      {/* 3. Global Modals */}
+      <DayEventsModal />
+      <FullScreenCalendarModal />
+      <UnsavedChangesModal />
+    </div>
+  );
+};
+
+export default RootLayout;
+

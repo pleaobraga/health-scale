@@ -2,8 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { TestAppRouter } from './index';
-import * as backupService from '../services/backupService';
-import { useScheduleStore } from '../store/useScheduleStore';
+import * as backupService from '../services/backup-service';
+import { useScheduleStore } from '../store/use-schedule-store';
 
 describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
   beforeEach(() => {

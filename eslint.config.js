@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   [
-    globalIgnores(['dist']),
+    globalIgnores(['dist', 'storybook-static']),
     {
       files: ['**/*.{ts,tsx}'],
       extends: [
