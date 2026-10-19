@@ -25,10 +25,11 @@
   - [Development Server](#development-server)
   - [Production Build](#production-build)
 - [Quality Assurance & Testing](#-quality-assurance--testing)
+  - [Available Scripts](#available-scripts)
   - [Unit & Integration Tests](#unit--integration-tests)
-  - [ESLint Flat Config & Formatting](#eslint-flat-config--formatting)
-  - [Storybook](#storybook)
-  - [Husky Pre-Push Pipeline](#husky-pre-push-pipeline)
+  - [ESLint Flat Config & Code Quality](#eslint-flat-config--code-quality)
+  - [Git Hooks & Automated Pre-Commit (Husky & lint-staged)](#git-hooks--automated-pre-commit-husky--lint-staged)
+  - [Storybook Component Documentation](#storybook-component-documentation)
 - [CI/CD & GitHub Actions](#-cicd--github-actions)
 - [License](#-license)
 
@@ -80,10 +81,15 @@ Export the active month schedule with one click into a formatted spreadsheet con
 - **Onboarding Redirection**: If first opening the app with no local data, new users are automatically guided to import existing data or start fresh.
 - **Admin Cloud Recovery**: Administrators can pull data saved on Firestore directly from the Import screen.
 
-### 🌓 6. Ergonomics & Responsive UI
-- **Dark & Light Mode**: Fluid theme switching with persistent user preference.
+### 🌓 6. Ergonomics, Theme & Print System
+- **Dark & Light Mode**: Fluid theme switching with persistent user preference and accessible contrast ratios.
+- **Dark Theme Print Support**: Intelligent CSS media queries (`@media print`) ensure that schedules and event tables print with high-contrast, paper-optimized light backgrounds even when using dark theme.
 - **Hover Sidebar (Desktop)**: Space-saving retractable drawer that smoothly expands on hover.
 - **Mobile Friendly**: Dedicated top navigation bar and full-screen drawer menu for smartphones and tablets.
+
+### 🛡️ 7. Fault Isolation & Error Boundaries
+- **Component & Route Isolation**: Implements React 19 `ErrorBoundary` wrappers around main application views and route outlets.
+- **Graceful Error Recovery**: Traps runtime exceptions to prevent full application crashes, providing users with actionable error messages and one-click reload/retry options.
 
 ---
 
@@ -213,9 +219,47 @@ graph TD
 | **Routing** | [React Router 7](https://reactrouter.com/) | Declarative client-side Hash routing (`createHashRouter`) |
 | **Icons** | [Lucide React](https://lucide.dev/) | Lightweight, customizable SVG icons |
 | **Spreadsheets** | [SheetJS (xlsx)](https://sheetjs.com/) | Client-side Excel workbook and sheet generation |
-| **Testing** | [Vitest 5](https://vitest.dev/) + Testing Library | 27 test suites with 178 unit and integration tests |
-| **Linter** | [ESLint 10](https://eslint.org/) | Flat config with `eslint-plugin-import-x` and Storybook support |
+| **Testing** | [Vitest 5](https://vitest.dev/) + Testing Library | 29 test suites with 194 unit and integration tests |
+| **Linter & Hooks** | [ESLint 10](https://eslint.org/) + [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) | Flat config, semicolon-free formatting, named exports, and pre-commit auto-fix |
+| **Documentation** | [Storybook 10](https://storybook.js.org/) | Isolated stories for every UI component and modal |
 | **CI/CD** | [GitHub Actions](https://github.com/features/actions) | Automatic test validation and GitHub Pages deployment |
+
+---
+
+## 📁 Project Structure
+
+The project strictly follows a modular, feature-based **kebab-case** naming standard for all directories and files:
+
+```
+src/
+├── app.tsx                         # Root component with ErrorBoundary & context providers
+├── main.tsx                        # Vite application bootstrap & DOM mounting
+├── index.css                       # Global styles & Tailwind CSS directives
+├── vite-env.d.ts                   # Vite environment definitions
+├── components/                     # Reusable & domain-specific UI components
+│   ├── auth/                       # Route guards (admin-route, private-route)
+│   ├── calendar/                   # Monthly calendar grid, header, cells, candidate picker
+│   ├── common/                     # Common components (error-boundary, etc.)
+│   ├── import/                     # Import view & overwrite confirmation modals
+│   ├── layout/                     # RootLayout and view wrappers
+│   ├── modals/                     # Fullscreen calendar, day events, unsaved changes modals
+│   ├── navigation/                 # HoverSidebar, top navigation bar
+│   ├── people-management/          # Staff registry, deactivation & deletion modals
+│   ├── settings/                   # System settings & cloud sync controls
+│   ├── sidebar/                    # Monthly participants, availability mini-calendar
+│   ├── users/                      # User administration & role management modals
+│   └── validation/                 # Compliance audit panel
+├── constants/                      # Application constants (tailwind-colors, etc.)
+├── context/                        # React Context definitions (auth-context, auth-context-base)
+├── hooks/                          # Custom React hooks (use-cloud-sync, etc.)
+├── pages/                          # Top-level route pages (login-page, user-management-view)
+├── router/                         # HashRouter configuration & route definitions
+├── services/                       # Core services (backup, cloud-sync, firebase, person, storage)
+├── store/                          # Zustand global store (use-schedule-store)
+├── test/                           # Vitest setup & mocks
+├── types/                          # Domain TypeScript types & interfaces
+└── utils/                          # Pure utilities (validate-schedule, export-to-excel, date-utils, auth-errors)
+```
 
 ---
 
@@ -279,25 +323,50 @@ pnpm typecheck
 # Lint all TypeScript and React files with ESLint
 pnpm lint
 
+# Automatically fix linting and formatting issues
+pnpm lint:fix
+
 # Run all unit and integration tests in headless mode
 pnpm test:run
 
+# Run tests in interactive watch mode
+pnpm test
+
 # Run full validation pipeline (typecheck + lint + test:run)
 pnpm validate
+
+# Launch Storybook development workshop
+pnpm storybook
+
+# Build static Storybook documentation
+pnpm build-storybook
 ```
 
 ### Unit & Integration Tests
 The project features a comprehensive test suite covering utilities, services, stores, route guards, and React components using **Vitest** and **React Testing Library**:
 ```bash
-pnpm test
+pnpm test:run
 ```
-*Current test metrics: 27 test files, 178 tests passing (100% pass rate).*
+*Current test metrics: **29 test files, 194 tests passing** (100% pass rate).*
 
-### ESLint Flat Config & Formatting
-Configured in `eslint.config.js` using ESLint Flat Config:
-- Automatic import ordering and grouping (`import/order`).
-- Enforced TypeScript type imports (`@typescript-eslint/consistent-type-imports`).
-- Storybook component rules (`eslint-plugin-storybook`).
+### ESLint Flat Config & Code Quality
+Configured in `eslint.config.js` using the modern ESLint Flat Config format:
+- **Semicolon-Free Syntax**: Standardizes modern, clean JavaScript syntax (`semi: ['error', 'never']`).
+- **Mandatory Named Exports**: Disallows `export default` in application source files (`import/no-default-export: 'error'`), enforcing consistent naming across imports and refactoring safety (with explicit overrides for Storybook stories and configuration files).
+- **Import Ordering & Grouping**: Deterministic organization of external, internal, and sibling modules (`import/order`).
+- **Consistent Type Imports**: Enforces `import type` for type-only imports (`@typescript-eslint/consistent-type-imports`).
+- **Storybook Linting**: Dedicated validation for component stories (`eslint-plugin-storybook`).
+
+### Git Hooks & Automated Pre-Commit (Husky & lint-staged)
+The repository enforces code quality automatically via Git hooks managed by **Husky**:
+- **Pre-Commit Hook (`.husky/pre-commit`)**: Triggers `pnpm lint-staged` on every commit, automatically running `eslint --fix` solely on staged `.{ts,tsx,js,jsx}` files before allowing the commit to proceed.
+- **Pre-Push Hook (`.husky/pre-push`)**: Executes the complete quality validation pipeline (`pnpm typecheck`, `pnpm lint`, and `pnpm test:run`) before any push to remote branches, preventing broken builds or regressions.
+
+### Storybook Component Documentation
+Component development and UI states are documented in isolation using **Storybook 10**:
+- Comprehensive story coverage for all modals (Day Events, Unsaved Changes, Confirm Overwrite, Availability, Fullscreen Calendar).
+- Interactive parameter and argTypes exploration for calendar cells, cards, and navigation bars.
+- Test stories verify visual states under both light and dark themes.
 
 ---
 

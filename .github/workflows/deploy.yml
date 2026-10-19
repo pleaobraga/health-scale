@@ -6,13 +6,11 @@ on:
       - main
   workflow_dispatch:
 
-# Minimum permissions required for GitHub Pages deployment using the native GITHUB_TOKEN
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Cancel in-progress runs when new commits are pushed
 concurrency:
   group: 'pages'
   cancel-in-progress: true
@@ -35,13 +33,13 @@ jobs:
       - name: 2. Setup do pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 12.14.0
+          version: 10.4.1
           run_install: false
 
       - name: 3. Setup do Node.js com cache do pnpm
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
           cache: 'pnpm'
 
       - name: 4. Instalação estrita de dependências
@@ -58,13 +56,6 @@ jobs:
 
       - name: 8. Build do Projeto
         run: pnpm build
-        env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
       - name: 9. Configuração do GitHub Pages
         uses: actions/configure-pages@v5
@@ -85,4 +76,3 @@ jobs:
       - name: 11. Publicação final no Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
