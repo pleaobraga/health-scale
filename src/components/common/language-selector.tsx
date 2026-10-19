@@ -97,7 +97,7 @@ export function LanguageSelector({
   // Position alignment styling for dropdown menu
   const menuPlacementClass =
     align === 'top'
-      ? 'bottom-full mb-2'
+      ? 'left-0 bottom-full mb-2'
       : align === 'right'
         ? 'right-0 top-full mt-2'
         : 'left-0 top-full mt-2'
@@ -119,7 +119,7 @@ export function LanguageSelector({
           aria-haspopup="listbox"
           className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
         >
-          <CurrentFlag className="w-5 h-3.5" />
+          <CurrentFlag className="w-5 h-5" />
         </button>
       ) : variant === 'sidebar' ? (
         <button
@@ -129,10 +129,10 @@ export function LanguageSelector({
           aria-label={`Idioma atual: ${currentOption.label}`}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
-          className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
         >
           <div className="w-5 h-5 flex items-center justify-center shrink-0">
-            <CurrentFlag className="w-5 h-3.5" />
+            <CurrentFlag className="w-5 h-5" />
           </div>
           <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden flex items-center justify-between flex-1 min-w-0">
             <span className="truncate">{currentOption.label}</span>
@@ -168,7 +168,9 @@ export function LanguageSelector({
       {isOpen && (
         <div
           role="listbox"
-          aria-label={t('languages.select', { defaultValue: 'Opções de idioma' })}
+          aria-label={t('languages.select', {
+            defaultValue: 'Opções de idioma',
+          })}
           className={`absolute ${menuPlacementClass} z-50 min-w-[200px] w-full max-w-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150`}
         >
           <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-1">
