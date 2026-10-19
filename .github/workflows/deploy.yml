@@ -33,13 +33,13 @@ jobs:
       - name: 2. Setup do pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.4.1
+          version: 12.14.0
           run_install: false
 
       - name: 3. Setup do Node.js com cache do pnpm
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: 'pnpm'
 
       - name: 4. Instalação estrita de dependências
