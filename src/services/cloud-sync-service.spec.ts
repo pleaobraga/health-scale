@@ -187,4 +187,36 @@ describe('CloudSyncService - On-Demand Refresh and Explicit Save', () => {
     )
     expect(success).toBe(true)
   })
+
+  it('deve realizar pullAllFromCloud com sucesso mesmo se o toggle de sync estiver DESLIGADO', async () => {
+    CloudSyncService.setSyncEnabled(false)
+
+    const result = await CloudSyncService.pullAllFromCloud('2026-10', true)
+
+    expect(firestoreModule.getDoc).toHaveBeenCalled()
+    expect(result.monthData).toBeDefined()
+    expect(result.monthData?.month).toBe('2026-10')
+    // Verifica que o toggle continua desligado
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+  })
+
+  it('deve executar pushAllToCloud salvando dados locais no Firestore sem alterar nem exigir o toggle de sync', async () => {
+    CloudSyncService.setSyncEnabled(false)
+
+    const success = await CloudSyncService.pushAllToCloud(
+      '2026-10',
+      {
+        monthData: { assignments: { '2026-10-01': ['p1'] } },
+        persons: [{ id: 'p1', name: 'Dr. Teste', color: '#6366f1', active: true }],
+        addresses: [{ id: 'addr-1', name: 'Clínica', street: 'Rua 1', number: '10' }],
+      },
+      true,
+      true,
+    )
+
+    expect(success).toBe(true)
+    expect(firestoreModule.setDoc).toHaveBeenCalledTimes(3)
+    // O toggle de sync não pode ter sido alterado
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+  })
 })

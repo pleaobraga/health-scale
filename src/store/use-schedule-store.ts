@@ -90,7 +90,8 @@ interface ScheduleStore {
   // Audit and Persistence
   validateCurrentSchedule: () => ValidationError[];
   saveSchedule: () => Promise<void>;
-  pullCloudData: (month?: string) => Promise<{ success: boolean; message: string }>;
+  pullCloudData: (month?: string, isAdmin?: boolean) => Promise<{ success: boolean; message: string }>;
+  forcePushCloudData: (isAdmin?: boolean) => Promise<{ success: boolean; message: string }>;
   dismissValidation: () => void;
   reloadFromStorage: () => void;
 
@@ -796,17 +797,15 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }, 5000)
   },
 
-  pullCloudData: async (month?: string) => {
+  pullCloudData: async (month?: string, isAdmin?: boolean) => {
     const targetMonth = month || get().currentMonth
-    if (!CloudSyncService.isSyncEnabled()) {
-      return {
-        success: false,
-        message: 'A sincronização na nuvem precisa estar ativada.',
-      }
-    }
 
     try {
-      const { monthData, persons, addresses } = await CloudSyncService.pullAllFromCloud(targetMonth)
+      const { monthData, persons, addresses } = await CloudSyncService.pullAllFromCloud(
+        targetMonth,
+        isAdmin,
+        true,
+      )
 
       if (!monthData && !persons && !addresses) {
         return {
@@ -856,6 +855,42 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       return {
         success: false,
         message: 'Erro ao tentar buscar dados na nuvem.',
+      }
+    }
+  },
+
+  forcePushCloudData: async (isAdmin?: boolean) => {
+    set({ isSaving: true })
+    try {
+      const success = await CloudSyncService.pushAllToCloud(
+        get().currentMonth,
+        {
+          monthData: {
+            assignments: get().assignments,
+            monthParticipants: get().monthParticipants,
+            availabilities: get().availabilities,
+            events: get().events,
+          },
+          persons: get().persons,
+          addresses: get().addresses,
+        },
+        isAdmin,
+        true,
+      )
+
+      set({ isSaving: false })
+      return {
+        success,
+        message: success
+          ? 'Dados locais forçados para a nuvem com sucesso!'
+          : 'Falha ao forçar envio de dados para a nuvem. Verifique permissões.',
+      }
+    } catch (err) {
+      console.error('Failed to force push data to cloud:', err)
+      set({ isSaving: false })
+      return {
+        success: false,
+        message: 'Erro inesperado ao forçar envio de dados para a nuvem.',
       }
     }
   },

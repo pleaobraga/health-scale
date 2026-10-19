@@ -23,7 +23,6 @@ import {
   restoreAppData,
   hasExistingLocalData,
 } from '../../services/backup-service'
-import { CloudSyncService } from '../../services/cloud-sync-service'
 import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
@@ -56,11 +55,6 @@ export function ImportView() {
     try {
       setIsPullingCloud(true)
       setCloudFeedback(null)
-
-      // Auto-enable sync if not already enabled
-      if (!CloudSyncService.isSyncEnabled()) {
-        CloudSyncService.setSyncEnabled(true)
-      }
 
       const result = await pullCloudData()
       if (result.success) {

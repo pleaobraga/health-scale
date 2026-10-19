@@ -14,7 +14,6 @@ import {
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
-import { CloudSyncService } from '../services/cloud-sync-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 import { formatAddressOneLine } from '../utils/address-utils'
 import { copyToClipboard } from '../utils/clipboard-utils'
@@ -462,19 +461,17 @@ export function AddressManagementView() {
         </div>
 
         <div className="flex items-center gap-2">
-          {CloudSyncService.isSyncEnabled() && (
-            <button
-              type="button"
-              onClick={handlePullCloud}
-              disabled={isPulling}
-              title="Buscar dados atualizados da nuvem (Firestore)"
-              aria-label="Puxar dados da nuvem"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 shadow-xs transition disabled:opacity-50 shrink-0"
-            >
-              <RefreshCw className={`w-4 h-4 ${isPulling ? 'animate-spin' : ''}`} />
-              <span>{isPulling ? 'Buscando...' : 'Puxar da Nuvem'}</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handlePullCloud}
+            disabled={isPulling}
+            title="Buscar dados atualizados da nuvem (Firestore)"
+            aria-label="Puxar dados da nuvem"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 shadow-xs transition disabled:opacity-50 shrink-0"
+          >
+            <RefreshCw className={`w-4 h-4 ${isPulling ? 'animate-spin' : ''}`} />
+            <span>{isPulling ? 'Buscando...' : 'Puxar da Nuvem'}</span>
+          </button>
 
           <button
             type="button"

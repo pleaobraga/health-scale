@@ -65,14 +65,16 @@ export class CloudSyncService {
 
   /**
    * Pulls the active month document from Firestore on-demand.
-   * If sync is disabled or user is not admin, does NOT perform any network calls.
+   * If ignoreSyncEnabled is false (default for background sync) and sync is disabled,
+   * does NOT perform network calls.
    */
   static async fetchMonthFromCloud(
     month: string,
     isAdmin?: boolean,
+    ignoreSyncEnabled = false,
   ): Promise<MonthScheduleDoc | null> {
     const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
-    if (!authorized || !this.isSyncEnabled()) {
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
       return null
     }
 
@@ -102,9 +104,12 @@ export class CloudSyncService {
   /**
    * Pulls master personnel list from Firestore on-demand.
    */
-  static async fetchPeopleFromCloud(isAdmin?: boolean): Promise<Person[] | null> {
+  static async fetchPeopleFromCloud(
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<Person[] | null> {
     const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
-    if (!authorized || !this.isSyncEnabled()) {
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
       return null
     }
 
@@ -127,9 +132,12 @@ export class CloudSyncService {
   /**
    * Pulls master registered addresses from Firestore on-demand.
    */
-  static async fetchAddressesFromCloud(isAdmin?: boolean): Promise<Address[] | null> {
+  static async fetchAddressesFromCloud(
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<Address[] | null> {
     const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
-    if (!authorized || !this.isSyncEnabled()) {
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
       return null
     }
 
@@ -151,26 +159,28 @@ export class CloudSyncService {
 
   /**
    * Consolidated on-demand pull for monthly schedule, personnel and addresses.
+   * By default, ignores the local sync toggle for on-demand pull requests.
    */
   static async pullAllFromCloud(
     month: string,
     isAdmin?: boolean,
+    ignoreSyncEnabled = true,
   ): Promise<{
     monthData: MonthScheduleDoc | null;
     persons: Person[] | null;
     addresses: Address[] | null;
   }> {
     const [monthData, persons, addresses] = await Promise.all([
-      this.fetchMonthFromCloud(month, isAdmin),
-      this.fetchPeopleFromCloud(isAdmin),
-      this.fetchAddressesFromCloud(isAdmin),
+      this.fetchMonthFromCloud(month, isAdmin, ignoreSyncEnabled),
+      this.fetchPeopleFromCloud(isAdmin, ignoreSyncEnabled),
+      this.fetchAddressesFromCloud(isAdmin, ignoreSyncEnabled),
     ])
     return { monthData, persons, addresses }
   }
 
   /**
    * Explicitly pushes the month schedule to Firestore when the user saves changes.
-   * Only executes if the user is admin and the sync toggle is enabled.
+   * If ignoreSyncEnabled is true, bypasses the sync toggle check.
    */
   static async saveMonthToCloud(
     month: string,
@@ -181,9 +191,10 @@ export class CloudSyncService {
       events?: CalendarEvent[];
     },
     isAdmin?: boolean,
+    ignoreSyncEnabled = false,
   ): Promise<boolean> {
     const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
-    if (!authorized || !this.isSyncEnabled()) {
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
       return false
     }
 
@@ -209,9 +220,13 @@ export class CloudSyncService {
   /**
    * Syncs master personnel to Firestore when saving if sync is active.
    */
-  static async savePeopleToCloud(persons: Person[], isAdmin?: boolean): Promise<boolean> {
+  static async savePeopleToCloud(
+    persons: Person[],
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<boolean> {
     const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
-    if (!authorized || !this.isSyncEnabled()) {
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
       return false
     }
 
@@ -236,9 +251,13 @@ export class CloudSyncService {
   /**
    * Syncs master registered addresses to Firestore when saving if sync is active.
    */
-  static async saveAddressesToCloud(addresses: Address[], isAdmin?: boolean): Promise<boolean> {
+  static async saveAddressesToCloud(
+    addresses: Address[],
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<boolean> {
     const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
-    if (!authorized || !this.isSyncEnabled()) {
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
       return false
     }
 
@@ -258,5 +277,32 @@ export class CloudSyncService {
       console.error('Failed to sync addresses with Firestore:', err)
       return false
     }
+  }
+
+  /**
+   * Directly pushes local schedule, personnel and addresses to Firestore,
+   * without requiring or altering the local sync toggle.
+   */
+  static async pushAllToCloud(
+    month: string,
+    data: {
+      monthData: {
+        assignments?: Record<string, string[]>;
+        monthParticipants?: Record<string, string[]>;
+        availabilities?: MonthlyAvailability[];
+        events?: CalendarEvent[];
+      };
+      persons: Person[];
+      addresses: Address[];
+    },
+    isAdmin?: boolean,
+    ignoreSyncEnabled = true,
+  ): Promise<boolean> {
+    const [monthSaved, peopleSaved, addressesSaved] = await Promise.all([
+      this.saveMonthToCloud(month, data.monthData, isAdmin, ignoreSyncEnabled),
+      this.savePeopleToCloud(data.persons, isAdmin, ignoreSyncEnabled),
+      this.saveAddressesToCloud(data.addresses, isAdmin, ignoreSyncEnabled),
+    ])
+    return monthSaved && peopleSaved && addressesSaved
   }
 }

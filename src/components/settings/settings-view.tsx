@@ -63,12 +63,6 @@ export function SettingsView() {
       setIsPulling(true)
       setPullFeedback(null)
 
-      // Auto-enable sync toggle on deliberate pull action if previously disabled
-      if (!syncEnabled) {
-        setSyncEnabled(true)
-        CloudSyncService.setSyncEnabled(true)
-      }
-
       const result = await pullCloudData()
       setPullFeedback({
         type: result.success ? 'success' : 'error',

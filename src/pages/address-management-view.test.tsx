@@ -193,8 +193,8 @@ describe('AddressManagementView', () => {
     expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
 
-  it('deve exibir botão Puxar da Nuvem quando sync ativado e disparar pullCloudData', async () => {
-    localStorage.setItem('scale_manager_cloud_sync_enabled', 'true')
+  it('deve exibir botão Puxar da Nuvem mesmo sem sincronização ativada e disparar pullCloudData', async () => {
+    localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
     const pullCloudDataMock = vi.fn().mockResolvedValue({
       success: true,
       message: 'Dados locais atualizados a partir da nuvem com sucesso!',

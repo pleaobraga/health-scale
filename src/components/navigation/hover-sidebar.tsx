@@ -2,7 +2,9 @@ import {
   CalendarDays,
   Check,
   Cloud,
+  CloudDownload,
   CloudOff,
+  CloudUpload,
   Download,
   LogOut,
   Menu,
@@ -26,11 +28,25 @@ import { useScheduleStore } from '../../store/use-schedule-store'
 
 import type { NavigationTab } from '../../types'
 
-export function HoverSidebar() {
-  const { currentView, setCurrentView, isDarkMode, toggleDarkMode } =
-    useScheduleStore()
+export interface HoverSidebarProps {
+  isProdOverride?: boolean;
+}
+
+export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
+  const {
+    currentView,
+    setCurrentView,
+    isDarkMode,
+    toggleDarkMode,
+    pullCloudData,
+    forcePushCloudData,
+  } = useScheduleStore()
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
+  const [isPullingCloud, setIsPullingCloud] = useState(false)
+  const [pullSuccess, setPullSuccess] = useState(false)
+  const [isForcingCloud, setIsForcingCloud] = useState(false)
+  const [forceSuccess, setForceSuccess] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const inRouter = useInRouterContext()
 
@@ -39,6 +55,9 @@ export function HoverSidebar() {
   const isAdmin = auth?.isAdmin ?? false
   const isGuest = auth?.isGuest ?? false
   const isSyncEnabled = CloudSyncService.isSyncEnabled()
+
+  const isProd = isProdOverride !== undefined ? isProdOverride : import.meta.env.PROD
+  const showForceCloud = isProd && isAdmin
 
   const navItems: {
     id: NavigationTab;
@@ -104,6 +123,36 @@ export function HoverSidebar() {
       console.error('Erro ao exportar backup:', err)
     } finally {
       setIsExporting(false)
+    }
+  }
+
+  const handlePullCloud = async () => {
+    try {
+      setIsPullingCloud(true)
+      const res = await pullCloudData(undefined, isAdmin)
+      if (res.success) {
+        setPullSuccess(true)
+        setTimeout(() => setPullSuccess(false), 2500)
+      }
+    } catch (err) {
+      console.error('Erro ao puxar dados da nuvem:', err)
+    } finally {
+      setIsPullingCloud(false)
+    }
+  }
+
+  const handleForceCloud = async () => {
+    try {
+      setIsForcingCloud(true)
+      const res = await forcePushCloudData(isAdmin)
+      if (res.success) {
+        setForceSuccess(true)
+        setTimeout(() => setForceSuccess(false), 2500)
+      }
+    } catch (err) {
+      console.error('Erro ao forçar dados na nuvem:', err)
+    } finally {
+      setIsForcingCloud(false)
     }
   }
 
@@ -302,6 +351,58 @@ export function HoverSidebar() {
 
           {/* Footer Actions in Full Screen */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+            {/* Action: Puxar Dados da Nuvem */}
+            <button
+              type="button"
+              onClick={handlePullCloud}
+              disabled={isPullingCloud}
+              title="Puxar Dados da Nuvem"
+              aria-label="Puxar Dados da Nuvem"
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 text-sm font-bold shadow-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition disabled:opacity-50"
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+                {pullSuccess ? (
+                  <Check className="w-5 h-5 text-emerald-500" />
+                ) : (
+                  <CloudDownload className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`} />
+                )}
+              </div>
+              <span>
+                {pullSuccess
+                  ? 'Dados atualizados da nuvem!'
+                  : isPullingCloud
+                    ? 'Puxando da nuvem...'
+                    : 'Puxar Dados da Nuvem'}
+              </span>
+            </button>
+
+            {/* Action: Forçar Dados na Nuvem (Apenas Prod + Admin) */}
+            {showForceCloud && (
+              <button
+                type="button"
+                onClick={handleForceCloud}
+                disabled={isForcingCloud}
+                title="Forçar Dados Locais na Nuvem"
+                aria-label="Forçar Dados na Nuvem"
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 text-sm font-bold shadow-xs hover:bg-amber-100 dark:hover:bg-amber-900/50 transition disabled:opacity-50"
+              >
+                <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
+                  {forceSuccess ? (
+                    <Check className="w-5 h-5 text-emerald-500" />
+                  ) : (
+                    <CloudUpload className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`} />
+                  )}
+                </div>
+                <span>
+                  {forceSuccess
+                    ? 'Forçado com sucesso!'
+                    : isForcingCloud
+                      ? 'Forçando na nuvem...'
+                      : 'Forçar Dados na Nuvem'}
+                </span>
+              </button>
+            )}
+
             {/* Immediate Action: Exportar Dados */}
             <button
               type="button"
@@ -495,6 +596,50 @@ export function HoverSidebar() {
             </div>
           )}
 
+
+          {/* Action: Puxar da Nuvem */}
+          <button
+            type="button"
+            onClick={handlePullCloud}
+            disabled={isPullingCloud}
+            title="Puxar Dados da Nuvem"
+            aria-label="Puxar Dados da Nuvem"
+            className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-indigo-200/80 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/30 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
+          >
+            <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
+              {pullSuccess ? (
+                <Check className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <CloudDownload className={`w-4 h-4 ${isPullingCloud ? 'animate-bounce' : ''}`} />
+              )}
+            </div>
+            <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+              {pullSuccess ? 'Atualizado!' : isPullingCloud ? 'Puxando...' : 'Puxar da Nuvem'}
+            </span>
+          </button>
+
+          {/* Action: Forçar Dados na Nuvem (Apenas Prod + Admin) */}
+          {showForceCloud && (
+            <button
+              type="button"
+              onClick={handleForceCloud}
+              disabled={isForcingCloud}
+              title="Forçar Dados Locais na Nuvem"
+              aria-label="Forçar Dados na Nuvem"
+              className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
+            >
+              <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
+                {forceSuccess ? (
+                  <Check className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <CloudUpload className={`w-4 h-4 ${isForcingCloud ? 'animate-bounce' : ''}`} />
+                )}
+              </div>
+              <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
+                {forceSuccess ? 'Forçado!' : isForcingCloud ? 'Forçando...' : 'Forçar na Nuvem'}
+              </span>
+            </button>
+          )}
 
           {/* Immediate Action: Exportar Dados */}
           <button

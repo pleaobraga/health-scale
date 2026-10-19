@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useScheduleStore } from './use-schedule-store'
+import { CloudSyncService } from '../services/cloud-sync-service'
 
 describe('useScheduleStore - Gerenciamento de Estado Global', () => {
   beforeEach(() => {
@@ -380,6 +381,41 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     // Future event: address and addressId removed
     expect(futureEvAfterDelete.address).toBeUndefined()
     expect(futureEvAfterDelete.addressId).toBeUndefined()
+  })
+
+  it('deve executar pullCloudData com sucesso mesmo sem toggle de sincronização ativado', async () => {
+    localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
+    vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
+      monthData: { month: '2026-10', assignments: { '2026-10-01': ['p1'] } },
+      persons: [{ id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' }],
+      addresses: [],
+    })
+    const store = useScheduleStore.getState()
+
+    const res = await store.pullCloudData('2026-10')
+    expect(res.success).toBe(true)
+    // O toggle de sincronização não pode ter sido alterado
+    expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
+  })
+
+  it('deve executar forcePushCloudData enviando dados para a nuvem sem alterar o toggle de sincronização', async () => {
+    localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
+    const pushSpy = vi.spyOn(CloudSyncService, 'pushAllToCloud').mockResolvedValueOnce(true)
+    const store = useScheduleStore.getState()
+
+    const res = await store.forcePushCloudData(true)
+    expect(res.success).toBe(true)
+    expect(pushSpy).toHaveBeenCalledWith(
+      '2026-10',
+      expect.objectContaining({
+        monthData: expect.any(Object),
+        persons: expect.any(Array),
+        addresses: expect.any(Array),
+      }),
+      true,
+      true,
+    )
+    expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
 })
 
