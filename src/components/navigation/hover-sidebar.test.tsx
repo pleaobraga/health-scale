@@ -215,5 +215,13 @@ describe('HoverSidebar Component', () => {
     })
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
+
+  it('deve renderizar o seletor de idiomas na sidebar', () => {
+    renderWithRouter()
+
+    const selectors = screen.getAllByTestId('language-selector')
+    expect(selectors.length).toBeGreaterThan(0)
+    expect(screen.getAllByLabelText(/idioma atual/i).length).toBeGreaterThan(0)
+  })
 })
 

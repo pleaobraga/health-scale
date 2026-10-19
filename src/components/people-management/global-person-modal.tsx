@@ -1,16 +1,17 @@
 import { X, Check, User, Palette } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import { TAILWIND_PALETTE } from '../../constants/tailwind-colors'
 
 import type { Person } from '../../types'
 
 export interface GlobalPersonModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  personToEdit?: Person | null;
-  onSave: (name: string, color: string) => void;
+  isOpen: boolean
+  onClose: () => void
+  personToEdit?: Person | null
+  onSave: (name: string, color: string) => void
 }
 
 export function GlobalPersonModal({
@@ -19,6 +20,7 @@ export function GlobalPersonModal({
   personToEdit,
   onSave,
 }: GlobalPersonModalProps) {
+  const { t } = useTranslation(['people', 'common'])
   const [name, setName] = useState('')
   const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex)
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +53,7 @@ export function GlobalPersonModal({
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) {
-      setError('Por favor, informe o nome do funcionário.')
+      setError(t('people:globalModal.nameRequired'))
       return
     }
     onSave(trimmed, selectedColor)
@@ -80,10 +82,10 @@ export function GlobalPersonModal({
                 id="global-person-modal-title"
                 className="text-base font-bold text-slate-900 dark:text-white"
               >
-                {personToEdit ? 'Editar Funcionário' : 'Novo Funcionário'}
+                {personToEdit ? t('people:globalModal.editTitle') : t('people:globalModal.newTitle')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {personToEdit ? 'Altere o nome ou cor cadastral' : 'Cadastre um novo profissional na equipe'}
+                {personToEdit ? t('people:globalModal.editSubtitle') : t('people:globalModal.newSubtitle')}
               </p>
             </div>
           </div>
@@ -91,8 +93,8 @@ export function GlobalPersonModal({
           <button
             type="button"
             onClick={onClose}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:close')}
+            aria-label={t('common:close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -114,7 +116,7 @@ export function GlobalPersonModal({
               className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
             >
               <User className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-              <span>Nome Completo / Identificação *</span>
+              <span>{t('people:globalModal.nameLabel')}</span>
             </label>
             <input
               id="person-name-input"
@@ -125,7 +127,7 @@ export function GlobalPersonModal({
                 setName(e.target.value)
                 if (error) setError(null)
               }}
-              placeholder="Ex: Dra. Mariana Costa, Enf. Pedro..."
+              placeholder={t('people:globalModal.namePlaceholder')}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-850 text-slate-900 dark:text-white placeholder:text-slate-400 transition"
             />
           </div>
@@ -135,11 +137,11 @@ export function GlobalPersonModal({
             <div className="flex items-center justify-between mb-2">
               <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
                 <Palette className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                <span>Cor de Destaque / Identificação</span>
+                <span>{t('people:globalModal.colorLabel')}</span>
               </label>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-                  {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.name || 'Cor Personalizada'}
+                  {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.name || t('people:globalModal.customColor')}
                 </span>
                 <span className="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                   {selectedColor.toUpperCase()}
@@ -178,13 +180,13 @@ export function GlobalPersonModal({
               onClick={onClose}
               className="px-4 py-2.5 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             >
-              Cancelar
+              {t('people:globalModal.cancel')}
             </button>
             <button
               type="submit"
               className="px-5 py-2.5 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-sm transition"
             >
-              {personToEdit ? 'Salvar Alterações' : 'Cadastrar Funcionário'}
+              {personToEdit ? t('people:globalModal.save') : t('people:globalModal.create')}
             </button>
           </div>
         </form>
@@ -192,5 +194,5 @@ export function GlobalPersonModal({
     </div>,
     document.body
   )
-};
+}
 

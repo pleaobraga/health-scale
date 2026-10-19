@@ -1,9 +1,11 @@
 import { AlertTriangle, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
 export interface ConfirmOverwriteModalProps {
-  isOpen: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-  isRestoring?: boolean;
+  isOpen: boolean
+  onConfirm: () => void
+  onCancel: () => void
+  isRestoring?: boolean
 }
 
 export function ConfirmOverwriteModal({
@@ -12,6 +14,8 @@ export function ConfirmOverwriteModal({
   onCancel,
   isRestoring = false,
 }: ConfirmOverwriteModalProps) {
+  const { t } = useTranslation(['import', 'common'])
+
   if (!isOpen) return null
 
   return (
@@ -26,7 +30,7 @@ export function ConfirmOverwriteModal({
           type="button"
           onClick={onCancel}
           disabled={isRestoring}
-          aria-label="Fechar"
+          aria-label={t('common:close')}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
         >
           <X className="w-5 h-5" />
@@ -39,13 +43,12 @@ export function ConfirmOverwriteModal({
 
           <div className="space-y-2">
             <h3 id="overwrite-modal-title" className="text-lg font-bold leading-snug">
-              Atenção: Sobrescrita de Dados
+              {t('import:overwriteModal.title')}
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Atenção: A aplicação já contém dados cadastrados. Esta importação irá{' '}
-              <strong className="text-red-600 dark:text-red-400 font-bold">SOBRESCREVER</strong> todos
-              os profissionais, escalas e eventos atuais de forma irreversível. Deseja continuar?
-            </p>
+            <p
+              className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: t('import:overwriteModal.description') }}
+            />
           </div>
         </div>
 
@@ -56,7 +59,7 @@ export function ConfirmOverwriteModal({
             disabled={isRestoring}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-sm transition-colors text-slate-700 dark:text-slate-300 disabled:opacity-50"
           >
-            Cancelar
+            {t('import:overwriteModal.cancel')}
           </button>
           <button
             type="button"
@@ -64,11 +67,11 @@ export function ConfirmOverwriteModal({
             disabled={isRestoring}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {isRestoring ? 'Restaurando...' : 'Sim, Sobrescrever Dados'}
+            {isRestoring ? t('import:overwriteModal.restoring') : t('import:overwriteModal.confirm')}
           </button>
         </div>
       </div>
     </div>
   )
-};
+}
 

@@ -1,14 +1,15 @@
 import { AlertTriangle, UserX, X, ShieldAlert } from 'lucide-react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import type { Person } from '../../types'
 
 export interface DeactivatePersonModalProps {
-  isOpen: boolean;
-  person: Person | null;
-  onClose: () => void;
-  onConfirm: () => void;
+  isOpen: boolean
+  person: Person | null
+  onClose: () => void
+  onConfirm: () => void
 }
 
 export function DeactivatePersonModal({
@@ -17,6 +18,8 @@ export function DeactivatePersonModal({
   onClose,
   onConfirm,
 }: DeactivatePersonModalProps) {
+  const { t } = useTranslation(['people', 'common'])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -48,10 +51,10 @@ export function DeactivatePersonModal({
                 id="deactivate-modal-title"
                 className="text-base font-bold text-slate-900 dark:text-white"
               >
-                Histórico em Escala Detectado
+                {t('people:deactivateModal.title')}
               </h3>
               <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                Proteção de integridade referencial ativa
+                {t('people:deactivateModal.subtitle')}
               </p>
             </div>
           </div>
@@ -59,8 +62,8 @@ export function DeactivatePersonModal({
           <button
             type="button"
             onClick={onClose}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:close')}
+            aria-label={t('common:close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -71,25 +74,17 @@ export function DeactivatePersonModal({
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-3 p-3.5 bg-amber-50/80 dark:bg-amber-950/30 rounded-xl border border-amber-200/80 dark:border-amber-800/60 text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
             <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <p>
-              Este profissional já possui histórico em escalas e não pode ser excluído permanentemente para não quebrar os registros. Você deseja desativá-lo?
-            </p>
+            <p>{t('people:deactivateModal.warning')}</p>
           </div>
 
           <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
             <p className="font-semibold text-slate-800 dark:text-slate-200">
-              O que acontece ao desativar {person.name}:
+              {t('people:deactivateModal.whatHappens', { name: person.name })}
             </p>
             <ul className="list-disc list-inside space-y-1 pl-1">
-              <li>
-                O histórico nos calendários passados e atuais permanece intacto com o nome e a cor do profissional.
-              </li>
-              <li>
-                O profissional <strong>não aparecerá</strong> na lista de novos candidatos para vinculação a meses futuros.
-              </li>
-              <li>
-                O status pode ser <strong>reativado a qualquer momento</strong> pelo Cadastro Geral.
-              </li>
+              <li>{t('people:deactivateModal.point1')}</li>
+              <li dangerouslySetInnerHTML={{ __html: t('people:deactivateModal.point2') }} />
+              <li dangerouslySetInnerHTML={{ __html: t('people:deactivateModal.point3') }} />
             </ul>
           </div>
         </div>
@@ -101,7 +96,7 @@ export function DeactivatePersonModal({
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
           >
-            Cancelar
+            {t('people:deactivateModal.cancel')}
           </button>
           <button
             type="button"
@@ -112,12 +107,12 @@ export function DeactivatePersonModal({
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition shadow-xs"
           >
             <UserX className="w-3.5 h-3.5" />
-            <span>Sim, Desativar Profissional</span>
+            <span>{t('people:deactivateModal.confirm')}</span>
           </button>
         </div>
       </div>
     </div>,
     document.body
   )
-};
+}
 

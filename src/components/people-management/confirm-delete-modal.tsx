@@ -1,14 +1,15 @@
 import { AlertTriangle, Trash2, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import type { Person } from '../../types'
 
 export interface ConfirmDeleteModalProps {
-  isOpen: boolean;
-  person: Person | null;
-  onClose: () => void;
-  onConfirm: () => void;
+  isOpen: boolean
+  person: Person | null
+  onClose: () => void
+  onConfirm: () => void
 }
 
 export function ConfirmDeleteModal({
@@ -17,6 +18,8 @@ export function ConfirmDeleteModal({
   onClose,
   onConfirm,
 }: ConfirmDeleteModalProps) {
+  const { t } = useTranslation(['people', 'common'])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -48,10 +51,10 @@ export function ConfirmDeleteModal({
                 id="confirm-delete-title"
                 className="text-base font-bold text-slate-900 dark:text-white"
               >
-                Excluir Funcionário
+                {t('people:deleteModal.title')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ação destrutiva e permanente
+                {t('people:deleteModal.subtitle')}
               </p>
             </div>
           </div>
@@ -59,8 +62,8 @@ export function ConfirmDeleteModal({
           <button
             type="button"
             onClick={onClose}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:close')}
+            aria-label={t('common:close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -69,11 +72,14 @@ export function ConfirmDeleteModal({
 
         {/* Content */}
         <div className="p-6 space-y-3">
-          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            Tem certeza que deseja excluir o cadastro de <strong>{person.name}</strong>?
-          </p>
+          <p
+            className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: t('people:deleteModal.question', { name: person.name }),
+            }}
+          />
           <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 text-xs text-rose-900 dark:text-rose-200">
-            Este profissional não possui escalas vinculadas. Esta ação removerá definitivamente o cadastro do sistema de forma irreversível.
+            {t('people:deleteModal.warning')}
           </div>
         </div>
 
@@ -84,7 +90,7 @@ export function ConfirmDeleteModal({
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
           >
-            Cancelar
+            {t('people:deleteModal.cancel')}
           </button>
           <button
             type="button"
@@ -95,12 +101,12 @@ export function ConfirmDeleteModal({
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-xs"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Excluir Definitivamente</span>
+            <span>{t('people:deleteModal.confirm')}</span>
           </button>
         </div>
       </div>
     </div>,
     document.body
   )
-};
+}
 

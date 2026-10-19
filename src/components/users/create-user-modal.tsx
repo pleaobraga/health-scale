@@ -3,15 +3,16 @@ import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { X, UserPlus, Mail, Lock, User as UserIcon, ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { firebaseConfig, db } from '../../services/firebase'
 
 import type { UserRole } from '../../context/auth-context'
 
 export interface CreateUserModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onUserCreated: () => void;
+  isOpen: boolean
+  onClose: () => void
+  onUserCreated: () => void
 }
 
 export function CreateUserModal({
@@ -19,6 +20,7 @@ export function CreateUserModal({
   onClose,
   onUserCreated,
 }: CreateUserModalProps) {
+  const { t } = useTranslation(['users', 'common'])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [tempPassword, setTempPassword] = useState('')
@@ -37,12 +39,12 @@ export function CreateUserModal({
     const trimmedEmail = email.trim()
 
     if (!trimmedName || !trimmedEmail || !tempPassword) {
-      setErrorMessage('Todos os campos são obrigatórios.')
+      setErrorMessage(t('users:createModal.errors.allFieldsRequired'))
       return
     }
 
     if (tempPassword.length < 6) {
-      setErrorMessage('A senha provisória deve conter pelo menos 6 caracteres.')
+      setErrorMessage(t('users:createModal.errors.weakPassword'))
       return
     }
 
@@ -80,13 +82,13 @@ export function CreateUserModal({
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code
       if (code === 'auth/email-already-in-use') {
-        setErrorMessage('Este e-mail já está em uso por outro usuário.')
+        setErrorMessage(t('users:createModal.errors.emailInUse'))
       } else if (code === 'auth/weak-password') {
-        setErrorMessage('A senha informada é muito fraca.')
+        setErrorMessage(t('users:createModal.errors.weakPasswordAuth'))
       } else if (code === 'auth/invalid-email') {
-        setErrorMessage('Formato de e-mail inválido.')
+        setErrorMessage(t('users:createModal.errors.invalidEmail'))
       } else {
-        setErrorMessage('Falha ao cadastrar usuário. Tente novamente.')
+        setErrorMessage(t('users:createModal.errors.general'))
       }
     } finally {
       // 4. Safely tear down and destroy secondary app instance
@@ -115,17 +117,17 @@ export function CreateUserModal({
                 id="modal-create-user-title"
                 className="text-base font-bold text-slate-900 dark:text-white"
               >
-                Novo Usuário do Sistema
+                {t('users:createModal.title')}
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Cadastre credenciais com controle de nível de acesso
+                {t('users:createModal.subtitle')}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={t('common:close')}
             disabled={isSubmitting}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
@@ -152,7 +154,7 @@ export function CreateUserModal({
               htmlFor="user-name"
               className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
             >
-              Nome Completo
+              {t('users:createModal.name')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -164,7 +166,7 @@ export function CreateUserModal({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Dra. Ana Paula"
+                placeholder={t('users:createModal.namePlaceholder')}
                 disabled={isSubmitting}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
@@ -177,7 +179,7 @@ export function CreateUserModal({
               htmlFor="user-email"
               className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
             >
-              E-mail de Acesso
+              {t('users:createModal.email')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -189,7 +191,7 @@ export function CreateUserModal({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="usuario@saude.gov.br"
+                placeholder={t('users:createModal.emailPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
@@ -202,7 +204,7 @@ export function CreateUserModal({
               htmlFor="user-password"
               className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
             >
-              Senha Provisória
+              {t('users:createModal.password')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -215,13 +217,13 @@ export function CreateUserModal({
                 minLength={6}
                 value={tempPassword}
                 onChange={(e) => setTempPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t('users:createModal.passwordPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
               <button
                 type="button"
-                aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                aria-label={showPassword ? t('users:createModal.hidePassword') : t('users:createModal.showPassword')}
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition"
@@ -234,7 +236,7 @@ export function CreateUserModal({
           {/* Role selection */}
           <div className="space-y-1.5">
             <span className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Nível de Permissão (Role)
+              {t('users:createModal.role')}
             </span>
             <div className="grid grid-cols-2 gap-3">
               <label
@@ -254,9 +256,9 @@ export function CreateUserModal({
                 />
                 <UserIcon className="w-4 h-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold">Usuário Comum</span>
+                  <span className="text-xs font-bold">{t('users:createModal.roleUserTitle')}</span>
                   <span className="text-[10px] text-slate-500 font-normal">
-                    Persistência 100% local
+                    {t('users:createModal.roleUserDesc')}
                   </span>
                 </div>
               </label>
@@ -278,9 +280,9 @@ export function CreateUserModal({
                 />
                 <ShieldCheck className="w-4 h-4 shrink-0 text-amber-500" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold">Administrador</span>
+                  <span className="text-xs font-bold">{t('users:createModal.roleAdminTitle')}</span>
                   <span className="text-[10px] text-slate-500 font-normal">
-                    Acesso a sync e usuários
+                    {t('users:createModal.roleAdminDesc')}
                   </span>
                 </div>
               </label>
@@ -295,7 +297,7 @@ export function CreateUserModal({
               disabled={isSubmitting}
               className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             >
-              Cancelar
+              {t('users:createModal.cancel')}
             </button>
             <button
               type="submit"
@@ -305,10 +307,10 @@ export function CreateUserModal({
               {isSubmitting ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Cadastrando...</span>
+                  <span>{t('users:createModal.submitting')}</span>
                 </>
               ) : (
-                <span>Criar Usuário</span>
+                <span>{t('users:createModal.submit')}</span>
               )}
             </button>
           </div>
@@ -316,5 +318,5 @@ export function CreateUserModal({
       </div>
     </div>
   )
-};
+}
 

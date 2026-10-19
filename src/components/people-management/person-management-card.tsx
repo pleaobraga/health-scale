@@ -1,16 +1,17 @@
 import { Edit2, Trash2, CalendarCheck2, RotateCcw, UserX, CheckCircle, ShieldAlert } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import type { Person } from '../../types'
 
 export interface PersonManagementCardProps {
-  person: Person;
-  monthsCount: number;
-  isInCurrentMonth: boolean;
-  canDelete: boolean;
-  onEdit: (person: Person) => void;
-  onDeactivate: (person: Person) => void;
-  onDeleteRequest: (person: Person) => void;
-  onReactivate: (personId: string) => void;
+  person: Person
+  monthsCount: number
+  isInCurrentMonth: boolean
+  canDelete: boolean
+  onEdit: (person: Person) => void
+  onDeactivate: (person: Person) => void
+  onDeleteRequest: (person: Person) => void
+  onReactivate: (personId: string) => void
 }
 
 export function PersonManagementCard({
@@ -23,6 +24,7 @@ export function PersonManagementCard({
   onDeleteRequest,
   onReactivate,
 }: PersonManagementCardProps) {
+  const { t } = useTranslation(['people', 'common'])
   const isActive = person.active !== false
 
   return (
@@ -60,12 +62,12 @@ export function PersonManagementCard({
             {!isActive ? (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shrink-0">
                 <UserX className="w-2.5 h-2.5" />
-                <span>Inativo</span>
+                <span>{t('people:inactive')}</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
                 <CheckCircle className="w-2.5 h-2.5" />
-                <span>Ativo</span>
+                <span>{t('people:active')}</span>
               </span>
             )}
           </div>
@@ -89,13 +91,15 @@ export function PersonManagementCard({
         <span className="flex items-center gap-1">
           <CalendarCheck2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
           <span>
-            {monthsCount} {monthsCount === 1 ? 'mês vinculado' : 'meses vinculados'}
+            {monthsCount === 1
+              ? t('people:management.monthsLinked', { count: monthsCount })
+              : t('people:management.monthsLinkedPlural', { count: monthsCount })}
           </span>
         </span>
 
         {isInCurrentMonth && (
           <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-900/60">
-            Na escala deste mês
+            {t('people:management.inCurrentMonth')}
           </span>
         )}
       </div>
@@ -107,22 +111,22 @@ export function PersonManagementCard({
             <button
               type="button"
               onClick={() => onEdit(person)}
-              title={`Editar cadastro de ${person.name}`}
+              title={t('people:management.editTitle', { name: person.name })}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 transition"
             >
               <Edit2 className="w-3.5 h-3.5 text-slate-500" />
-              <span>Editar</span>
+              <span>{t('people:management.edit')}</span>
             </button>
 
             <button
               type="button"
               onClick={() => onDeactivate(person)}
-              title={`Desativar funcionário ${person.name}`}
-              aria-label={`Desativar funcionário ${person.name}`}
+              title={t('people:management.deactivateTitle', { name: person.name })}
+              aria-label={t('people:management.deactivateTitle', { name: person.name })}
               className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800 transition"
             >
               <UserX className="w-3.5 h-3.5" />
-              <span>Desativar</span>
+              <span>{t('people:management.deactivate')}</span>
             </button>
 
             <button
@@ -130,10 +134,10 @@ export function PersonManagementCard({
               onClick={() => onDeleteRequest(person)}
               title={
                 canDelete
-                  ? `Excluir cadastro de ${person.name}`
-                  : `Desativar ${person.name} (possui histórico em escalas)`
+                  ? t('people:management.deleteTitle', { name: person.name })
+                  : t('people:management.cannotDeleteTitle', { name: person.name })
               }
-              aria-label={`Excluir cadastro de ${person.name}`}
+              aria-label={t('people:management.deleteTitle', { name: person.name })}
               className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition shrink-0"
             >
               <Trash2 className="w-4 h-4" />
@@ -147,7 +151,7 @@ export function PersonManagementCard({
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition shadow-2xs"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reativar</span>
+              <span>{t('people:management.reactivate')}</span>
             </button>
 
             <button
@@ -160,13 +164,13 @@ export function PersonManagementCard({
               }}
               title={
                 canDelete
-                  ? `Excluir permanentemente o cadastro de ${person.name}`
-                  : `Não é possível excluir: possui vínculos históricos em escalas`
+                  ? t('people:management.deletePermanentTitle', { name: person.name })
+                  : t('people:management.cannotDeletePermanentTitle')
               }
-              aria-label={`Excluir permanentemente o cadastro de ${person.name}`}
+              aria-label={t('people:management.deletePermanentTitle', { name: person.name })}
               className={`p-2 rounded-xl border transition ${
                 canDelete
-                  ? 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border-transparent hover:border-rose-200 dark:hover:border-rose-800 cursor-pointer'
+                  ? 'text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border-transparent hover:border-rose-200 dark:border-rose-800 cursor-pointer'
                   : 'text-slate-300 dark:text-slate-700 border-transparent cursor-not-allowed opacity-50'
               }`}
             >
@@ -181,4 +185,4 @@ export function PersonManagementCard({
       </div>
     </div>
   )
-};
+}

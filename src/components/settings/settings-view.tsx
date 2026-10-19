@@ -5,6 +5,7 @@ import {
   Cloud,
   CloudOff,
   Download,
+  Globe,
   HardDrive,
   Info,
   Moon,
@@ -17,6 +18,7 @@ import {
   Users,
 } from 'lucide-react'
 import { use, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 
 import { ConfirmClearLocalDataModal } from './confirm-clear-local-data-modal'
@@ -24,8 +26,10 @@ import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { LanguageSelector } from '../common/language-selector'
 
 export function SettingsView() {
+  const { t } = useTranslation(['settings', 'common'])
   const {
     isDarkMode,
     toggleDarkMode,
@@ -126,11 +130,40 @@ export function SettingsView() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              Configurações Gerais
+              {t('title', { defaultValue: 'Configurações Gerais' })}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Preferências do sistema, persistência e sincronização de dados
+              {t('subtitle', { defaultValue: 'Preferências do sistema, persistência e sincronização de dados' })}
             </p>
+          </div>
+        </div>
+
+        {/* Section: Idioma / Language (Visível para Todos os Usuários) */}
+        <div
+          data-testid="language-settings-card"
+          className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 shrink-0">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
+                  {t('languageSection.title', { defaultValue: 'Idioma / Language' })}
+                </h2>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  {t('languageSection.description', { defaultValue: 'Selecione o idioma de exibição do sistema' })}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {t('languageSection.helper', { defaultValue: 'Alterne entre Português e Inglês com suporte em tempo real em todas as telas.' })}
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full sm:w-64 shrink-0">
+              <LanguageSelector variant="full" align="bottom" className="w-full" />
+            </div>
           </div>
         </div>
 
@@ -147,10 +180,10 @@ export function SettingsView() {
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Sincronização na Nuvem (Firestore)
+                    {t('settings:cloudSyncSection.title')}
                   </h2>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Recurso exclusivo do Administrador • Plano Spark Custo Zero
+                    {t('settings:cloudSyncSection.subtitle')}
                   </p>
                 </div>
               </div>
@@ -167,12 +200,12 @@ export function SettingsView() {
                 {syncEnabled ? (
                   <>
                     <Cloud className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>Nuvem Ativa</span>
+                    <span>{t('common:sync.cloudActive')}</span>
                   </>
                 ) : (
                   <>
                     <CloudOff className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Apenas Local</span>
+                    <span>{t('common:sync.localOnly')}</span>
                   </>
                 )}
               </div>
@@ -181,13 +214,10 @@ export function SettingsView() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/80">
               <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
                 <p>
-                  Quando a sincronização está ativada,{' '}
-                  <strong>todas as alterações salvas</strong> (escala e
-                  profissionais) são gravadas localmente e enviadas à nuvem.
+                  {t('settings:cloudSyncSection.toggleActiveDesc')}
                 </p>
                 <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                  Quando desativada, a aplicação opera 100% no cliente sem
-                  efetuar chamadas ao Firestore.
+                  {t('settings:cloudSyncSection.toggleInactiveDesc')}
                 </p>
               </div>
 
@@ -204,7 +234,7 @@ export function SettingsView() {
                     : 'bg-slate-300 dark:bg-slate-700'
                 }`}
               >
-                <span className="sr-only">Ativar sincronização na nuvem</span>
+                <span className="sr-only">{t('settings:cloudSyncSection.toggleLabel')}</span>
                 <span
                   aria-hidden="true"
                   className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
@@ -219,11 +249,10 @@ export function SettingsView() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white">
-                    Puxar Dados da Nuvem para o Dispositivo
+                    {t('settings:cloudSyncSection.pullButton')}
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Recarrega a escala do mês ativo e os profissionais salvos no
-                    Firestore para este computador
+                    {t('settings:cloudSyncSection.pullButtonDesc')}
                   </p>
                 </div>
 
@@ -239,8 +268,8 @@ export function SettingsView() {
                   />
                   <span>
                     {isPulling
-                      ? 'Buscando da nuvem...'
-                      : 'Puxar Dados da Nuvem'}
+                      ? t('settings:cloudSyncSection.pulling')
+                      : t('settings:cloudSyncSection.pullButton')}
                   </span>
                 </button>
               </div>
@@ -269,7 +298,7 @@ export function SettingsView() {
         {/* Section 2: Appearance Preferences */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
-            Aparência e Tema
+            {t('settings:appearanceSection.title')}
           </h2>
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
@@ -282,12 +311,12 @@ export function SettingsView() {
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  Modo Escuro / Claro
+                  {t('settings:appearanceSection.theme')}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {isDarkMode
-                    ? 'O tema escuro está ativado atualmente'
-                    : 'O tema claro está ativado atualmente'}
+                    ? t('settings:appearanceSection.darkActive')
+                    : t('settings:appearanceSection.lightActive')}
                 </p>
               </div>
             </div>
@@ -297,8 +326,8 @@ export function SettingsView() {
               className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition"
             >
               {isDarkMode
-                ? 'Alternar para Modo Claro'
-                : 'Alternar para Modo Escuro'}
+                ? t('settings:appearanceSection.switchToLight')
+                : t('settings:appearanceSection.switchToDark')}
             </button>
           </div>
         </div>
@@ -308,46 +337,46 @@ export function SettingsView() {
           <div className="flex items-center gap-2">
             <HardDrive className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
-              Resumo do Armazenamento Local
+              {t('settings:storageSection.title')}
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
                 <Users className="w-4 h-4" />
-                <span className="text-xs font-medium">Profissionais</span>
+                <span className="text-xs font-medium">{t('settings:storageSection.staff')}</span>
               </div>
               <p className="text-2xl font-black text-slate-900 dark:text-white">
                 {persons.length}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                {persons.filter((p) => p.active !== false).length} ativos
+                {t('settings:storageSection.activeStaff', { count: persons.filter((p) => p.active !== false).length })}
               </p>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
                 <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">Dias com Escala</span>
+                <span className="text-xs font-medium">{t('settings:storageSection.assignedDays')}</span>
               </div>
               <p className="text-2xl font-black text-slate-900 dark:text-white">
                 {totalAssignedDays}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Dias com alocações salvas
+                {t('settings:storageSection.assignedDaysDesc')}
               </p>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
                 <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">Eventos do Mês</span>
+                <span className="text-xs font-medium">{t('settings:storageSection.events')}</span>
               </div>
               <p className="text-2xl font-black text-slate-900 dark:text-white">
                 {events.length}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Avisos e plantões registrados
+                {t('settings:storageSection.eventsDesc')}
               </p>
             </div>
           </div>
@@ -356,7 +385,7 @@ export function SettingsView() {
         {/* Section 4: Backup & Restore Actions */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
-            Backup e Segurança de Dados
+            {t('settings:backupSection.title')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
@@ -372,8 +401,8 @@ export function SettingsView() {
               )}
               <span>
                 {exportSuccess
-                  ? 'Backup baixado com sucesso!'
-                  : 'Baixar Cópia (.json)'}
+                  ? t('settings:backupSection.downloadSuccess')
+                  : t('settings:backupSection.downloadBackup')}
               </span>
             </button>
 
@@ -382,7 +411,7 @@ export function SettingsView() {
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition"
             >
               <Upload className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span>Importar ou Restaurar</span>
+              <span>{t('settings:backupSection.importOrRestore')}</span>
             </NavLink>
           </div>
         </div>
@@ -399,13 +428,13 @@ export function SettingsView() {
               </div>
               <div className="space-y-1">
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider text-xs">
-                  Redefinir Armazenamento Local
+                  {t('settings:dangerSection.title')}
                 </h2>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
-                  Apaga todas as escalas, pessoas, endereços e disponibilidades salvos localmente neste navegador para o seu usuário.
+                  {t('settings:dangerSection.description')}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Esta ação não altera nem remove nenhum dado salvo na nuvem (Firestore).
+                  {t('settings:dangerSection.note')}
                 </p>
               </div>
             </div>
@@ -413,11 +442,11 @@ export function SettingsView() {
             <button
               type="button"
               onClick={() => setIsClearModalOpen(true)}
-              aria-label="Limpar todos os dados locais"
+              aria-label={t('settings:dangerSection.clearButton')}
               className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition flex items-center justify-center gap-2 shrink-0 self-start sm:self-center"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Limpar Todos os Dados Locais</span>
+              <span>{t('settings:dangerSection.clearButton')}</span>
             </button>
           </div>
 
@@ -434,13 +463,10 @@ export function SettingsView() {
           <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="font-semibold text-slate-900 dark:text-slate-200">
-              Gerenciador de Escalas Mensais • v1.0.0
+              {t('settings:systemSection.title')}
             </p>
             <p>
-              Aplicação Single Page Application (SPA) 100% client-side com
-              persistência local em IndexedDB/LocalStorage, autenticação
-              obrigatória via Firebase Auth e sincronização sob demanda no plano
-              Spark do Firestore.
+              {t('settings:systemSection.description')}
             </p>
           </div>
         </div>

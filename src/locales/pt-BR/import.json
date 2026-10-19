@@ -1,0 +1,54 @@
+{
+  "welcomeBanner": {
+    "initialSetup": "Configuração Inicial / Boas-vindas",
+    "restoreBackup": "Restauração de Backup",
+    "title": "Bem-vindo ao Gerenciador de Escalas Mensais",
+    "description": "Restaure um arquivo de backup (.json) para recuperar instantaneamente toda a sua equipe, disponibilidades, calendários e eventos. Ou se preferir, inicie um novo cadastro manual do zero.",
+    "pullCloud": "Puxar da Nuvem",
+    "pullingCloud": "Buscando...",
+    "startZero": "Começar do zero"
+  },
+  "cloudPull": {
+    "title": "Puxar Dados da Nuvem (Firestore)",
+    "adminBadge": "Admin",
+    "description": "Recupere instantaneamente a escala do mês ativo e os profissionais salvos no Firestore para este dispositivo.",
+    "button": "Puxar Dados da Nuvem",
+    "buttonPulling": "Buscando da nuvem...",
+    "successRedirect": "{{message}} Redirecionando para a escala...",
+    "error": "Falha ao sincronizar dados com a nuvem."
+  },
+  "dropzone": {
+    "title": "Selecione o arquivo de backup",
+    "description": "Arraste seu arquivo JSON ou clique abaixo para selecionar do seu computador.",
+    "clickToSelect": "Clique para selecionar",
+    "orDrag": "ou arraste o arquivo aqui",
+    "supportHint": "Suporta arquivos .json gerados pelo Gerenciador de Escalas",
+    "readyForValidation": "{{size}} KB • Pronto para validação",
+    "validating": "Lendo e validando estrutura do backup...",
+    "errorTitle": "Erro ao validar arquivo:",
+    "unexpectedError": "Ocorreu um erro inesperado ao processar o arquivo de backup.",
+    "restoreError": "Falha ao aplicar os dados do backup. Tente novamente."
+  },
+  "preview": {
+    "title": "Prévia do Backup Válido",
+    "remove": "Remover",
+    "backupDate": "Data do Backup",
+    "dateNotSpecified": "Data não informada",
+    "staff": "Profissionais",
+    "configuredMonths": "Meses Configurados",
+    "events": "Eventos",
+    "teamIncluded": "Equipe incluída ({{count}}):",
+    "othersCount": "+{{count}} outros",
+    "cancel": "Cancelar",
+    "restore": "Restaurar Backup"
+  },
+  "overwriteModal": {
+    "title": "Atenção: Sobrescrita de Dados",
+    "description": "Atenção: A aplicação já contém dados cadastrados. Esta importação irá <strong class=\"text-red-600 dark:text-red-400 font-bold\">SOBRESCREVER</strong> todos os profissionais, escalas e eventos atuais de forma irreversível. Deseja continuar?",
+    "cancel": "Cancelar",
+    "confirm": "Sim, Sobrescrever Dados",
+    "restoring": "Restaurando...",
+    "closeAria": "Fechar"
+  }
+}
+

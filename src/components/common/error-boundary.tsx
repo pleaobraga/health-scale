@@ -1,18 +1,23 @@
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import React, { Component, type ReactNode } from 'react'
 
+import { i18n } from '../../i18n'
+
 export interface ErrorBoundaryProps {
-  children: ReactNode;
-  fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode);
-  onReset?: () => void;
+  children: ReactNode
+  fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode)
+  onReset?: () => void
 }
 
 interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
+  hasError: boolean
+  error: Error | null
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   public override state: ErrorBoundaryState = {
     hasError: false,
     error: null,
@@ -22,9 +27,16 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error }
   }
 
-  public override componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+  public override componentDidCatch(
+    error: Error,
+    errorInfo: React.ErrorInfo,
+  ): void {
     // In React 19, caught errors are reported cleanly to error boundaries
-    console.error('ErrorBoundary caught an unhandled render error:', error, errorInfo)
+    console.error(
+      'ErrorBoundary caught an unhandled render error:',
+      error,
+      errorInfo,
+    )
   }
 
   private handleReset = (): void => {
@@ -36,7 +48,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.state.hasError) {
       if (typeof this.props.fallback === 'function') {
         return this.props.fallback(
-          this.state.error ?? new Error('Erro desconhecido'),
+          this.state.error ??
+            new Error(i18n.t('common:errorBoundary.unknownError')),
           this.handleReset,
         )
       }
@@ -56,12 +69,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           </div>
 
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-            Algo inesperado aconteceu
+            {i18n.t('common:errorBoundary.title')}
           </h2>
 
           <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mb-6">
-            Ocorreu um erro inesperado ao renderizar esta seção da aplicação.
-            Seus dados locais permanecem salvos em segurança.
+            {i18n.t('common:errorBoundary.description')}
           </p>
 
           {this.state.error && (
@@ -76,7 +88,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-sm transition active:scale-95"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Tentar novamente</span>
+            <span>{i18n.t('common:errorBoundary.retry')}</span>
           </button>
         </div>
       )
@@ -85,4 +97,3 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return this.props.children
   }
 }
-

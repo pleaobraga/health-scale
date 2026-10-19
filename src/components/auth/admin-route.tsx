@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet } from 'react-router-dom'
 
 import { useAuth } from '../../context/auth-context'
@@ -13,6 +14,7 @@ export interface AdminRouteProps {
  * and non-admin authenticated users to #/calendario.
  */
 export function AdminRoute({ children }: AdminRouteProps) {
+  const { t } = useTranslation('auth')
   const { user, isAdmin, loading } = useAuth()
 
   if (loading) {
@@ -24,7 +26,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Verificando permissões de administrador...
+            {t('verifyingAdmin')}
           </p>
         </div>
       </div>

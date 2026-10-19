@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import { useScheduleStore } from '../store/use-schedule-store'
 import { formatAddressOneLine } from '../utils/address-utils'
@@ -33,6 +34,7 @@ function AddressModal({
   onClose,
   onSave,
 }: AddressModalProps) {
+  const { t } = useTranslation(['addresses', 'common'])
   const [name, setName] = useState('')
   const [street, setStreet] = useState('')
   const [number, setNumber] = useState('')
@@ -75,15 +77,15 @@ function AddressModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      setError('O nome do local é obrigatório.')
+      setError(t('addresses:errors.nameRequired'))
       return
     }
     if (!street.trim()) {
-      setError('O logradouro é obrigatório.')
+      setError(t('addresses:errors.streetRequired'))
       return
     }
     if (!number.trim()) {
-      setError('O número é obrigatório.')
+      setError(t('addresses:errors.numberRequired'))
       return
     }
 
@@ -113,10 +115,10 @@ function AddressModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {addressToEdit ? 'Editar Endereço' : 'Novo Endereço'}
+                {addressToEdit ? t('addresses:editAddress') : t('addresses:newAddress')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Preencha as informações do endereço
+                {t('addresses:subtitle')}
               </p>
             </div>
           </div>
@@ -124,8 +126,8 @@ function AddressModal({
           <button
             type="button"
             onClick={onClose}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:actions.close')}
+            aria-label={t('common:actions.close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -145,7 +147,7 @@ function AddressModal({
               htmlFor="address-name"
               className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
             >
-              Nome do Local / Identificação *
+              {t('addresses:name')}
             </label>
             <input
               id="address-name"
@@ -156,7 +158,7 @@ function AddressModal({
                 setName(e.target.value)
                 if (error) setError(null)
               }}
-              placeholder="Ex: Residência Principal, Clínica Sul, Casa Dona Maria"
+              placeholder={t('addresses:namePlaceholder')}
               className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </div>
@@ -167,7 +169,7 @@ function AddressModal({
                 htmlFor="address-street"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                Logradouro *
+                {t('addresses:street')}
               </label>
               <input
                 id="address-street"
@@ -178,7 +180,7 @@ function AddressModal({
                   setStreet(e.target.value)
                   if (error) setError(null)
                 }}
-                placeholder="Ex: Rua das Flores, Av. Brasil"
+                placeholder={t('addresses:streetPlaceholder')}
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -188,7 +190,7 @@ function AddressModal({
                 htmlFor="address-number"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                Número *
+                {t('addresses:number')}
               </label>
               <input
                 id="address-number"
@@ -199,7 +201,7 @@ function AddressModal({
                   setNumber(e.target.value)
                   if (error) setError(null)
                 }}
-                placeholder="Ex: 123 ou S/N"
+                placeholder={t('addresses:numberPlaceholder')}
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -210,14 +212,14 @@ function AddressModal({
               htmlFor="address-complement"
               className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
             >
-              Complemento (Opcional)
+              {t('addresses:complement')}
             </label>
             <input
               id="address-complement"
               type="text"
               value={complement}
               onChange={(e) => setComplement(e.target.value)}
-              placeholder="Ex: Apto 101, Bloco B, Casa dos Fundos"
+              placeholder={t('addresses:complementPlaceholder')}
               className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </div>
@@ -228,14 +230,14 @@ function AddressModal({
                 htmlFor="address-neighborhood"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                Bairro (Opcional)
+                {t('addresses:neighborhood')}
               </label>
               <input
                 id="address-neighborhood"
                 type="text"
                 value={neighborhood}
                 onChange={(e) => setNeighborhood(e.target.value)}
-                placeholder="Ex: Centro, Jardim América"
+                placeholder={t('addresses:neighborhoodPlaceholder')}
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -245,14 +247,14 @@ function AddressModal({
                 htmlFor="address-city"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                Cidade (Opcional)
+                {t('addresses:city')}
               </label>
               <input
                 id="address-city"
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="Ex: São Paulo"
+                placeholder={t('addresses:cityPlaceholder')}
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
@@ -264,13 +266,13 @@ function AddressModal({
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-xs"
             >
-              {addressToEdit ? 'Salvar Alterações' : 'Cadastrar Endereço'}
+              {addressToEdit ? t('addresses:saveChanges') : t('addresses:createButton')}
             </button>
           </div>
         </form>
@@ -293,6 +295,8 @@ function ConfirmDeleteAddressModal({
   onClose,
   onConfirm,
 }: ConfirmDeleteAddressModalProps) {
+  const { t } = useTranslation(['addresses', 'common'])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -319,10 +323,10 @@ function ConfirmDeleteAddressModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                Excluir Endereço
+                {t('addresses:confirmDeleteTitle')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ação permanente
+                {t('addresses:confirmDeleteDescription')}
               </p>
             </div>
           </div>
@@ -330,8 +334,8 @@ function ConfirmDeleteAddressModal({
           <button
             type="button"
             onClick={onClose}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:actions.close')}
+            aria-label={t('common:actions.close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -340,12 +344,8 @@ function ConfirmDeleteAddressModal({
 
         <div className="p-6 space-y-3">
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            Tem certeza que deseja remover o endereço{' '}
-            <strong>{address.name}</strong> ({address.street}, {address.number})?
+            {address.name} ({address.street}, {address.number})
           </p>
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 text-xs text-rose-900 dark:text-rose-200">
-            Eventos que já utilizam este endereço como texto livre não serão afetados, mas ele não estará mais disponível na lista de seleção rápida.
-          </div>
         </div>
 
         <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
@@ -354,7 +354,7 @@ function ConfirmDeleteAddressModal({
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
           >
-            Cancelar
+            {t('common:actions.cancel')}
           </button>
           <button
             type="button"
@@ -365,7 +365,7 @@ function ConfirmDeleteAddressModal({
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-xs"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Excluir Definitivamente</span>
+            <span>{t('addresses:confirmDelete')}</span>
           </button>
         </div>
       </div>
@@ -375,6 +375,7 @@ function ConfirmDeleteAddressModal({
 }
 
 export function AddressManagementView() {
+  const { t } = useTranslation(['addresses', 'common', 'settings'])
   const { addresses, addAddress, updateAddress, deleteAddress, pullCloudData } = useScheduleStore()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -406,7 +407,7 @@ export function AddressManagementView() {
       setPullFeedback(result.message)
       setTimeout(() => setPullFeedback(null), 4000)
     } catch {
-      setPullFeedback('Erro ao buscar dados na nuvem.')
+      setPullFeedback(t('settings:cloudSyncSection.pullError'))
       setTimeout(() => setPullFeedback(null), 4000)
     } finally {
       setIsPulling(false)
@@ -452,10 +453,10 @@ export function AddressManagementView() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-              Gerenciar Endereços
+              {t('addresses:title')}
             </h1>
             <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              Cadastre e gerencie endereços para vincular aos eventos diários da escala
+              {t('addresses:subtitle')}
             </p>
           </div>
         </div>
@@ -465,12 +466,12 @@ export function AddressManagementView() {
             type="button"
             onClick={handlePullCloud}
             disabled={isPulling}
-            title="Buscar dados atualizados da nuvem (Firestore)"
-            aria-label="Puxar dados da nuvem"
+            title={t('common:actions.pullCloudTooltip')}
+            aria-label={t('common:actions.pullCloud')}
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 shadow-xs transition disabled:opacity-50 shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${isPulling ? 'animate-spin' : ''}`} />
-            <span>{isPulling ? 'Buscando...' : 'Puxar da Nuvem'}</span>
+            <span>{isPulling ? t('common:actions.pullingCloud') : t('common:actions.pullCloud')}</span>
           </button>
 
           <button
@@ -479,7 +480,7 @@ export function AddressManagementView() {
             className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition-all shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Novo Endereço</span>
+            <span>{t('addresses:newAddress')}</span>
           </button>
         </div>
       </div>
@@ -499,7 +500,7 @@ export function AddressManagementView() {
           <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Buscar por nome, logradouro, bairro..."
+            placeholder={t('addresses:searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
@@ -508,7 +509,10 @@ export function AddressManagementView() {
 
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 self-end sm:self-center">
           <span className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
-            Total: {addresses.length} {addresses.length === 1 ? 'endereço' : 'endereços'}
+            {t('addresses:totalBadge', {
+              count: addresses.length,
+              label: addresses.length === 1 ? t('addresses:addressSingular') : t('addresses:addressPlural'),
+            })}
           </span>
         </div>
       </div>
@@ -519,14 +523,9 @@ export function AddressManagementView() {
           <Building2 className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
           <h3 className="text-sm md:text-base font-bold text-slate-700 dark:text-slate-300">
             {searchQuery
-              ? 'Nenhum endereço encontrado para esta busca.'
-              : 'Nenhum endereço cadastrado.'}
+              ? t('addresses:noSearchResults')
+              : t('addresses:emptyList')}
           </h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto">
-            {searchQuery
-              ? 'Tente utilizar outros termos na barra de busca.'
-              : 'Clique em "Novo Endereço" para cadastrar locais frequentes da sua equipe.'}
-          </p>
           {!searchQuery && (
             <button
               type="button"
@@ -534,7 +533,7 @@ export function AddressManagementView() {
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition"
             >
               <Plus className="w-4 h-4" />
-              <span>Adicionar Primeiro Endereço</span>
+              <span>{t('addresses:addFirstAddress')}</span>
             </button>
           )}
         </div>
@@ -564,7 +563,7 @@ export function AddressManagementView() {
 
                 {addr.complement && (
                   <p className="text-xs text-slate-600 dark:text-slate-300 pl-10">
-                    <span className="font-semibold text-slate-500 dark:text-slate-400">Compl: </span>
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">{t('addresses:complementAbbr')} </span>
                     {addr.complement}
                   </p>
                 )}
@@ -580,8 +579,8 @@ export function AddressManagementView() {
                 <button
                   type="button"
                   onClick={() => handleCopy(addr)}
-                  title={copiedAddressId === addr.id ? 'Endereço copiado!' : 'Copiar endereço completo'}
-                  aria-label={`Copiar endereço ${addr.name}`}
+                  title={copiedAddressId === addr.id ? t('addresses:copied') : t('addresses:copyAddress')}
+                  aria-label={t('addresses:copyAddressFor', { name: addr.name })}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     copiedAddressId === addr.id
                       ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50'
@@ -591,34 +590,34 @@ export function AddressManagementView() {
                   {copiedAddressId === addr.id ? (
                     <>
                       <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>Copiado!</span>
+                      <span>{t('addresses:copied')}</span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5" />
-                      <span>Copiar</span>
+                      <span>{t('common:actions.copy')}</span>
                     </>
                   )}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleOpenEdit(addr)}
-                  title="Editar endereço"
-                  aria-label={`Editar endereço ${addr.name}`}
+                  title={t('common:actions.edit')}
+                  aria-label={t('addresses:editAddressFor', { name: addr.name })}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  <span>Editar</span>
+                  <span>{t('common:actions.edit')}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAddressToDelete(addr)}
-                  title="Excluir endereço"
-                  aria-label={`Excluir endereço ${addr.name}`}
+                  title={t('common:actions.delete')}
+                  aria-label={t('addresses:deleteAddressFor', { name: addr.name })}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>Excluir</span>
+                  <span>{t('common:actions.delete')}</span>
                 </button>
               </div>
             </div>

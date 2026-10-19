@@ -1,5 +1,6 @@
 import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ConfirmDeleteModal } from './confirm-delete-modal'
 import { DeactivatePersonModal } from './deactivate-person-modal'
@@ -10,6 +11,7 @@ import { useScheduleStore } from '../../store/use-schedule-store'
 import type { Person } from '../../types'
 
 export function PeopleManagementView() {
+  const { t } = useTranslation(['people', 'common'])
   const {
     persons,
     monthParticipants,
@@ -81,10 +83,10 @@ export function PeopleManagementView() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Cadastro Geral de Funcionários
+              {t('people:management.title')}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Gestão mestre da equipe clínica e assistencial. Escalas e disponibilidades são definidas no Calendário.
+              {t('people:management.subtitle')}
             </p>
           </div>
         </div>
@@ -95,7 +97,7 @@ export function PeopleManagementView() {
           className="flex items-center justify-center gap-2 px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition shrink-0"
         >
           <UserPlus className="w-4 h-4" />
-          <span>Novo Funcionário</span>
+          <span>{t('people:management.newPerson')}</span>
         </button>
       </div>
 
@@ -108,7 +110,7 @@ export function PeopleManagementView() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar funcionários por nome..."
+            placeholder={t('people:management.searchPlaceholder')}
             className="w-full px-3 py-1.5 text-xs sm:text-sm bg-transparent focus:outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {searchQuery && (
@@ -117,7 +119,7 @@ export function PeopleManagementView() {
               onClick={() => setSearchQuery('')}
               className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-2 py-1"
             >
-              Limpar
+              {t('people:management.clearSearch')}
             </button>
           )}
         </div>
@@ -126,15 +128,19 @@ export function PeopleManagementView() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 px-5 py-3 flex items-center justify-between shadow-2xs">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Total Cadastrado:</span>
+            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{t('people:management.totalRegistered')}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
-              {activeCount} ativo{activeCount !== 1 ? 's' : ''}
+              {activeCount === 1
+                ? t('people:management.activeBadge', { count: activeCount })
+                : t('people:management.activeBadgePlural', { count: activeCount })}
             </span>
             {inactiveCount > 0 && (
               <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800">
-                {inactiveCount} inativo{inactiveCount > 1 ? 's' : ''}
+                {inactiveCount === 1
+                  ? t('people:management.inactiveBadge', { count: inactiveCount })
+                  : t('people:management.inactiveBadgePlural', { count: inactiveCount })}
               </span>
             )}
           </div>
@@ -148,12 +154,12 @@ export function PeopleManagementView() {
             <Users className="w-8 h-8" />
           </div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white">
-            {searchQuery ? 'Nenhum funcionário encontrado' : 'Nenhum funcionário cadastrado'}
+            {searchQuery ? t('people:management.emptySearchTitle') : t('people:management.emptyListTitle')}
           </h3>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mt-1 mb-6">
             {searchQuery
-              ? `Não foram encontrados resultados para "${searchQuery}". Tente outro termo.`
-              : 'Comece adicionando os membros da sua equipe médica e assistencial ao sistema.'}
+              ? t('people:management.emptySearchDesc', { query: searchQuery })
+              : t('people:management.emptyListDesc')}
           </p>
           {searchQuery ? (
             <button
@@ -161,7 +167,7 @@ export function PeopleManagementView() {
               onClick={() => setSearchQuery('')}
               className="px-4 py-2 text-xs font-semibold rounded-xl text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 transition"
             >
-              Limpar termo de busca
+              {t('people:management.clearSearchBtn')}
             </button>
           ) : (
             <button
@@ -170,7 +176,7 @@ export function PeopleManagementView() {
               className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Cadastrar Primeiro Funcionário</span>
+              <span>{t('people:management.registerFirst')}</span>
             </button>
           )}
         </div>
@@ -233,4 +239,4 @@ export function PeopleManagementView() {
       />
     </div>
   )
-};
+}

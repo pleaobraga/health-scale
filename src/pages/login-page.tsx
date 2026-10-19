@@ -13,28 +13,40 @@ import {
   X,
 } from 'lucide-react'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
+import { LanguageSelector } from '../components/common/language-selector'
 import { useAuth } from '../context/auth-context'
 import { getFriendlyAuthErrorMessage } from '../utils/auth-errors'
 
-const formatLastActive = (isoString?: string): string => {
-  if (!isoString) return 'Recentemente'
+import type { TFunction } from 'i18next'
+
+const formatLastActive = (
+  isoString: string | undefined,
+  lang: string,
+  t: TFunction<['auth', 'common']>,
+): string => {
+  if (!isoString) return t('auth:recently')
   try {
     const date = new Date(isoString)
-    return `Ativo em ${date.toLocaleDateString('pt-BR', {
+    const localeStr = lang === 'en-US' || lang.startsWith('en') ? 'en-US' : 'pt-BR'
+    const datePart = date.toLocaleDateString(localeStr, {
       day: '2-digit',
       month: '2-digit',
-    })} às ${date.toLocaleTimeString('pt-BR', {
+    })
+    const timePart = date.toLocaleTimeString(localeStr, {
       hour: '2-digit',
       minute: '2-digit',
-    })}`
+    })
+    return t('auth:lastActiveOn', { date: datePart, time: timePart })
   } catch {
-    return 'Recentemente'
+    return t('auth:recently')
   }
 }
 
 export function LoginPage() {
+  const { t, i18n } = useTranslation(['auth', 'common'])
   const { user, login, loginAsGuest, guestProfiles, deleteGuestProfile } =
     useAuth()
   const navigate = useNavigate()
@@ -71,7 +83,7 @@ export function LoginPage() {
 
     const trimmedEmail = email.trim()
     if (!trimmedEmail || !password) {
-      setErrorMessage('Por favor, informe seu e-mail e senha.')
+      setErrorMessage(t('auth:errors.requiredFields'))
       return
     }
 
@@ -101,7 +113,7 @@ export function LoginPage() {
       navigate(fromPath, { replace: true })
     } catch (err: unknown) {
       setGuestError(
-        (err as Error)?.message || 'Erro ao carregar conta de convidado.'
+        (err as Error)?.message || t('auth:errors.loadGuestError'),
       )
     } finally {
       setIsGuestSubmitting(false)
@@ -112,7 +124,7 @@ export function LoginPage() {
     e.preventDefault()
     const trimmed = guestName.trim()
     if (!trimmed) {
-      setGuestError('Por favor, informe seu nome.')
+      setGuestError(t('auth:errors.requiredName'))
       return
     }
 
@@ -126,7 +138,7 @@ export function LoginPage() {
       navigate(fromPath, { replace: true })
     } catch (err: unknown) {
       setGuestError(
-        (err as Error)?.message || 'Erro ao criar conta de convidado.'
+        (err as Error)?.message || t('auth:errors.createGuestError'),
       )
     } finally {
       setIsGuestSubmitting(false)
@@ -136,8 +148,13 @@ export function LoginPage() {
   return (
     <div
       data-testid="login-page"
-      className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 font-sans select-none transition-colors"
+      className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 font-sans select-none transition-colors relative"
     >
+      {/* Top right language selector */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSelector variant="compact" align="right" />
+      </div>
+
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl p-6 sm:p-8 space-y-6">
         {/* Branding header */}
         <div className="flex flex-col items-center text-center space-y-2">
@@ -145,10 +162,10 @@ export function LoginPage() {
             <CalendarDays className="w-8 h-8 stroke-[2.2]" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Gerenciador de Escalas
+            {t('auth:loginTitle')}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Acesso restrito para profissionais e administradores
+            {t('auth:loginSubtitle')}
           </p>
         </div>
 
@@ -175,7 +192,7 @@ export function LoginPage() {
               htmlFor="email"
               className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
             >
-              E-mail institucional
+              {t('auth:email')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
@@ -188,7 +205,7 @@ export function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu.email@exemplo.com"
+                placeholder={t('auth:emailPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition disabled:opacity-60"
               />
@@ -201,7 +218,7 @@ export function LoginPage() {
               htmlFor="password"
               className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
             >
-              Senha
+              {t('auth:password')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
@@ -214,13 +231,13 @@ export function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t('auth:passwordPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition disabled:opacity-60"
               />
               <button
                 type="button"
-                aria-label={showPassword ? 'Ocultar senha' : 'Exibir senha'}
+                aria-label={showPassword ? t('auth:hidePassword') : t('auth:showPassword')}
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition"
@@ -243,11 +260,11 @@ export function LoginPage() {
             {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Autenticando...</span>
+                <span>{t('auth:entering')}</span>
               </>
             ) : (
               <>
-                <span>Entrar na Aplicação</span>
+                <span>{t('auth:enter')}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -258,7 +275,7 @@ export function LoginPage() {
         <div className="relative flex items-center justify-center">
           <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
           <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 relative">
-            ou
+            {t('auth:or')}
           </span>
         </div>
 
@@ -273,12 +290,12 @@ export function LoginPage() {
           className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm shadow-xs transition"
         >
           <UserCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-          <span>Entrar como Convidado</span>
+          <span>{t('auth:enterAsGuest')}</span>
         </button>
 
         {/* Footer info */}
         <div className="pt-2 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800/80">
-          Credenciais gerenciadas de forma segura via Firebase Authentication.
+          {t('auth:secureCredentialsNotice')}
         </div>
       </div>
 
@@ -303,17 +320,17 @@ export function LoginPage() {
                     id="guest-modal-title"
                     className="text-lg font-bold text-slate-900 dark:text-white"
                   >
-                    Acesso como Convidado
+                    {t('auth:guestModalTitle')}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Acesso local para gerenciar suas escalas
+                    {t('auth:guestModalSubtitle')}
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsGuestModalOpen(false)}
-                aria-label="Fechar"
+                aria-label={t('common:actions.close')}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
@@ -336,7 +353,7 @@ export function LoginPage() {
             {guestProfiles.length > 0 && (
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  Contas Salvas Neste Navegador
+                  {t('auth:savedAccounts')}
                 </label>
                 <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
                   {guestProfiles.map((profile) => (
@@ -360,7 +377,7 @@ export function LoginPage() {
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            <span>{formatLastActive(profile.lastActiveAt)}</span>
+                            <span>{formatLastActive(profile.lastActiveAt, i18n.language, t)}</span>
                           </p>
                         </div>
                       </button>
@@ -371,16 +388,17 @@ export function LoginPage() {
                           onClick={() => handleSelectExistingGuest(profile.id)}
                           disabled={isGuestSubmitting}
                           data-testid={`select-guest-${profile.id}`}
-                          aria-label={`Entrar como ${profile.name}`}
+                          aria-label={t('auth:enterAs', { name: profile.name })}
                           className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs"
                         >
-                          Entrar
+                          {t('auth:access')}
                         </button>
                         <button
                           type="button"
                           onClick={() => deleteGuestProfile(profile.id)}
                           data-testid={`delete-guest-${profile.id}`}
-                          aria-label={`Excluir perfil de ${profile.name}`}
+                          aria-label={t('auth:deleteProfileOf', { name: profile.name })}
+                          title={t('auth:deleteGuestTitle')}
                           className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -401,9 +419,7 @@ export function LoginPage() {
                 htmlFor="new-guest-name"
                 className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400"
               >
-                {guestProfiles.length > 0
-                  ? 'Ou entrar como novo usuário'
-                  : 'Criar Perfil de Convidado'}
+                {t('auth:guestNameLabel')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
@@ -415,7 +431,7 @@ export function LoginPage() {
                   required
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Nome do novo usuário (ex: Dr. Roberto)"
+                  placeholder={t('auth:guestNamePlaceholder')}
                   disabled={isGuestSubmitting}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60"
                 />
@@ -430,11 +446,11 @@ export function LoginPage() {
                 {isGuestSubmitting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Iniciando...</span>
+                    <span>{t('auth:creatingGuest')}</span>
                   </>
                 ) : (
                   <>
-                    <span>Entrar como Novo Convidado</span>
+                    <span>{t('auth:createAndEnter')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -446,4 +462,5 @@ export function LoginPage() {
     </div>
   )
 }
+
 

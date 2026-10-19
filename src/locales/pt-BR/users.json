@@ -1,0 +1,49 @@
+{
+  "title": "Gestão de Usuários do Sistema",
+  "subtitle": "Controle de acessos, credenciais institucionais e permissões",
+  "newUser": "Novo Usuário",
+  "reloadList": "Recarregar lista",
+  "searchPlaceholder": "Buscar por nome, e-mail ou perfil...",
+  "total": "Total:",
+  "userCount": "{{count}} usuário",
+  "userCountPlural": "{{count}} usuários",
+  "loading": "Carregando usuários cadastrados...",
+  "emptySearchTitle": "Nenhum usuário encontrado",
+  "emptySearchSubtitle": "Tente buscar com outro termo ou cadastre um novo usuário.",
+  "roles": {
+    "admin": "Admin",
+    "user": "Usuário"
+  },
+  "createModal": {
+    "title": "Novo Usuário do Sistema",
+    "subtitle": "Cadastre credenciais com controle de nível de acesso",
+    "name": "Nome Completo",
+    "namePlaceholder": "Ex: Dra. Ana Paula",
+    "email": "E-mail de Acesso",
+    "emailPlaceholder": "usuario@saude.gov.br",
+    "password": "Senha Provisória",
+    "passwordPlaceholder": "Mínimo 6 caracteres",
+    "hidePassword": "Ocultar senha",
+    "showPassword": "Exibir senha",
+    "role": "Nível de Permissão (Role)",
+    "roleUserTitle": "Usuário Comum",
+    "roleUserDesc": "Persistência 100% local",
+    "roleAdminTitle": "Administrador",
+    "roleAdminDesc": "Acesso a sync e usuários",
+    "cancel": "Cancelar",
+    "submit": "Criar Usuário",
+    "submitting": "Cadastrando...",
+    "errors": {
+      "allFieldsRequired": "Todos os campos são obrigatórios.",
+      "weakPassword": "A senha provisória deve conter pelo menos 6 caracteres.",
+      "emailInUse": "Este e-mail já está em uso por outro usuário.",
+      "weakPasswordAuth": "A senha informada é muito fraca.",
+      "invalidEmail": "Formato de e-mail inválido.",
+      "general": "Falha ao cadastrar usuário. Tente novamente."
+    }
+  },
+  "errors": {
+    "fetchFailed": "Não foi possível carregar a lista de usuários do Firestore."
+  }
+}
+

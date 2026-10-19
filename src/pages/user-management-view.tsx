@@ -7,6 +7,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { CreateUserModal } from '../components/users/create-user-modal'
 import { db } from '../services/firebase'
@@ -14,14 +15,15 @@ import { db } from '../services/firebase'
 import type { UserRole } from '../context/auth-context'
 
 export interface AppUserRecord {
-  uid: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  createdAt?: unknown;
+  uid: string
+  name: string
+  email: string
+  role: UserRole
+  createdAt?: unknown
 }
 
 export function UserManagementView() {
+  const { t } = useTranslation(['users', 'common'])
   const [users, setUsers] = useState<AppUserRecord[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -52,7 +54,7 @@ export function UserManagementView() {
     } catch (err) {
       console.error('Error fetching users from Firestore:', err)
       setErrorFeedback(
-        'Não foi possível carregar a lista de usuários do Firestore.',
+        t('users:errors.fetchFailed'),
       )
     } finally {
       setIsLoading(false)
@@ -86,10 +88,10 @@ export function UserManagementView() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                Gestão de Usuários do Sistema
+                {t('users:title')}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Controle de acessos, credenciais institucionais e permissões
+                {t('users:subtitle')}
               </p>
             </div>
           </div>
@@ -98,8 +100,8 @@ export function UserManagementView() {
             <button
               type="button"
               onClick={fetchUsers}
-              title="Recarregar lista"
-              aria-label="Recarregar lista"
+              title={t('users:reloadList')}
+              aria-label={t('users:reloadList')}
               disabled={isLoading}
               className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-50"
             >
@@ -112,7 +114,7 @@ export function UserManagementView() {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Novo Usuário</span>
+              <span>{t('users:newUser')}</span>
             </button>
           </div>
         </div>
@@ -127,15 +129,17 @@ export function UserManagementView() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nome, e-mail ou perfil..."
+              placeholder={t('users:searchPlaceholder')}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
 
           <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <span>Total:</span>
+            <span>{t('users:total')}</span>
             <span className="font-bold text-slate-800 dark:text-slate-200">
-              {users.length} {users.length === 1 ? 'usuário' : 'usuários'}
+              {users.length === 1
+                ? t('users:userCount', { count: users.length })
+                : t('users:userCountPlural', { count: users.length })}
             </span>
           </div>
         </div>
@@ -152,17 +156,17 @@ export function UserManagementView() {
           <div className="flex flex-col items-center justify-center p-12 space-y-3">
             <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Carregando usuários cadastrados...
+              {t('users:loading')}
             </p>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="text-center p-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-2">
             <UserIcon className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
             <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              Nenhum usuário encontrado
+              {t('users:emptySearchTitle')}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Tente buscar com outro termo ou cadastre um novo usuário.
+              {t('users:emptySearchSubtitle')}
             </p>
           </div>
         ) : (
@@ -210,7 +214,7 @@ export function UserManagementView() {
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                     }`}
                   >
-                    {isAdmin ? 'Admin' : 'Usuário'}
+                    {isAdmin ? t('users:roles.admin') : t('users:roles.user')}
                   </span>
                 </div>
               )

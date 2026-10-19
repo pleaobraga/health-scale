@@ -1,17 +1,21 @@
-const WEEKDAYS = [
-  { short: 'Dom', full: 'Domingo', isWeekend: true },
-  { short: 'Seg', full: 'Segunda-feira', isWeekend: false },
-  { short: 'Ter', full: 'Terça-feira', isWeekend: false },
-  { short: 'Qua', full: 'Quarta-feira', isWeekend: false },
-  { short: 'Qui', full: 'Quinta-feira', isWeekend: false },
-  { short: 'Sex', full: 'Sexta-feira', isWeekend: false },
-  { short: 'Sáb', full: 'Sábado', isWeekend: true },
-]
+import { useTranslation } from 'react-i18next'
 
 export function CalendarHeader() {
+  const { t } = useTranslation(['calendar'])
+
+  const weekdays = [
+    { short: t('calendar:weekdays.sun'), full: t('calendar:weekdays.sunday'), isWeekend: true },
+    { short: t('calendar:weekdays.mon'), full: t('calendar:weekdays.monday'), isWeekend: false },
+    { short: t('calendar:weekdays.tue'), full: t('calendar:weekdays.tuesday'), isWeekend: false },
+    { short: t('calendar:weekdays.wed'), full: t('calendar:weekdays.wednesday'), isWeekend: false },
+    { short: t('calendar:weekdays.thu'), full: t('calendar:weekdays.thursday'), isWeekend: false },
+    { short: t('calendar:weekdays.fri'), full: t('calendar:weekdays.friday'), isWeekend: false },
+    { short: t('calendar:weekdays.sat'), full: t('calendar:weekdays.saturday'), isWeekend: true },
+  ]
+
   return (
     <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors">
-      {WEEKDAYS.map((day) => (
+      {weekdays.map((day) => (
         <div
           key={day.full}
           className={`py-2.5 text-center border-r border-slate-200 dark:border-slate-800 last:border-r-0 ${
@@ -24,4 +28,4 @@ export function CalendarHeader() {
       ))}
     </div>
   )
-};
+}

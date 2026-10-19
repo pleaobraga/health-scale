@@ -14,6 +14,7 @@
 
 - [Overview](#-overview)
 - [Key Features](#-key-features)
+- [Internationalization (i18n)](#-internationalization-i18n)
 - [Authentication & Cloud Synchronization](#-authentication--cloud-synchronization)
 - [Live Demo & Static Hosting](#-live-demo--static-hosting)
 - [System Architecture](#-system-architecture)
@@ -98,6 +99,95 @@ Export the active month schedule with one click into a formatted spreadsheet con
 
 - **Component & Route Isolation**: Implements React 19 `ErrorBoundary` wrappers around main application views and route outlets.
 - **Graceful Error Recovery**: Traps runtime exceptions to prevent full application crashes, providing users with actionable error messages and one-click reload/retry options.
+
+### 🌐 8. Multilingual Support & Internationalization (i18n)
+
+- **Two First-Class Locales**: Full native support for Brazilian Portuguese (`pt-BR`, default) and US English (`en-US`).
+- **Modern Accessible Language Selector**: Dropdown component (`LanguageSelector`) featuring vector SVG flags for Brazil 🇧🇷 and USA 🇺🇸, keyboard navigation (`Escape`), and outside-click auto-dismiss.
+- **Adaptive Sidebar & Settings Placements**:
+  - **Desktop Hover Sidebar**: Compact flag icon in retracted state (`w-16`) that expands smoothly into a full language label with chevron on hover (`w-64`).
+  - **Mobile Menu**: Full width language dropdown inside the slide-out navigation menu.
+  - **Settings View**: Dedicated "Idioma / Language" configuration card.
+- **Strict TypeScript Typing**: Complete autocomplete and build-time safety for translation keys via `CustomTypeOptions` matching JSON namespaces.
+- **Persistent Preferences**: Saves selected language in browser `localStorage` under `health-schedule:language`.
+
+---
+
+## 🌐 Internationalization (i18n)
+
+HealthSchedule provides an end-to-end internationalization architecture powered by **i18next**, **react-i18next**, and **i18next-browser-languagedetector**.
+
+### 1. Translation Namespaces Architecture
+
+Translations are modularized into domain-specific namespaces under `src/locales/`:
+
+```
+src/locales/
+├── pt-BR/                          # Portuguese (Brazil) - Default Locale
+│   ├── common.json                 # Common actions, errors, buttons, dialogs
+│   ├── auth.json                   # Authentication, guest login, roles
+│   ├── calendar.json               # Days, months, shift rules, audit checks
+│   ├── people.json                 # Staff management, deactivation, deletion
+│   ├── settings.json               # Application preferences, cloud toggle, clear data
+│   ├── addresses.json              # Address registry and location modals
+│   ├── users.json                  # Firebase user management and role assignment
+│   └── import.json                 # Backup restore and cloud pull modal
+└── en-US/                          # English (US)
+    ├── common.json
+    ├── auth.json
+    ├── calendar.json
+    ├── people.json
+    ├── settings.json
+    ├── addresses.json
+    ├── users.json
+    └── import.json
+```
+
+### 2. Adding New Translation Keys
+
+1. Add the new translation key to the relevant namespace file in `src/locales/pt-BR/<namespace>.json`:
+   ```json
+   {
+     "my_feature": {
+       "button_title": "Salvar Escala"
+     }
+   }
+   ```
+2. Mirror the key in the English file `src/locales/en-US/<namespace>.json`:
+   ```json
+   {
+     "my_feature": {
+       "button_title": "Save Schedule"
+     }
+   }
+   ```
+3. Consume in any React component with strict type safety:
+   ```tsx
+   import { useTranslation } from 'react-i18next'
+
+   export function MyComponent() {
+     const { t } = useTranslation(['calendar'])
+     return <button>{t('calendar:my_feature.button_title')}</button>
+   }
+   ```
+   > [!NOTE]
+   > The TypeScript compiler will automatically validate translation key paths through `src/types/i18next.d.ts`. Typos or missing keys will trigger compilation errors immediately.
+
+### 3. Adding a New Language
+
+To introduce a new language (e.g., Spanish `es-ES`):
+1. Create `src/locales/es-ES/` containing copies of all JSON namespace files translated to Spanish.
+2. Register the new locale in `src/i18n.ts`:
+   ```ts
+   import esCommon from './locales/es-ES/common.json'
+   // ...
+   export const resources = {
+     'pt-BR': { ... },
+     'en-US': { ... },
+     'es-ES': { common: esCommon, ... }
+   } as const
+   ```
+3. Add the SVG flag component and option entry in `SUPPORTED_LANGUAGES` inside `src/components/common/language-selector.tsx`.
 
 ---
 
@@ -232,6 +322,7 @@ graph TD
 | **Icons**          | [Lucide React](https://lucide.dev/)                                                                                                       | Lightweight, customizable SVG icons                                            |
 | **Spreadsheets**   | [SheetJS (xlsx)](https://sheetjs.com/)                                                                                                    | Client-side Excel workbook and sheet generation                                |
 | **Testing**        | [Vitest 5](https://vitest.dev/) + Testing Library                                                                                         | 29 test suites with 198 unit and integration tests                             |
+| **i18n**           | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/) + [LanguageDetector](https://github.com/i18next/i18next-browser-languageDetector) | Multilingual architecture (`pt-BR` & `en-US`) with strict TypeScript typings |
 | **Linter & Hooks** | [ESLint 10](https://eslint.org/) + [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) | Flat config, semicolon-free formatting, named exports, and pre-commit auto-fix |
 | **Documentation**  | [Storybook 10](https://storybook.js.org/)                                                                                                 | Isolated stories for every UI component and modal                              |
 | **CI/CD**          | [GitHub Actions](https://github.com/features/actions)                                                                                     | Automatic test validation and GitHub Pages deployment                          |
@@ -246,12 +337,13 @@ The project strictly follows a modular, feature-based **kebab-case** naming stan
 src/
 ├── app.tsx                         # Root component with ErrorBoundary & context providers
 ├── main.tsx                        # Vite application bootstrap & DOM mounting
+├── i18n.ts                         # i18n configuration, language detector & resource definitions
 ├── index.css                       # Global styles & Tailwind CSS directives
 ├── vite-env.d.ts                   # Vite environment definitions
 ├── components/                     # Reusable & domain-specific UI components
 │   ├── auth/                       # Route guards (admin-route, private-route)
 │   ├── calendar/                   # Monthly calendar grid, header, cells, candidate picker
-│   ├── common/                     # Common components (error-boundary, etc.)
+│   ├── common/                     # Common components (error-boundary, language-selector, flag-icons)
 │   ├── import/                     # Import view & overwrite confirmation modals
 │   ├── layout/                     # RootLayout and view wrappers
 │   ├── modals/                     # Fullscreen calendar, day events, unsaved changes modals
@@ -264,12 +356,15 @@ src/
 ├── constants/                      # Application constants (tailwind-colors, etc.)
 ├── context/                        # React Context definitions (auth-context, auth-context-base)
 ├── hooks/                          # Custom React hooks (use-cloud-sync, etc.)
+├── locales/                        # Internationalization modular dictionary namespaces
+│   ├── pt-BR/                      # Portuguese (Brazil) - common, auth, calendar, people, settings, addresses
+│   └── en-US/                      # English (US) - mirrored namespaces
 ├── pages/                          # Top-level route pages (login-page, user-management-view)
 ├── router/                         # HashRouter configuration & route definitions
 ├── services/                       # Core services (backup, cloud-sync, firebase, person, storage)
 ├── store/                          # Zustand global store (use-schedule-store)
 ├── test/                           # Vitest setup & mocks
-├── types/                          # Domain TypeScript types & interfaces
+├── types/                          # Domain TypeScript types & interfaces (i18next.d.ts)
 └── utils/                          # Pure utilities (validate-schedule, export-to-excel, date-utils, auth-errors)
 ```
 

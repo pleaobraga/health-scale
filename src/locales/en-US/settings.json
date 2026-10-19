@@ -1,0 +1,65 @@
+{
+  "title": "General Settings",
+  "subtitle": "System preferences, persistence, and data synchronization",
+  "languageSection": {
+    "title": "Idioma / Language",
+    "description": "Select the system display language",
+    "helper": "Switch between Portuguese and English with real-time support across all screens."
+  },
+  "cloudSyncSection": {
+    "title": "Cloud Synchronization (Firestore)",
+    "subtitle": "Administrator exclusive feature • Zero-cost Spark Plan",
+    "toggleLabel": "Continuous cloud synchronization",
+    "toggleActiveDesc": "Saved changes are automatically synced to Firestore.",
+    "toggleInactiveDesc": "Data is only stored in your browser (offline-first).",
+    "pullButton": "Pull Data from Cloud",
+    "pullButtonDesc": "Downloads the latest Firestore state to this device",
+    "pulling": "Syncing...",
+    "pullSuccess": "Data successfully synchronized from cloud!",
+    "pullError": "Failed to fetch cloud data."
+  },
+  "appearanceSection": {
+    "title": "Appearance & Theme",
+    "theme": "Dark / Light Mode",
+    "darkActive": "Dark theme is currently active",
+    "lightActive": "Light theme is currently active",
+    "switchToLight": "Switch to Light Mode",
+    "switchToDark": "Switch to Dark Mode"
+  },
+  "storageSection": {
+    "title": "Local Storage Summary",
+    "staff": "Staff Members",
+    "activeStaff": "{{count}} active",
+    "assignedDays": "Days with Shifts",
+    "assignedDaysDesc": "Days with saved allocations",
+    "events": "Month Events",
+    "eventsDesc": "Announcements and duties registered"
+  },
+  "backupSection": {
+    "title": "Backup & Data Safety",
+    "downloadBackup": "Download Copy (.json)",
+    "downloadSuccess": "Backup downloaded successfully!",
+    "importOrRestore": "Import or Restore"
+  },
+  "dangerSection": {
+    "title": "Reset Local Storage",
+    "description": "Deletes all shifts, staff members, addresses and availabilities saved locally in this browser for your user.",
+    "note": "This action does not alter or remove any data saved in the cloud (Firestore).",
+    "clearButton": "Clear All Local Data",
+    "clearedFeedback": "All local data has been cleared successfully!"
+  },
+  "clearLocalDataModal": {
+    "title": "Clear All Local Data",
+    "description": "Are you sure you want to clear all local data? This action will remove <strong class=\"text-rose-600 dark:text-rose-400 font-bold\">ALL</strong> staff members, schedules, events and addresses stored locally in this browser.",
+    "note": "Note: Data synchronized in the cloud (Firestore) will not be affected by this action.",
+    "cancel": "Cancel",
+    "confirm": "Yes, Clear All",
+    "clearing": "Clearing...",
+    "closeAria": "Close modal"
+  },
+  "systemSection": {
+    "title": "Monthly Schedule Manager • v1.0.0",
+    "description": "100% client-side Single Page Application (SPA) with local persistence in IndexedDB/LocalStorage, required Firebase Auth and on-demand synchronization on Firestore Spark plan."
+  }
+}
+

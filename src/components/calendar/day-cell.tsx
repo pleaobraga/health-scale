@@ -1,4 +1,5 @@
 import { Calendar as CalendarIcon, X, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { CandidatePicker } from './candidate-picker'
 
@@ -6,19 +7,19 @@ import type { Person, CalendarEvent } from '../../types'
 import type { CalendarDayInfo } from '../../utils/date-utils'
 
 export interface DayCellProps {
-  dayInfo: CalendarDayInfo;
-  currentMonth: string;
-  isEditMode: boolean;
-  assignedPersonIds: string[];
-  allPersons: Person[];
-  monthPersons?: Person[];
-  events: CalendarEvent[];
-  highlightedPerson: Person | null;
-  isHighlightedPersonAvailable: boolean;
-  isPersonAvailable: (personId: string, dayNumber: number) => boolean;
-  onOpenEvents: () => void;
-  onRemovePerson: (personId: string) => void;
-  onAddPerson: (personId: string) => void;
+  dayInfo: CalendarDayInfo
+  currentMonth: string
+  isEditMode: boolean
+  assignedPersonIds: string[]
+  allPersons: Person[]
+  monthPersons?: Person[]
+  events: CalendarEvent[]
+  highlightedPerson: Person | null
+  isHighlightedPersonAvailable: boolean
+  isPersonAvailable: (personId: string, dayNumber: number) => boolean
+  onOpenEvents: () => void
+  onRemovePerson: (personId: string) => void
+  onAddPerson: (personId: string) => void
 }
 
 export function DayCell({
@@ -36,6 +37,7 @@ export function DayCell({
   onRemovePerson,
   onAddPerson,
 }: DayCellProps) {
+  const { t } = useTranslation(['calendar', 'common'])
   const { dayNumber, isCurrentMonth, isToday, dateStr } = dayInfo
   const hasEvents = events.length > 0
   const personMap = new Map<string, Person>(allPersons.map((p) => [p.id, p]))
@@ -77,10 +79,10 @@ export function DayCell({
           {isTargetOfHighlight && (
             <span
               className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.2 rounded-full"
-              title={`${highlightedPerson.name} marcou disponibilidade`}
+              title={t('calendar:dayCell.markedAvailability', { name: highlightedPerson.name })}
             >
               <Sparkles className="w-2.5 h-2.5" />
-              Disp.
+              {t('calendar:dayCell.disp')}
             </span>
           )}
         </div>
@@ -91,8 +93,8 @@ export function DayCell({
           onClick={onOpenEvents}
           title={
             hasEvents
-              ? `${events.length} evento(s) neste dia. Clique para ver/editar.`
-              : 'Ver ou adicionar eventos do dia'
+              ? t('calendar:dayCell.eventsTooltip', { count: events.length })
+              : t('calendar:dayCell.viewOrAddEvents')
           }
           className={`p-1 rounded-md text-xs transition flex items-center gap-0.5 ${
             hasEvents
@@ -116,7 +118,7 @@ export function DayCell({
           <div className="space-y-1">
             {assignedPersonIds.length === 0 ? (
               <div className="text-center py-1">
-                <span className="text-[11px] text-slate-300 dark:text-slate-600 italic">Vago</span>
+                <span className="text-[11px] text-slate-300 dark:text-slate-600 italic">{t('calendar:dayCell.vacant')}</span>
               </div>
             ) : (
               assignedPersonIds.map((personId) => {
@@ -139,7 +141,7 @@ export function DayCell({
             {/* Warning if multiple people are assigned in reading mode */}
             {assignedPersonIds.length > 1 && (
               <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center">
-                Conflito: {assignedPersonIds.length} escalados
+                {t('calendar:dayCell.conflict', { count: assignedPersonIds.length })}
               </span>
             )}
           </div>
@@ -165,7 +167,7 @@ export function DayCell({
                     <button
                       type="button"
                       onClick={() => onRemovePerson(personId)}
-                      title={`Remover ${person.name} deste dia`}
+                      title={t('calendar:dayCell.removePersonTooltip', { name: person.name })}
                       className="w-4 h-4 rounded hover:bg-black/20 flex items-center justify-center shrink-0 transition"
                     >
                       <X className="w-3 h-3 stroke-[2.5]" />
@@ -201,4 +203,4 @@ export function DayCell({
       )}
     </div>
   )
-};
+}

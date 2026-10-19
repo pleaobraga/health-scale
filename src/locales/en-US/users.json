@@ -1,0 +1,49 @@
+{
+  "title": "System User Management",
+  "subtitle": "Access control, institutional credentials and permissions",
+  "newUser": "New User",
+  "reloadList": "Reload list",
+  "searchPlaceholder": "Search by name, email or role...",
+  "total": "Total:",
+  "userCount": "{{count}} user",
+  "userCountPlural": "{{count}} users",
+  "loading": "Loading registered users...",
+  "emptySearchTitle": "No users found",
+  "emptySearchSubtitle": "Try searching with another term or register a new user.",
+  "roles": {
+    "admin": "Admin",
+    "user": "User"
+  },
+  "createModal": {
+    "title": "New System User",
+    "subtitle": "Register credentials with access level control",
+    "name": "Full Name",
+    "namePlaceholder": "E.g.: Dr. Jane Doe",
+    "email": "Access Email",
+    "emailPlaceholder": "user@health.gov",
+    "password": "Temporary Password",
+    "passwordPlaceholder": "Minimum 6 characters",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "role": "Permission Level (Role)",
+    "roleUserTitle": "Standard User",
+    "roleUserDesc": "100% local persistence",
+    "roleAdminTitle": "Administrator",
+    "roleAdminDesc": "Access to sync and users",
+    "cancel": "Cancel",
+    "submit": "Create User",
+    "submitting": "Registering...",
+    "errors": {
+      "allFieldsRequired": "All fields are required.",
+      "weakPassword": "Temporary password must contain at least 6 characters.",
+      "emailInUse": "This email is already in use by another user.",
+      "weakPasswordAuth": "The provided password is too weak.",
+      "invalidEmail": "Invalid email format.",
+      "general": "Failed to register user. Please try again."
+    }
+  },
+  "errors": {
+    "fetchFailed": "Unable to load users list from Firestore."
+  }
+}
+

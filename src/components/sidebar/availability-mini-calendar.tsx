@@ -1,12 +1,13 @@
 import { Sparkles, Eraser, CheckSquare, Calendar } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { formatMonthYear, getDaysCountInMonth } from '../../utils/date-utils'
 
 export interface AvailabilityMiniCalendarProps {
-  month: string; // 'YYYY-MM'
-  selectedDays: number[];
-  onChange: (days: number[]) => void;
-  accentColor?: string;
+  month: string // 'YYYY-MM'
+  selectedDays: number[]
+  onChange: (days: number[]) => void
+  accentColor?: string
 }
 
 export function AvailabilityMiniCalendar({
@@ -15,6 +16,7 @@ export function AvailabilityMiniCalendar({
   onChange,
   accentColor = '#3b82f6',
 }: AvailabilityMiniCalendarProps) {
+  const { t, i18n } = useTranslation(['people', 'common'])
   const totalDays = getDaysCountInMonth(month)
   const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1)
 
@@ -47,10 +49,10 @@ export function AvailabilityMiniCalendar({
       <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium pb-2 border-b border-slate-200 dark:border-slate-700">
         <span className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-100">
           <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-          Disponibilidade ({formatMonthYear(month)})
+          {t('people:monthAvailability.availabilityOf', { month: formatMonthYear(month, i18n.language) })}
         </span>
         <span className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-medium">
-          {selectedDays.length} / {totalDays} dias
+          {t('people:monthAvailability.daysCount', { selected: selectedDays.length, total: totalDays })}
         </span>
       </div>
 
@@ -62,7 +64,7 @@ export function AvailabilityMiniCalendar({
           className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
           <CheckSquare className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-          Dias Pares
+          {t('people:monthAvailability.evenDays')}
         </button>
         <button
           type="button"
@@ -70,7 +72,7 @@ export function AvailabilityMiniCalendar({
           className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
           <CheckSquare className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-          Dias Ímpares
+          {t('people:monthAvailability.oddDays')}
         </button>
         <button
           type="button"
@@ -78,7 +80,7 @@ export function AvailabilityMiniCalendar({
           className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
           <Sparkles className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
-          Todos
+          {t('people:monthAvailability.allDays')}
         </button>
         <button
           type="button"
@@ -86,7 +88,7 @@ export function AvailabilityMiniCalendar({
           className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 text-rose-600 dark:text-rose-400 transition ml-auto"
         >
           <Eraser className="w-3 h-3 text-rose-500" />
-          Limpar
+          {t('people:monthAvailability.clear')}
         </button>
       </div>
 
@@ -117,4 +119,4 @@ export function AvailabilityMiniCalendar({
       </div>
     </div>
   )
-};
+}

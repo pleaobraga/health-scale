@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import React, { use, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { ConfirmOverwriteModal } from './confirm-overwrite-modal'
@@ -29,6 +30,7 @@ import { useScheduleStore } from '../../store/use-schedule-store'
 import type { AppDataSnapshot } from '../../types'
 
 export function ImportView() {
+  const { t, i18n } = useTranslation(['import', 'common'])
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -38,8 +40,8 @@ export function ImportView() {
   const { pullCloudData } = useScheduleStore()
   const [isPullingCloud, setIsPullingCloud] = useState(false)
   const [cloudFeedback, setCloudFeedback] = useState<{
-    type: 'success' | 'error';
-    message: string;
+    type: 'success' | 'error'
+    message: string
   } | null>(null)
 
   const [isDragOver, setIsDragOver] = useState(false)
@@ -60,7 +62,7 @@ export function ImportView() {
       if (result.success) {
         setCloudFeedback({
           type: 'success',
-          message: `${result.message} Redirecionando para a escala...`,
+          message: t('import:cloudPull.successRedirect', { message: result.message }),
         })
         setTimeout(() => {
           navigate('/calendario')
@@ -75,7 +77,7 @@ export function ImportView() {
     } catch {
       setCloudFeedback({
         type: 'error',
-        message: 'Falha ao sincronizar dados com a nuvem.',
+        message: t('import:cloudPull.error'),
       })
       setTimeout(() => setCloudFeedback(null), 5000)
     } finally {
@@ -109,7 +111,7 @@ export function ImportView() {
       const message =
         err instanceof Error
           ? err.message
-          : 'Ocorreu um erro inesperado ao processar o arquivo de backup.'
+          : t('import:dropzone.unexpectedError')
       setErrorMessage(message)
       setSelectedFile(null)
     } finally {
@@ -199,16 +201,16 @@ export function ImportView() {
       }
     } catch (err) {
       console.error('Falha ao restaurar dados:', err)
-      setErrorMessage('Falha ao aplicar os dados do backup. Tente novamente.')
+      setErrorMessage(t('import:dropzone.restoreError'))
       setIsRestoring(false)
     }
   }
 
   const formatExportedDate = (isoStr?: string) => {
-    if (!isoStr) return 'Data não informada'
+    if (!isoStr) return t('import:preview.dateNotSpecified')
     try {
       const date = new Date(isoStr)
-      return new Intl.DateTimeFormat('pt-BR', {
+      return new Intl.DateTimeFormat(i18n.language === 'en-US' ? 'en-US' : 'pt-BR', {
         dateStyle: 'medium',
         timeStyle: 'short',
       }).format(date)
@@ -229,16 +231,14 @@ export function ImportView() {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold text-indigo-100">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 {isStorageEmpty
-                  ? 'Configuração Inicial / Boas-vindas'
-                  : 'Restauração de Backup'}
+                  ? t('import:welcomeBanner.initialSetup')
+                  : t('import:welcomeBanner.restoreBackup')}
               </div>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight">
-                Bem-vindo ao Gerenciador de Escalas Mensais
+                {t('import:welcomeBanner.title')}
               </h2>
               <p className="text-sm sm:text-base text-indigo-100 leading-relaxed">
-                Restaure um arquivo de backup (.json) para recuperar instantaneamente toda a sua
-                equipe, disponibilidades, calendários e eventos. Ou se preferir, inicie um novo
-                cadastro manual do zero.
+                {t('import:welcomeBanner.description')}
               </p>
             </div>
 
@@ -252,7 +252,7 @@ export function ImportView() {
                   className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white/20 hover:bg-white/30 text-white border border-white/20 font-bold text-sm backdrop-blur-md shadow-md transition-all active:scale-98 disabled:opacity-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
-                  <span>{isPullingCloud ? 'Buscando...' : 'Puxar da Nuvem'}</span>
+                  <span>{isPullingCloud ? t('import:welcomeBanner.pullingCloud') : t('import:welcomeBanner.pullCloud')}</span>
                 </button>
               )}
 
@@ -261,7 +261,7 @@ export function ImportView() {
                 onClick={handleStartZero}
                 className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow-md transition-all active:scale-98"
               >
-                <span>Começar do zero</span>
+                <span>{t('import:welcomeBanner.startZero')}</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
@@ -282,14 +282,14 @@ export function ImportView() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                      Puxar Dados da Nuvem (Firestore)
+                      {t('import:cloudPull.title')}
                     </h3>
                     <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                      Admin
+                      {t('import:cloudPull.adminBadge')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Recupere instantaneamente a escala do mês ativo e os profissionais salvos no Firestore para este dispositivo.
+                    {t('import:cloudPull.description')}
                   </p>
                 </div>
               </div>
@@ -302,7 +302,7 @@ export function ImportView() {
                 className="shrink-0 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition disabled:opacity-50 w-full sm:w-auto"
               >
                 <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
-                <span>{isPullingCloud ? 'Buscando da nuvem...' : 'Puxar Dados da Nuvem'}</span>
+                <span>{isPullingCloud ? t('import:cloudPull.buttonPulling') : t('import:cloudPull.button')}</span>
               </button>
             </div>
 
@@ -331,10 +331,10 @@ export function ImportView() {
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
               <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              Selecione o arquivo de backup
+              {t('import:dropzone.title')}
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Arraste seu arquivo JSON ou clique abaixo para selecionar do seu computador.
+              {t('import:dropzone.description')}
             </p>
           </div>
 
@@ -388,19 +388,19 @@ export function ImportView() {
                     {selectedFile.name}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {(selectedFile.size / 1024).toFixed(1)} KB • Pronto para validação
+                    {t('import:dropzone.readyForValidation', { size: (selectedFile.size / 1024).toFixed(1) })}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-1">
                   <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                     <span className="text-indigo-600 dark:text-indigo-400 underline">
-                      Clique para selecionar
+                      {t('import:dropzone.clickToSelect')}
                     </span>{' '}
-                    ou arraste o arquivo aqui
+                    {t('import:dropzone.orDrag')}
                   </p>
                   <p className="text-xs text-slate-400 dark:text-slate-500">
-                    Suporta arquivos .json gerados pelo Gerenciador de Escalas
+                    {t('import:dropzone.supportHint')}
                   </p>
                 </div>
               )}
@@ -415,7 +415,7 @@ export function ImportView() {
             >
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-500" />
               <div className="space-y-1">
-                <span className="font-bold">Erro ao validar arquivo:</span>
+                <span className="font-bold">{t('import:dropzone.errorTitle')}</span>
                 <p className="text-xs sm:text-sm text-red-600 dark:text-red-300">
                   {errorMessage}
                 </p>
@@ -426,7 +426,7 @@ export function ImportView() {
           {isValidating && (
             <div className="flex items-center justify-center gap-2.5 py-4 text-indigo-600 dark:text-indigo-400 text-sm font-semibold">
               <div className="w-4 h-4 border-2 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-spin" />
-              Lendo e validando estrutura do backup...
+              {t('import:dropzone.validating')}
             </div>
           )}
 
@@ -437,7 +437,7 @@ export function ImportView() {
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Prévia do Backup Válido
+                    {t('import:preview.title')}
                   </h4>
                 </div>
                 <button
@@ -446,7 +446,7 @@ export function ImportView() {
                   className="text-xs font-semibold text-slate-500 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-1 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  Remover
+                  {t('import:preview.remove')}
                 </button>
               </div>
 
@@ -455,7 +455,7 @@ export function ImportView() {
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
                     <Clock className="w-4 h-4 text-indigo-500" />
-                    Data do Backup
+                    {t('import:preview.backupDate')}
                   </div>
                   <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
                     {formatExportedDate(parsedData.exportedAt)}
@@ -465,7 +465,7 @@ export function ImportView() {
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
                     <Users className="w-4 h-4 text-emerald-500" />
-                    Profissionais
+                    {t('import:preview.staff')}
                   </div>
                   <div className="text-2xl font-black text-slate-900 dark:text-white">
                     {parsedData.people.length}
@@ -475,7 +475,7 @@ export function ImportView() {
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
                     <Calendar className="w-4 h-4 text-violet-500" />
-                    Meses Configurados
+                    {t('import:preview.configuredMonths')}
                   </div>
                   <div className="text-2xl font-black text-slate-900 dark:text-white">
                     {Object.keys(parsedData.monthParticipants || {}).length}
@@ -485,7 +485,7 @@ export function ImportView() {
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
                     <Sparkles className="w-4 h-4 text-amber-500" />
-                    Eventos
+                    {t('import:preview.events')}
                   </div>
                   <div className="text-2xl font-black text-slate-900 dark:text-white">
                     {parsedData.events.length}
@@ -497,7 +497,7 @@ export function ImportView() {
               {parsedData.people.length > 0 && (
                 <div className="space-y-2 pt-2">
                   <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Equipe incluída ({parsedData.people.length}):
+                    {t('import:preview.teamIncluded', { count: parsedData.people.length })}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {parsedData.people.slice(0, 10).map((person) => (
@@ -514,7 +514,7 @@ export function ImportView() {
                     ))}
                     {parsedData.people.length > 10 && (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500">
-                        +{parsedData.people.length - 10} outros
+                        {t('import:preview.othersCount', { count: parsedData.people.length - 10 })}
                       </span>
                     )}
                   </div>
@@ -529,7 +529,7 @@ export function ImportView() {
                   disabled={isRestoring}
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-sm text-slate-700 dark:text-slate-300 transition-colors"
                 >
-                  Cancelar
+                  {t('import:preview.cancel')}
                 </button>
                 <button
                   type="button"
@@ -537,7 +537,7 @@ export function ImportView() {
                   disabled={isRestoring}
                   className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
-                  <span>Restaurar Backup</span>
+                  <span>{t('import:preview.restore')}</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.2]" />
                 </button>
               </div>
@@ -555,4 +555,4 @@ export function ImportView() {
       />
     </div>
   )
-};
+}

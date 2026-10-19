@@ -1,0 +1,62 @@
+{
+  "appName": "Monthly Schedules",
+  "appSubtitle": "HealthSchedule",
+  "close": "Close",
+  "cancel": "Cancel",
+  "save": "Save",
+  "errorBoundary": {
+    "unknownError": "Unknown error",
+    "title": "Something unexpected happened",
+    "description": "An unexpected error occurred while rendering this section of the application. Your local data remains safely saved.",
+    "retry": "Try again"
+  },
+  "nav": {
+    "calendar": "Schedule Calendar",
+    "people": "Manage People",
+    "addresses": "Manage Addresses",
+    "import": "Import Data",
+    "settings": "Settings",
+    "users": "User Management"
+  },
+  "actions": {
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "export": "Export Data",
+    "exported": "Exported!",
+    "pullCloud": "Pull Data from Cloud",
+    "pullCloudTooltip": "Fetch updated data from the cloud (Firestore)",
+    "pullingCloud": "Pulling...",
+    "pullSuccess": "Updated!",
+    "forceCloud": "Force Data to Cloud",
+    "forcingCloud": "Forcing...",
+    "forceSuccess": "Forced!",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "clearLocal": "Clear All Local Data",
+    "clearingLocal": "Clearing...",
+    "clearedLocal": "All local data has been cleared successfully!",
+    "lightMode": "Switch to Light Mode",
+    "darkMode": "Switch to Dark Mode",
+    "modeLightLabel": "Light Mode",
+    "modeDarkLabel": "Dark Mode",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "logout": "Sign Out"
+  },
+  "sync": {
+    "cloudActive": "Cloud Active",
+    "localOnly": "Local Only"
+  },
+  "languages": {
+    "title": "Language",
+    "select": "Select language",
+    "ptBR": "Português (Brasil)",
+    "enUS": "English (US)"
+  }
+}
+

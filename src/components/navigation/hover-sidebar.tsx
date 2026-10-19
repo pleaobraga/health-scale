@@ -19,17 +19,19 @@ import {
   X,
 } from 'lucide-react'
 import React, { use, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { NavLink, useInRouterContext } from 'react-router-dom'
 
 import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { LanguageSelector } from '../common/language-selector'
 
 import type { NavigationTab } from '../../types'
 
 export interface HoverSidebarProps {
-  isProdOverride?: boolean;
+  isProdOverride?: boolean
 }
 
 export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
@@ -48,6 +50,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const [isForcingCloud, setIsForcingCloud] = useState(false)
   const [forceSuccess, setForceSuccess] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { t } = useTranslation(['common', 'auth'])
   const inRouter = useInRouterContext()
 
   const auth = use(AuthContext)
@@ -69,35 +72,35 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
     {
       id: 'calendar',
       path: '/',
-      label: 'Calendário de Escalas',
+      label: t('nav.calendar', { defaultValue: 'Calendário de Escalas' }),
       icon: CalendarDays,
       end: true,
     },
     {
       id: 'people',
       path: '/pessoas',
-      label: 'Gerenciar Pessoas',
+      label: t('nav.people', { defaultValue: 'Gerenciar Pessoas' }),
       icon: Users,
       end: false,
     },
     {
       id: 'addresses',
       path: '/enderecos',
-      label: 'Gerenciar Endereços',
+      label: t('nav.addresses', { defaultValue: 'Gerenciar Endereços' }),
       icon: MapPin,
       end: false,
     },
     {
       id: 'import',
       path: '/importar',
-      label: 'Importar Dados',
+      label: t('nav.import', { defaultValue: 'Importar Dados' }),
       icon: Upload,
       end: false,
     },
     {
       id: 'settings',
       path: '/configuracoes',
-      label: 'Configurações',
+      label: t('nav.settings', { defaultValue: 'Configurações' }),
       icon: Settings,
       end: false,
     },
@@ -107,7 +110,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
     navItems.push({
       id: 'users',
       path: '/usuarios',
-      label: 'Gestão de Usuários',
+      label: t('nav.users', { defaultValue: 'Gestão de Usuários' }),
       icon: ShieldCheck,
       end: false,
     })
@@ -179,10 +182,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           </div>
           <div className="flex flex-col">
             <h1 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
-              Escalas Mensais
+              {t('common:appName')}
             </h1>
             <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-              HealthSchedule
+              {t('common:appSubtitle')}
             </span>
           </div>
         </div>
@@ -190,7 +193,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
         <div className="flex items-center gap-2">
           {isAdmin && (
             <span
-              title={isSyncEnabled ? 'Nuvem Ativa' : 'Apenas Local'}
+              title={isSyncEnabled ? t('common:sync.cloudActive') : t('common:sync.localOnly')}
               className={`p-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 ${
                 isSyncEnabled
                   ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -208,8 +211,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(true)}
-            title="Abrir menu"
-            aria-label="Abrir menu"
+            title={t('common:actions.openMenu')}
+            aria-label={t('common:actions.openMenu')}
             data-testid="mobile-menu-button"
             className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
@@ -223,7 +226,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Menu de navegação"
+          aria-label={t('common:appName')}
           data-testid="mobile-fullscreen-menu"
           className="fixed inset-0 z-50 bg-white dark:bg-slate-900 flex flex-col justify-between p-5 overflow-y-auto animate-in fade-in duration-200 md:hidden text-slate-900 dark:text-slate-100"
         >
@@ -236,10 +239,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 </div>
                 <div>
                   <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
-                    Escalas Mensais
+                    {t('common:appName')}
                   </h2>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                    HealthSchedule
+                    {t('common:appSubtitle')}
                   </span>
                 </div>
               </div>
@@ -247,8 +250,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
-                title="Fechar menu"
-                aria-label="Fechar menu"
+                title={t('common:actions.closeMenu')}
+                aria-label={t('common:actions.closeMenu')}
                 data-testid="mobile-menu-close"
                 className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
@@ -265,10 +268,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                      {user.displayName || user.email || 'Convidado'}
+                      {user.displayName || user.email || t('auth:roles.guest')}
                     </p>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                      {isAdmin ? 'Administrador' : isGuest ? 'Convidado' : 'Profissional'}
+                      {isAdmin ? t('auth:roles.admin') : isGuest ? t('auth:roles.guest') : t('auth:roles.user')}
                     </span>
                   </div>
                 </div>
@@ -280,7 +283,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                         : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                     }`}
                   >
-                    {isSyncEnabled ? 'Nuvem Ativa' : 'Apenas Local'}
+                    {isSyncEnabled ? t('common:sync.cloudActive') : t('common:sync.localOnly')}
                   </span>
                 )}
               </div>
@@ -289,7 +292,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             {/* Navigation Items in Full Screen */}
             <nav
               className="py-5 space-y-2.5"
-              aria-label="Navegação em tela cheia"
+              aria-label={t('common:appName')}
             >
               {navItems.map((item) => {
                 const Icon = item.icon
@@ -356,8 +359,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               type="button"
               onClick={handlePullCloud}
               disabled={isPullingCloud}
-              title="Puxar Dados da Nuvem"
-              aria-label="Puxar Dados da Nuvem"
+              title={t('common:actions.pullCloud')}
+              aria-label={t('common:actions.pullCloud')}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 text-sm font-bold shadow-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
@@ -369,10 +372,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               </div>
               <span>
                 {pullSuccess
-                  ? 'Dados atualizados da nuvem!'
+                  ? t('common:actions.pullSuccess')
                   : isPullingCloud
-                    ? 'Puxando da nuvem...'
-                    : 'Puxar Dados da Nuvem'}
+                    ? t('common:actions.pullingCloud')
+                    : t('common:actions.pullCloud')}
               </span>
             </button>
 
@@ -382,8 +385,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 type="button"
                 onClick={handleForceCloud}
                 disabled={isForcingCloud}
-                title="Forçar Dados Locais na Nuvem"
-                aria-label="Forçar Dados na Nuvem"
+                title={t('common:actions.forceCloud')}
+                aria-label={t('common:actions.forceCloud')}
                 className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 text-sm font-bold shadow-xs hover:bg-amber-100 dark:hover:bg-amber-900/50 transition disabled:opacity-50"
               >
                 <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
@@ -395,10 +398,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 </div>
                 <span>
                   {forceSuccess
-                    ? 'Forçado com sucesso!'
+                    ? t('common:actions.forceSuccess')
                     : isForcingCloud
-                      ? 'Forçando na nuvem...'
-                      : 'Forçar Dados na Nuvem'}
+                      ? t('common:actions.forcingCloud')
+                      : t('common:actions.forceCloud')}
                 </span>
               </button>
             )}
@@ -408,8 +411,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               type="button"
               onClick={handleExport}
               disabled={isExporting}
-              title="Exportar Dados"
-              aria-label="Exportar Dados"
+              title={t('common:actions.export')}
+              aria-label={t('common:actions.export')}
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-sm font-bold shadow-xs hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-300 transition disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
@@ -420,19 +423,24 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 )}
               </div>
               <span>
-                {exportSuccess ? 'Exportado com sucesso!' : 'Exportar Dados'}
+                {exportSuccess ? t('common:actions.exported') : isExporting ? t('common:actions.saving') : t('common:actions.export')}
               </span>
             </button>
+
+            {/* Language Selector */}
+            <div className="w-full">
+              <LanguageSelector variant="full" align="top" className="w-full" />
+            </div>
 
             {/* Theme Toggle */}
             <button
               type="button"
               onClick={toggleDarkMode}
               title={
-                isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+                isDarkMode ? t('common:actions.lightMode') : t('common:actions.darkMode')
               }
               aria-label={
-                isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+                isDarkMode ? t('common:actions.lightMode') : t('common:actions.darkMode')
               }
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-sm font-bold shadow-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             >
@@ -445,8 +453,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               </div>
               <span>
                 {isDarkMode
-                  ? 'Mudar para Modo Claro'
-                  : 'Mudar para Modo Escuro'}
+                  ? t('common:actions.lightMode')
+                  : t('common:actions.darkMode')}
               </span>
             </button>
 
@@ -455,12 +463,12 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               <button
                 type="button"
                 onClick={handleLogout}
-                title="Sair da Conta"
-                aria-label="Sair da Conta"
+                title={t('common:actions.logout')}
+                aria-label={t('common:actions.logout')}
                 className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-sm font-bold shadow-xs hover:bg-rose-100 dark:hover:bg-rose-900/40 transition"
               >
                 <LogOut className="w-5 h-5" />
-                <span>Sair da Conta</span>
+                <span>{t('common:actions.logout')}</span>
               </button>
             )}
           </div>
@@ -480,10 +488,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             </div>
             <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
               <h1 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
-                Escalas Mensais
+                {t('common:appName')}
               </h1>
               <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                HealthSchedule
+                {t('common:appSubtitle')}
               </span>
             </div>
           </div>
@@ -492,7 +500,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           {isAdmin && (
             <div className="px-2.5 pt-2">
               <div
-                title={isSyncEnabled ? 'Nuvem Ativa' : 'Apenas Local'}
+                title={isSyncEnabled ? t('common:sync.cloudActive') : t('common:sync.localOnly')}
                 className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition ${
                   isSyncEnabled
                     ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
@@ -507,7 +515,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                   )}
                 </div>
                 <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-                  {isSyncEnabled ? 'Nuvem Ativa' : 'Apenas Local'}
+                  {isSyncEnabled ? t('common:sync.cloudActive') : t('common:sync.localOnly')}
                 </span>
               </div>
             </div>
@@ -516,7 +524,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           {/* Navigation Links */}
           <nav
             className="p-2 space-y-1.5"
-            aria-label="Menu Principal"
+            aria-label={t('common:appName')}
           >
             {navItems.map((item) => {
               const Icon = item.icon
@@ -579,7 +587,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           {/* User profile identifier (collapsed: icon, expanded: email + role) */}
           {user && (
             <div
-              title={user.displayName || user.email || 'Usuário autenticado'}
+              title={user.displayName || user.email || t('auth:roles.user')}
               className="flex items-center gap-3 px-2 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 text-xs overflow-hidden"
             >
               <div className="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
@@ -587,10 +595,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               </div>
               <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden min-w-0">
                 <p className="font-bold truncate text-[11px] leading-tight">
-                  {user.displayName || user.email || 'Convidado'}
+                  {user.displayName || user.email || t('auth:roles.guest')}
                 </p>
                 <span className="text-[9px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold">
-                  {isAdmin ? 'Administrador' : isGuest ? 'Convidado' : 'Profissional'}
+                  {isAdmin ? t('auth:roles.admin') : isGuest ? t('auth:roles.guest') : t('auth:roles.user')}
                 </span>
               </div>
             </div>
@@ -602,8 +610,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             type="button"
             onClick={handlePullCloud}
             disabled={isPullingCloud}
-            title="Puxar Dados da Nuvem"
-            aria-label="Puxar Dados da Nuvem"
+            title={t('common:actions.pullCloud')}
+            aria-label={t('common:actions.pullCloud')}
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-indigo-200/80 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/30 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
           >
             <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
@@ -614,7 +622,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               )}
             </div>
             <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-              {pullSuccess ? 'Atualizado!' : isPullingCloud ? 'Puxando...' : 'Puxar da Nuvem'}
+              {pullSuccess ? t('common:actions.pullSuccess') : isPullingCloud ? t('common:actions.pullingCloud') : t('common:actions.pullCloud')}
             </span>
           </button>
 
@@ -624,8 +632,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               type="button"
               onClick={handleForceCloud}
               disabled={isForcingCloud}
-              title="Forçar Dados Locais na Nuvem"
-              aria-label="Forçar Dados na Nuvem"
+              title={t('common:actions.forceCloud')}
+              aria-label={t('common:actions.forceCloud')}
               className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
@@ -636,7 +644,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 )}
               </div>
               <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-                {forceSuccess ? 'Forçado!' : isForcingCloud ? 'Forçando...' : 'Forçar na Nuvem'}
+                {forceSuccess ? t('common:actions.forceSuccess') : isForcingCloud ? t('common:actions.forcingCloud') : t('common:actions.forceCloud')}
               </span>
             </button>
           )}
@@ -646,8 +654,8 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             type="button"
             onClick={handleExport}
             disabled={isExporting}
-            title="Exportar Dados"
-            aria-label="Exportar Dados"
+            title={t('common:actions.export')}
+            aria-label={t('common:actions.export')}
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-600 dark:hover:text-indigo-300 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
           >
             <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
@@ -658,19 +666,22 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               )}
             </div>
             <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-              {exportSuccess ? 'Exportado!' : 'Exportar Dados'}
+              {exportSuccess ? t('common:actions.exported') : isExporting ? t('common:actions.saving') : t('common:actions.export')}
             </span>
           </button>
+
+          {/* Language Selector */}
+          <LanguageSelector variant="sidebar" align="top" className="w-full" />
 
           {/* Theme Toggle */}
           <button
             type="button"
             onClick={toggleDarkMode}
             title={
-              isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+              isDarkMode ? t('common:actions.lightMode') : t('common:actions.darkMode')
             }
             aria-label={
-              isDarkMode ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
+              isDarkMode ? t('common:actions.lightMode') : t('common:actions.darkMode')
             }
             className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors"
           >
@@ -682,7 +693,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               )}
             </div>
             <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-              {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
+              {isDarkMode ? t('common:actions.modeLightLabel') : t('common:actions.modeDarkLabel')}
             </span>
           </button>
 
@@ -691,15 +702,15 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             <button
               type="button"
               onClick={handleLogout}
-              title="Sair da Conta"
-              aria-label="Sair da Conta"
+              title={t('common:actions.logout')}
+              aria-label={t('common:actions.logout')}
               className="w-full flex items-center gap-3 px-2 py-2 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-xs font-semibold shadow-2xs transition-colors"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-rose-600 dark:text-rose-400">
                 <LogOut className="w-4 h-4" />
               </div>
               <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-                Sair da Conta
+                {t('common:actions.logout')}
               </span>
             </button>
           )}

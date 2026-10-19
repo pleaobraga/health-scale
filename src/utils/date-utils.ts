@@ -15,23 +15,26 @@ import {
   getDate,
   getDaysInMonth,
 } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { enUS, ptBR } from 'date-fns/locale'
 
 export interface CalendarDayInfo {
-  date: Date;
-  dateStr: string; // 'YYYY-MM-DD'
-  dayNumber: number;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  dayOfWeek: number; // 0 = Sunday, 6 = Saturday
+  date: Date
+  dateStr: string // 'YYYY-MM-DD'
+  dayNumber: number
+  isCurrentMonth: boolean
+  isToday: boolean
+  dayOfWeek: number // 0 = Sunday, 6 = Saturday
 }
 
 /**
- * Returns month formatted in Portuguese (e.g., "Outubro de 2026")
+ * Returns month formatted in Portuguese or English (e.g., "Outubro de 2026" or "October 2026")
  */
-export function formatMonthYear(yearMonth: string): string {
+export function formatMonthYear(yearMonth: string, lang = 'pt-BR'): string {
   const date = parseISO(`${yearMonth}-01`)
-  const formatted = format(date, "MMMM 'de' yyyy", { locale: ptBR })
+  const isEn = typeof lang === 'string' && (lang === 'en-US' || lang.startsWith('en'))
+  const pattern = isEn ? 'MMMM yyyy' : "MMMM 'de' yyyy"
+  const locale = isEn ? enUS : ptBR
+  const formatted = format(date, pattern, { locale })
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
@@ -112,11 +115,12 @@ export function getWeekEndKey(dateStr: string): string {
 }
 
 /**
- * Formats a date string 'YYYY-MM-DD' to PT-BR display 'dd/MM/yyyy'
+ * Formats a date string 'YYYY-MM-DD' to localized display ('dd/MM/yyyy' or 'MM/dd/yyyy')
  */
-export function formatDisplayDate(dateStr: string): string {
+export function formatDisplayDate(dateStr: string, lang = 'pt-BR'): string {
   const date = parseISO(dateStr)
-  return format(date, 'dd/MM/yyyy')
+  const isEn = typeof lang === 'string' && (lang === 'en-US' || lang.startsWith('en'))
+  return format(date, isEn ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
 }
 
 /**
@@ -131,12 +135,13 @@ export function getConsecutiveDates(dateStr: string): { prevDateStr: string; nex
 }
 
 /**
- * Formats a date string 'YYYY-MM-DD' returning 'dd/MM/yyyy' and capitalized weekday
+ * Formats a date string 'YYYY-MM-DD' returning localized date and capitalized weekday
  */
-export function formatDateWithWeekday(dateStr: string): { formattedDate: string; weekday: string } {
+export function formatDateWithWeekday(dateStr: string, lang = 'pt-BR'): { formattedDate: string; weekday: string } {
   const date = parseISO(dateStr)
-  const formattedDate = format(date, 'dd/MM/yyyy')
-  const rawWeekday = format(date, 'EEEE', { locale: ptBR })
+  const isEn = typeof lang === 'string' && (lang === 'en-US' || lang.startsWith('en'))
+  const formattedDate = format(date, isEn ? 'MM/dd/yyyy' : 'dd/MM/yyyy')
+  const rawWeekday = format(date, 'EEEE', { locale: isEn ? enUS : ptBR })
   const weekday = rawWeekday.charAt(0).toUpperCase() + rawWeekday.slice(1)
   return { formattedDate, weekday }
 }

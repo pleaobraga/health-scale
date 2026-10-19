@@ -10,6 +10,7 @@ import {
   Trash2,
   Wand2,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { CalendarHeader } from './calendar-header'
 import { DayCell } from './day-cell'
@@ -18,6 +19,7 @@ import { formatMonthYear, getMonthCalendarGrid } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
 
 export function CalendarGrid() {
+  const { t, i18n } = useTranslation(['calendar', 'common'])
   const {
     currentMonth,
     goToPreviousMonth,
@@ -69,7 +71,7 @@ export function CalendarGrid() {
             <button
               type="button"
               onClick={goToPreviousMonth}
-              title="Mês anterior"
+              title={t('calendar:prevMonth')}
               className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -77,7 +79,7 @@ export function CalendarGrid() {
             <button
               type="button"
               onClick={goToNextMonth}
-              title="Próximo mês"
+              title={t('calendar:nextMonth')}
               className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
             >
               <ChevronRight className="w-5 h-5" />
@@ -87,10 +89,10 @@ export function CalendarGrid() {
           <div>
             <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <CalendarDays className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              {formatMonthYear(currentMonth)}
+              {formatMonthYear(currentMonth, i18n.language)}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Escala de plantões e distribuição de turnos
+              {t('calendar:subtitle')}
             </p>
           </div>
         </div>
@@ -104,40 +106,42 @@ export function CalendarGrid() {
                 onClick={() =>
                   populateMonthWithAvailableCandidates(currentMonth)
                 }
-                title="Preenche dias vagos com as pessoas disponíveis"
+                title={t('calendar:populateAvailableTooltip')}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition shadow-2xs"
               >
                 <Wand2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Povoar com Disponíveis</span>
+                <span className="hidden sm:inline">{t('calendar:populateAvailable')}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
                   const confirmed = window.confirm(
-                    `Deseja realmente limpar todas as escalas de ${formatMonthYear(currentMonth)}?`,
+                    t('calendar:confirmClearMonth', {
+                      month: formatMonthYear(currentMonth, i18n.language),
+                    }),
                   )
                   if (confirmed) {
                     clearMonthAssignments(currentMonth)
                   }
                 }}
-                title="Limpar todas as escalas do mês atual"
-                aria-label="Limpar escalas do mês"
+                title={t('calendar:clearMonthTooltip')}
+                aria-label={t('calendar:clearMonth')}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Limpar Mês</span>
+                <span className="hidden sm:inline">{t('calendar:clearMonth')}</span>
               </button>
 
               {hasUnsavedChanges && (
                 <button
                   type="button"
                   onClick={discardChanges}
-                  title="Descartar alterações e reverter ao último estado salvo"
+                  title={t('calendar:discardTooltip')}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 transition shadow-2xs"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Descartar</span>
+                  <span className="hidden sm:inline">{t('calendar:discard')}</span>
                 </button>
               )}
             </div>
@@ -157,7 +161,7 @@ export function CalendarGrid() {
               }`}
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Visualização</span>
+              <span>{t('calendar:viewMode')}</span>
             </button>
             <button
               type="button"
@@ -171,7 +175,7 @@ export function CalendarGrid() {
               }`}
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>Edição</span>
+              <span>{t('calendar:editMode')}</span>
             </button>
           </div>
 
@@ -186,24 +190,24 @@ export function CalendarGrid() {
                 events,
               })
             }
-            title="Exportar escala do mês para planilha Excel (.xlsx)"
-            aria-label="Exportar para Excel"
+            title={t('calendar:exportExcelTooltip')}
+            aria-label={t('calendar:exportExcel')}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition shadow-2xs"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="hidden sm:inline">Exportar Excel</span>
+            <span className="hidden sm:inline">{t('calendar:exportExcel')}</span>
           </button>
 
           {/* Full Screen Modal Button */}
           <button
             type="button"
             onClick={() => setFullScreenModalOpen(true)}
-            title="Abrir calendário em tela cheia"
-            aria-label="Abrir calendário em tela cheia"
+            title={t('calendar:fullscreenTooltip')}
+            aria-label={t('calendar:fullscreen')}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold transition shadow-2xs"
           >
             <Maximize2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden sm:inline">Tela Cheia</span>
+            <span className="hidden sm:inline">{t('calendar:fullscreen')}</span>
           </button>
         </div>
       </div>
@@ -214,22 +218,20 @@ export function CalendarGrid() {
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span>
-              <strong>Modo Edição Ativo:</strong> As alterações só são gravadas
-              ao clicar em <strong>Salvar</strong>. Se sair do modo de edição
-              sem salvar, o calendário reverte ao estado original.
+              <strong>{t('calendar:editModeActive')}</strong> {t('calendar:editNotice')}
             </span>
           </div>
           {hasUnsavedChanges && (
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
-                ● Alterações não salvas
+                {t('calendar:unsavedChanges')}
               </span>
               <button
                 type="button"
                 onClick={saveSchedule}
                 className="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition"
               >
-                Salvar Agora
+                {t('calendar:saveNow')}
               </button>
             </div>
           )}
@@ -244,9 +246,8 @@ export function CalendarGrid() {
               style={{ backgroundColor: highlightedPerson.color }}
             />
             <span>
-              Exibindo disponibilidade de:{' '}
-              <strong>{highlightedPerson.name}</strong> (dias destacados em
-              amarelo)
+              {t('calendar:showingAvailability')}{' '}
+              <strong>{highlightedPerson.name}</strong> {t('calendar:daysHighlighted')}
             </span>
           </div>
         </div>

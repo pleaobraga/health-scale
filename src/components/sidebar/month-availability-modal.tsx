@@ -1,6 +1,7 @@
 import { Calendar, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import { AvailabilityMiniCalendar } from './availability-mini-calendar'
 import { formatMonthYear } from '../../utils/date-utils'
@@ -8,12 +9,12 @@ import { formatMonthYear } from '../../utils/date-utils'
 import type { Person } from '../../types'
 
 export interface MonthAvailabilityModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  person: Person | null;
-  currentMonth: string;
-  initialAvailableDays: number[];
-  onSave: (personId: string, availableDays: number[]) => void;
+  isOpen: boolean
+  onClose: () => void
+  person: Person | null
+  currentMonth: string
+  initialAvailableDays: number[]
+  onSave: (personId: string, availableDays: number[]) => void
 }
 
 export function MonthAvailabilityModal({
@@ -24,6 +25,7 @@ export function MonthAvailabilityModal({
   initialAvailableDays,
   onSave,
 }: MonthAvailabilityModalProps) {
+  const { t, i18n } = useTranslation(['people', 'common'])
   const [availableDays, setAvailableDays] = useState<number[]>([])
 
   useEffect(() => {
@@ -71,10 +73,10 @@ export function MonthAvailabilityModal({
                 id="month-avail-modal-title"
                 className="text-base font-bold text-slate-900 dark:text-white truncate max-w-[240px]"
               >
-                Disponibilidade do Mês
+                {t('people:monthAvailability.title')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">
-                {person.name} • {formatMonthYear(currentMonth)}
+                {person.name} • {formatMonthYear(currentMonth, i18n.language)}
               </p>
             </div>
           </div>
@@ -82,8 +84,8 @@ export function MonthAvailabilityModal({
           <button
             type="button"
             onClick={onClose}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:close')}
+            aria-label={t('common:close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -94,9 +96,11 @@ export function MonthAvailabilityModal({
         <div className="p-6 overflow-y-auto space-y-4">
           <div className="flex items-center gap-2 p-3 bg-indigo-50/60 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/50 text-xs text-indigo-900 dark:text-indigo-200">
             <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-            <span>
-              Marque os dias em que <strong>{person.name}</strong> está disponível para assumir plantões neste mês.
-            </span>
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t('people:monthAvailability.instruction', { name: person.name }),
+              }}
+            />
           </div>
 
           <AvailabilityMiniCalendar
@@ -110,7 +114,9 @@ export function MonthAvailabilityModal({
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-            {availableDays.length} {availableDays.length === 1 ? 'dia marcado' : 'dias marcados'}
+            {availableDays.length === 1
+              ? t('people:monthAvailability.markedDays', { count: availableDays.length })
+              : t('people:monthAvailability.markedDaysPlural', { count: availableDays.length })}
           </span>
 
           <div className="flex items-center gap-2">
@@ -119,14 +125,14 @@ export function MonthAvailabilityModal({
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
             >
-              Cancelar
+              {t('people:monthAvailability.cancel')}
             </button>
             <button
               type="button"
               onClick={handleSave}
               className="px-5 py-2 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition"
             >
-              Salvar Disponibilidade
+              {t('people:monthAvailability.save')}
             </button>
           </div>
         </div>
@@ -134,4 +140,4 @@ export function MonthAvailabilityModal({
     </div>,
     document.body
   )
-};
+}

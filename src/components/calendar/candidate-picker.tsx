@@ -1,16 +1,17 @@
 import { Plus, Check } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { Person } from '../../types'
 
 export interface CandidatePickerProps {
-  dateStr: string;
-  dayNumber: number;
-  month: string;
-  assignedPersonIds: string[];
-  allPersons: Person[];
-  isPersonAvailable: (personId: string, dayNumber: number) => boolean;
-  onSelectPerson: (personId: string) => void;
+  dateStr: string
+  dayNumber: number
+  month: string
+  assignedPersonIds: string[]
+  allPersons: Person[]
+  isPersonAvailable: (personId: string, dayNumber: number) => boolean
+  onSelectPerson: (personId: string) => void
 }
 
 export function CandidatePicker({
@@ -20,6 +21,7 @@ export function CandidatePicker({
   isPersonAvailable,
   onSelectPerson,
 }: CandidatePickerProps) {
+  const { t } = useTranslation(['calendar', 'common'])
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -56,23 +58,23 @@ export function CandidatePicker({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        title="Adicionar pessoa a este dia"
+        title={t('calendar:dayCell.addPersonTooltip')}
         className="flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition"
       >
         <Plus className="w-3 h-3 text-slate-600 dark:text-slate-400" />
-        <span>Adicionar</span>
+        <span>{t('calendar:dayCell.addPerson')}</span>
       </button>
 
       {isOpen && (
         <div className="absolute left-0 bottom-full mb-1 z-30 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 animate-fadeIn">
           <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
-            Escalar pessoa
+            {t('calendar:candidatePicker.assignPerson')}
           </div>
 
           <div className="max-h-52 overflow-y-auto py-1">
             {availablePersons.length === 0 && (
               <div className="px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-lg m-1.5 border border-amber-200/80 dark:border-amber-800/80 text-center font-medium">
-                Nenhum profissional com disponibilidade para o dia {dayNumber}
+                {t('calendar:candidatePicker.noAvailable', { day: dayNumber })}
               </div>
             )}
 
@@ -85,7 +87,7 @@ export function CandidatePicker({
                   setIsOpen(false)
                 }}
                 className="w-full text-left px-2.5 py-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between text-xs transition cursor-pointer"
-                title={`Adicionar ${person.name}`}
+                title={t('calendar:candidatePicker.addPerson', { name: person.name })}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span
@@ -96,7 +98,7 @@ export function CandidatePicker({
                     {person.name}
                   </span>
                 </div>
-                <span title="Marcou disponibilidade" className="text-emerald-600 dark:text-emerald-400 shrink-0">
+                <span title={t('calendar:candidatePicker.markedAvailable')} className="text-emerald-600 dark:text-emerald-400 shrink-0">
                   <Check className="w-3.5 h-3.5" />
                 </span>
               </button>
@@ -105,7 +107,7 @@ export function CandidatePicker({
             {unavailablePersons.length > 0 && (
               <>
                 <div className="px-2.5 pt-2 pb-1 text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-t border-slate-100 dark:border-slate-700 mt-1">
-                  Sem disponibilidade ({unavailablePersons.length})
+                  {t('calendar:candidatePicker.noAvailabilityCount', { count: unavailablePersons.length })}
                 </div>
                 {unavailablePersons.map((person) => (
                   <button
@@ -114,7 +116,7 @@ export function CandidatePicker({
                     disabled
                     aria-disabled="true"
                     className="w-full text-left px-2.5 py-1.5 opacity-40 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between text-xs transition"
-                    title={`${person.name} não possui disponibilidade no dia ${dayNumber} e não pode ser adicionado(a)`}
+                    title={t('calendar:candidatePicker.unavailableTooltip', { name: person.name, day: dayNumber })}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span
@@ -126,10 +128,10 @@ export function CandidatePicker({
                       </span>
                     </div>
                     <span
-                      title="Sem disponibilidade para esta data"
+                      title={t('calendar:candidatePicker.noAvailabilityForDate')}
                       className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-950/60 px-1.5 py-0.5 rounded shrink-0"
                     >
-                      Indisponível
+                      {t('calendar:candidatePicker.unavailableBadge')}
                     </span>
                   </button>
                 ))}
@@ -140,4 +142,4 @@ export function CandidatePicker({
       )}
     </div>
   )
-};
+}

@@ -6,10 +6,12 @@ import {
   ShieldCheck,
   RotateCcw,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useScheduleStore } from '../../store/use-schedule-store'
 
 export function ValidationPanel() {
+  const { t } = useTranslation(['calendar', 'common'])
   const {
     validateCurrentSchedule,
     saveSchedule,
@@ -30,17 +32,17 @@ export function ValidationPanel() {
   const getRuleBadge = (rule: string) => {
     switch (rule) {
       case 'consecutive_days':
-        return { label: 'Descanso Consecutivo', color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800' }
+        return { label: t('calendar:validation.rules.consecutive_days'), color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800' }
       case 'weekly_limit':
-        return { label: 'Limite Semanal', color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800' }
+        return { label: t('calendar:validation.rules.weekly_limit'), color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800' }
       case 'multi_assigned':
-        return { label: 'Conflito de Alocação', color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800' }
+        return { label: t('calendar:validation.rules.multi_assigned'), color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800' }
       case 'empty_day':
-        return { label: 'Dia Vazio', color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
+        return { label: t('calendar:validation.rules.empty_day'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
       case 'not_available':
-        return { label: 'Indisponibilidade', color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' }
+        return { label: t('calendar:validation.rules.not_available'), color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' }
       default:
-        return { label: 'Auditoria', color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
+        return { label: t('calendar:validation.rules.default'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
     }
   }
 
@@ -54,10 +56,10 @@ export function ValidationPanel() {
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-              Operação & Auditoria da Escala
+              {t('calendar:validation.title')}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Valide as regras de descanso e limites semanais antes de publicar.
+              {t('calendar:validation.subtitle')}
             </p>
           </div>
         </div>
@@ -70,7 +72,7 @@ export function ValidationPanel() {
             className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:bg-slate-300 dark:active:bg-slate-600 border border-slate-300 dark:border-slate-700 rounded-xl transition shadow-2xs"
           >
             <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span>Validar Escala</span>
+            <span>{t('calendar:validation.validate')}</span>
           </button>
 
           <button
@@ -80,7 +82,7 @@ export function ValidationPanel() {
             className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 rounded-xl transition shadow-sm"
           >
             <Save className="w-4 h-4" />
-            <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
+            <span>{isSaving ? t('calendar:validation.saving') : t('calendar:validation.save')}</span>
           </button>
         </div>
       </div>
@@ -101,10 +103,15 @@ export function ValidationPanel() {
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Resultado da Auditoria de Regras
+                {t('calendar:validation.resultsTitle')}
               </h4>
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                ({errorsCount} {errorsCount === 1 ? 'erro crítico' : 'erros críticos'}, {warningsCount} {warningsCount === 1 ? 'aviso' : 'avisos'})
+                {t('calendar:validation.resultsSummary', {
+                  errors: errorsCount,
+                  errorLabel: errorsCount === 1 ? t('calendar:validation.criticalError') : t('calendar:validation.criticalErrors'),
+                  warnings: warningsCount,
+                  warningLabel: warningsCount === 1 ? t('calendar:validation.warning') : t('calendar:validation.warnings'),
+                })}
               </span>
             </div>
 
@@ -114,7 +121,7 @@ export function ValidationPanel() {
               className="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 transition"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              Recolher painel
+              {t('calendar:validation.collapse')}
             </button>
           </div>
 
@@ -123,9 +130,9 @@ export function ValidationPanel() {
             <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 text-emerald-800 dark:text-emerald-200">
               <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
-                <p className="text-sm font-bold">Escala 100% Conforme!</p>
+                <p className="text-sm font-bold">{t('calendar:validation.allGoodTitle')}</p>
                 <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
-                  Nenhuma infração de descanso consecutivo, limite semanal ou divergência de disponibilidade foi encontrada.
+                  {t('calendar:validation.allGoodDesc')}
                 </p>
               </div>
             </div>
@@ -165,7 +172,7 @@ export function ValidationPanel() {
                             isCritical ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
                           }`}
                         >
-                          {isCritical ? 'BLOQUEANTE' : 'AVISO'}
+                          {isCritical ? t('calendar:validation.blocking') : t('calendar:validation.warningBadge')}
                         </span>
                       </div>
 
@@ -182,4 +189,4 @@ export function ValidationPanel() {
       )}
     </div>
   )
-};
+}

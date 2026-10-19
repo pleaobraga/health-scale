@@ -1,10 +1,11 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import { useAuth } from '../../context/auth-context'
 
 export interface PrivateRouteProps {
-  children?: React.ReactNode;
+  children?: React.ReactNode
 }
 
 /**
@@ -13,6 +14,7 @@ export interface PrivateRouteProps {
  * redirects unauthenticated users to #/login, preserving location state.
  */
 export function PrivateRoute({ children }: PrivateRouteProps) {
+  const { t } = useTranslation('auth')
   const { user, loading } = useAuth()
   const location = useLocation()
 
@@ -25,7 +27,7 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Verificando credenciais...
+            {t('verifyingCredentials')}
           </p>
         </div>
       </div>

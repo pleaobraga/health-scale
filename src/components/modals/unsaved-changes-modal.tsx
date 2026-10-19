@@ -1,10 +1,12 @@
 import { AlertTriangle, Save, Trash2, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation, Trans } from 'react-i18next'
 
 import { useScheduleStore } from '../../store/use-schedule-store'
 
 export function UnsavedChangesModal() {
+  const { t } = useTranslation(['calendar', 'common'])
   const {
     isUnsavedModalOpen,
     setUnsavedModalOpen,
@@ -58,10 +60,10 @@ export function UnsavedChangesModal() {
                 id="unsaved-modal-title"
                 className="text-base font-bold text-slate-900 dark:text-white"
               >
-                Alterações Não Salvas
+                {t('calendar:unsavedModal.title')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Você possui modificações pendentes na escala
+                {t('calendar:unsavedModal.subtitle')}
               </p>
             </div>
           </div>
@@ -69,8 +71,8 @@ export function UnsavedChangesModal() {
           <button
             type="button"
             onClick={handleCancel}
-            title="Fechar (ESC)"
-            aria-label="Fechar"
+            title={t('common:actions.close')}
+            aria-label={t('common:actions.close')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
@@ -80,11 +82,13 @@ export function UnsavedChangesModal() {
         {/* Body */}
         <div className="p-6 space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-            Se você alternar para o modo de <strong>Visualização</strong> sem salvar, todas as escalas e turnos modificados serão descartados e o calendário retornará ao estado original.
+            <Trans ns="calendar" i18nKey="unsavedModal.message">
+              Se você alternar para o modo de <strong>Visualização</strong> sem salvar, todas as escalas e turnos modificados serão descartados e o calendário retornará ao estado original.
+            </Trans>
           </p>
 
           <div className="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200/80 dark:border-amber-800 text-xs font-semibold text-amber-900 dark:text-amber-200">
-            Deseja salvar as alterações feitas antes de sair do modo de edição?
+            {t('calendar:unsavedModal.question')}
           </div>
         </div>
 
@@ -95,7 +99,7 @@ export function UnsavedChangesModal() {
             onClick={handleCancel}
             className="w-full sm:w-auto h-9 px-3.5 flex items-center justify-center text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition whitespace-nowrap shrink-0"
           >
-            Continuar Editando
+            {t('calendar:unsavedModal.stay')}
           </button>
 
           <button
@@ -104,7 +108,7 @@ export function UnsavedChangesModal() {
             className="w-full sm:w-auto h-9 flex items-center justify-center gap-1.5 px-3.5 text-xs font-bold rounded-xl text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs whitespace-nowrap shrink-0"
           >
             <Trash2 className="w-3.5 h-3.5 shrink-0" />
-            <span>Descartar Alterações</span>
+            <span>{t('calendar:unsavedModal.discardAndExit')}</span>
           </button>
 
           <button
@@ -113,12 +117,12 @@ export function UnsavedChangesModal() {
             className="w-full sm:w-auto h-9 flex items-center justify-center gap-1.5 px-4 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-xs whitespace-nowrap shrink-0"
           >
             <Save className="w-3.5 h-3.5 shrink-0" />
-            <span>Salvar e Sair</span>
+            <span>{t('calendar:unsavedModal.saveAndExit')}</span>
           </button>
         </div>
       </div>
     </div>,
     document.body
   )
-};
+}
 

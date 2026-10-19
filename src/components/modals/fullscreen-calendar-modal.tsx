@@ -9,22 +9,14 @@ import {
 } from 'lucide-react'
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { getMonthCalendarGrid, formatMonthYear, formatDateWithWeekday } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
 
-const WEEKDAYS = [
-  { short: 'Dom', full: 'Domingo', isWeekend: true },
-  { short: 'Seg', full: 'Segunda-feira', isWeekend: false },
-  { short: 'Ter', full: 'Terça-feira', isWeekend: false },
-  { short: 'Qua', full: 'Quarta-feira', isWeekend: false },
-  { short: 'Qui', full: 'Quinta-feira', isWeekend: false },
-  { short: 'Sex', full: 'Sexta-feira', isWeekend: false },
-  { short: 'Sáb', full: 'Sábado', isWeekend: true },
-]
-
 export function FullScreenCalendarModal() {
+  const { t, i18n } = useTranslation(['calendar', 'common'])
   const {
     isFullScreenModalOpen,
     setFullScreenModalOpen,
@@ -35,6 +27,16 @@ export function FullScreenCalendarModal() {
     assignments,
     events,
   } = useScheduleStore()
+
+  const weekdays = [
+    { short: t('calendar:weekdays.sun'), full: t('calendar:weekdays.sunday'), isWeekend: true },
+    { short: t('calendar:weekdays.mon'), full: t('calendar:weekdays.monday'), isWeekend: false },
+    { short: t('calendar:weekdays.tue'), full: t('calendar:weekdays.tuesday'), isWeekend: false },
+    { short: t('calendar:weekdays.wed'), full: t('calendar:weekdays.wednesday'), isWeekend: false },
+    { short: t('calendar:weekdays.thu'), full: t('calendar:weekdays.thursday'), isWeekend: false },
+    { short: t('calendar:weekdays.fri'), full: t('calendar:weekdays.friday'), isWeekend: false },
+    { short: t('calendar:weekdays.sat'), full: t('calendar:weekdays.saturday'), isWeekend: true },
+  ]
 
   const daysGrid = getMonthCalendarGrid(currentMonth)
   const personMap = new Map(persons.map((p) => [p.id, p]))
@@ -91,14 +93,14 @@ export function FullScreenCalendarModal() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white print:text-slate-950 print:text-2xl tracking-tight">
-                  {formatMonthYear(currentMonth)}
+                  {formatMonthYear(currentMonth, i18n.language)}
                 </h2>
                 <span className="text-[11px] font-bold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 hidden sm:inline print:hidden">
-                  Tela Cheia
+                  {t('calendar:fullscreen')}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 print:text-slate-600">
-                Visualização panorâmica de todas as escalas e plantões do mês
+                {t('calendar:fullscreenSubtitle')}
               </p>
             </div>
           </div>
@@ -110,7 +112,7 @@ export function FullScreenCalendarModal() {
               <button
                 type="button"
                 onClick={goToPreviousMonth}
-                title="Mês anterior"
+                title={t('calendar:prevMonth')}
                 className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -118,7 +120,7 @@ export function FullScreenCalendarModal() {
               <button
                 type="button"
                 onClick={goToNextMonth}
-                title="Próximo mês"
+                title={t('calendar:nextMonth')}
                 className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -129,29 +131,29 @@ export function FullScreenCalendarModal() {
             <button
               type="button"
               onClick={handleExportExcel}
-              title="Exportar para Excel (.xlsx)"
+              title={t('calendar:exportExcelTooltip')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition shadow-2xs"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden sm:inline">Exportar Excel</span>
+              <span className="hidden sm:inline">{t('calendar:exportExcel')}</span>
             </button>
 
             {/* Print button */}
             <button
               type="button"
               onClick={handlePrint}
-              title="Imprimir escala do mês / Salvar em PDF"
+              title={t('calendar:printTooltip')}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 text-xs font-bold transition shadow-2xs"
             >
               <Printer className="w-4 h-4" />
-              <span className="hidden sm:inline">Imprimir / PDF</span>
+              <span className="hidden sm:inline">{t('calendar:printPdf')}</span>
             </button>
 
             {/* Close button */}
             <button
               type="button"
               onClick={() => setFullScreenModalOpen(false)}
-              title="Fechar tela cheia (ESC)"
+              title={t('calendar:fullscreenClose')}
               className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 transition"
             >
               <X className="w-5 h-5" />
@@ -163,7 +165,7 @@ export function FullScreenCalendarModal() {
         <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-slate-50/50 dark:bg-slate-950 print:overflow-visible print:bg-white print:h-auto">
           {/* Weekday headers */}
           <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-200 shrink-0 print:bg-slate-100 print:text-slate-900 print:border-b-2 print:border-slate-400">
-            {WEEKDAYS.map((day) => (
+            {weekdays.map((day) => (
               <div
                 key={day.full}
                 className={`py-2 text-center border-r border-slate-200 dark:border-slate-800 last:border-r-0 print:border-r print:border-slate-300 ${
@@ -226,7 +228,7 @@ export function FullScreenCalendarModal() {
                   <div className="flex-1 flex flex-col justify-center space-y-1">
                     {assigned.length === 0 ? (
                       <div className="text-center py-1">
-                        <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400">Vago</span>
+                        <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400">{t('calendar:dayCell.vacant')}</span>
                       </div>
                     ) : (
                       assigned.map((personId) => {
@@ -254,7 +256,7 @@ export function FullScreenCalendarModal() {
 
                     {assigned.length > 1 && (
                       <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 print:text-rose-800 print:border-rose-300">
-                        Conflito: {assigned.length} escalados
+                        {t('calendar:dayCell.conflict', { count: assigned.length })}
                       </span>
                     )}
                   </div>
@@ -273,15 +275,18 @@ export function FullScreenCalendarModal() {
             <div className="mb-4 pb-2 border-b-2 border-slate-800 dark:border-slate-800 print:border-slate-800 flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-extrabold text-slate-950 dark:text-slate-950 print:text-slate-950 tracking-tight">
-                  Eventos do Mês – {formatMonthYear(currentMonth)}
+                  {t('calendar:fullscreenEventsTitle', { month: formatMonthYear(currentMonth, i18n.language) })}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-600 print:text-slate-600 mt-0.5">
-                  Listagem cronológica dos eventos e programações especiais cadastradas para o período
+                  {t('calendar:fullscreenEventsSubtitle')}
                 </p>
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-800 print:text-slate-800 bg-slate-100 dark:bg-slate-100 print:bg-slate-100 px-3 py-1 rounded-full border border-slate-300 dark:border-slate-300 print:border-slate-300">
-                  Total: {monthEvents.length} {monthEvents.length === 1 ? 'evento' : 'eventos'}
+                  {t('calendar:totalEventsBadge', {
+                    count: monthEvents.length,
+                    label: monthEvents.length === 1 ? t('calendar:eventLabel') : t('calendar:eventsLabel'),
+                  })}
                 </span>
               </div>
             </div>
@@ -289,16 +294,16 @@ export function FullScreenCalendarModal() {
             <table className="w-full border-collapse border border-slate-300 dark:border-slate-300 print:border-slate-300 text-left text-xs bg-white dark:bg-white print:bg-white text-slate-900 dark:text-slate-900 print:text-slate-900">
               <thead>
                 <tr className="bg-slate-100 dark:bg-slate-100 print:bg-slate-100 border-b-2 border-slate-400 dark:border-slate-400 print:border-slate-400 text-slate-900 dark:text-slate-900 print:text-slate-900 font-bold">
-                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-36 text-slate-900 dark:text-slate-900 print:text-slate-900">Data</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-24 text-slate-900 dark:text-slate-900 print:text-slate-900">Horário</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-1/4 text-slate-900 dark:text-slate-900 print:text-slate-900">Evento</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 text-slate-900 dark:text-slate-900 print:text-slate-900">Endereço</th>
-                  <th className="py-2.5 px-3 w-48 text-slate-900 dark:text-slate-900 print:text-slate-900">Responsável do Serviço</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-36 text-slate-900 dark:text-slate-900 print:text-slate-900">{t('calendar:table.date')}</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-24 text-slate-900 dark:text-slate-900 print:text-slate-900">{t('calendar:table.time')}</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-1/4 text-slate-900 dark:text-slate-900 print:text-slate-900">{t('calendar:table.event')}</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 text-slate-900 dark:text-slate-900 print:text-slate-900">{t('calendar:table.address')}</th>
+                  <th className="py-2.5 px-3 w-48 text-slate-900 dark:text-slate-900 print:text-slate-900">{t('calendar:table.responsible')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-200 print:divide-slate-200">
                 {monthEvents.map((event) => {
-                  const { formattedDate, weekday } = formatDateWithWeekday(event.date)
+                  const { formattedDate, weekday } = formatDateWithWeekday(event.date, i18n.language)
                   const assignedIds = assignments[event.date] || []
                   const servicePersonId = event.personId || assignedIds[0]
                   const servicePerson = servicePersonId ? personMap.get(servicePersonId) : null
@@ -317,7 +322,7 @@ export function FullScreenCalendarModal() {
                         {event.time ? (
                           <span className="font-semibold text-slate-800 dark:text-slate-800 print:text-slate-800">{event.time}</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">Dia todo</span>
+                          <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">{t('calendar:allDay')}</span>
                         )}
                       </td>
                       <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 font-bold text-slate-900 dark:text-slate-900 print:text-slate-900">

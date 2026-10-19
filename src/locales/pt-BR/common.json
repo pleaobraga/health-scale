@@ -1,0 +1,62 @@
+{
+  "appName": "Escalas Mensais",
+  "appSubtitle": "HealthSchedule",
+  "close": "Fechar",
+  "cancel": "Cancelar",
+  "save": "Salvar",
+  "errorBoundary": {
+    "unknownError": "Erro desconhecido",
+    "title": "Algo inesperado aconteceu",
+    "description": "Ocorreu um erro inesperado ao renderizar esta seção da aplicação. Seus dados locais permanecem salvos em segurança.",
+    "retry": "Tentar novamente"
+  },
+  "nav": {
+    "calendar": "Calendário de Escalas",
+    "people": "Gerenciar Pessoas",
+    "addresses": "Gerenciar Endereços",
+    "import": "Importar Dados",
+    "settings": "Configurações",
+    "users": "Gestão de Usuários"
+  },
+  "actions": {
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "confirm": "Confirmar",
+    "close": "Fechar",
+    "export": "Exportar Dados",
+    "exported": "Exportado!",
+    "pullCloud": "Puxar Dados da Nuvem",
+    "pullCloudTooltip": "Buscar dados atualizados da nuvem (Firestore)",
+    "pullingCloud": "Puxando...",
+    "pullSuccess": "Atualizado!",
+    "forceCloud": "Forçar Dados na Nuvem",
+    "forcingCloud": "Forçando...",
+    "forceSuccess": "Forçado!",
+    "copy": "Copiar",
+    "copied": "Copiado!",
+    "clearLocal": "Limpar Todos os Dados Locais",
+    "clearingLocal": "Limpando...",
+    "clearedLocal": "Todos os dados locais foram apagados com sucesso!",
+    "lightMode": "Mudar para Modo Claro",
+    "darkMode": "Mudar para Modo Escuro",
+    "modeLightLabel": "Modo Claro",
+    "modeDarkLabel": "Modo Escuro",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu",
+    "logout": "Sair da Conta"
+  },
+  "sync": {
+    "cloudActive": "Nuvem Ativa",
+    "localOnly": "Apenas Local"
+  },
+  "languages": {
+    "title": "Idioma",
+    "select": "Selecione o idioma",
+    "ptBR": "Português (Brasil)",
+    "enUS": "English (US)"
+  }
+}
+

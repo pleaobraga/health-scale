@@ -152,7 +152,7 @@ export function validateSchedule({
 
         if (workedDatesInWeek.length > 2) {
           const weekEnd = getWeekEndKey(dateStr)
-          const formattedDatesList = workedDatesInWeek.map(formatDisplayDate).join(', ')
+          const formattedDatesList = workedDatesInWeek.map((d) => formatDisplayDate(d)).join(', ')
           errors.push({
             id: `weekly_${personId}_${weekStart}`,
             rule: 'weekly_limit',

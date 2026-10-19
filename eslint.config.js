@@ -1,6 +1,7 @@
 import storybook from 'eslint-plugin-storybook'
 
 import js from '@eslint/js'
+import i18nextPlugin from 'eslint-plugin-i18next'
 import importPlugin from 'eslint-plugin-import-x'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
@@ -22,7 +23,8 @@ export default tseslint.config(
       ],
       plugins: {
         react: reactPlugin,
-        import: importPlugin
+        import: importPlugin,
+        i18next: i18nextPlugin
       },
       languageOptions: {
         ecmaVersion: 2020,
@@ -58,18 +60,31 @@ export default tseslint.config(
             alphabetize: { order: 'asc', caseInsensitive: true },
             'newlines-between': 'always'
           }
+        ],
+        'i18next/no-literal-string': [
+          'error',
+          {
+            mode: 'jsx-only',
+            'jsx-attributes': {
+              include: ['title', 'aria-label', 'placeholder', 'alt']
+            }
+          }
         ]
       }
     },
     {
       files: [
         '**/*.stories.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
+        '**/*.test.{ts,tsx}',
         '*.config.{ts,js,mjs}',
-        '.storybook/**/*.{ts,tsx}'
+        '.storybook/**/*.{ts,tsx}',
+        'src/router/**/*.{ts,tsx}'
       ],
       rules: {
         'import/no-default-export': 'off',
-        'no-console': 'off'
+        'no-console': 'off',
+        'i18next/no-literal-string': 'off'
       }
     }
   ],

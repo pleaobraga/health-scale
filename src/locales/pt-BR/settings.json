@@ -1,0 +1,65 @@
+{
+  "title": "Configurações Gerais",
+  "subtitle": "Preferências do sistema, persistência e sincronização de dados",
+  "languageSection": {
+    "title": "Idioma / Language",
+    "description": "Selecione o idioma de exibição do sistema",
+    "helper": "Alterne entre Português e Inglês com suporte em tempo real em todas as telas."
+  },
+  "cloudSyncSection": {
+    "title": "Sincronização na Nuvem (Firestore)",
+    "subtitle": "Recurso exclusivo do Administrador • Plano Spark Custo Zero",
+    "toggleLabel": "Sincronização contínua na nuvem",
+    "toggleActiveDesc": "As alterações salvas são sincronizadas automaticamente com o Firestore.",
+    "toggleInactiveDesc": "Os dados ficam armazenados apenas no navegador (offline-first).",
+    "pullButton": "Puxar Dados da Nuvem",
+    "pullButtonDesc": "Baixa o estado mais recente do Firestore para este dispositivo",
+    "pulling": "Sincronizando...",
+    "pullSuccess": "Dados sincronizados com sucesso a partir da nuvem!",
+    "pullError": "Falha ao buscar dados na nuvem."
+  },
+  "appearanceSection": {
+    "title": "Aparência e Tema",
+    "theme": "Modo Escuro / Claro",
+    "darkActive": "O tema escuro está ativado atualmente",
+    "lightActive": "O tema claro está ativado atualmente",
+    "switchToLight": "Alternar para Modo Claro",
+    "switchToDark": "Alternar para Modo Escuro"
+  },
+  "storageSection": {
+    "title": "Resumo do Armazenamento Local",
+    "staff": "Profissionais",
+    "activeStaff": "{{count}} ativos",
+    "assignedDays": "Dias com Escala",
+    "assignedDaysDesc": "Dias com alocações salvas",
+    "events": "Eventos do Mês",
+    "eventsDesc": "Avisos e plantões registrados"
+  },
+  "backupSection": {
+    "title": "Backup e Segurança de Dados",
+    "downloadBackup": "Baixar Cópia (.json)",
+    "downloadSuccess": "Backup baixado com sucesso!",
+    "importOrRestore": "Importar ou Restaurar"
+  },
+  "dangerSection": {
+    "title": "Redefinir Armazenamento Local",
+    "description": "Apaga todas as escalas, pessoas, endereços e disponibilidades salvos localmente neste navegador para o seu usuário.",
+    "note": "Esta ação não altera nem remove nenhum dado salvo na nuvem (Firestore).",
+    "clearButton": "Limpar Todos os Dados Locais",
+    "clearedFeedback": "Todos os dados locais foram apagados com sucesso!"
+  },
+  "clearLocalDataModal": {
+    "title": "Limpar Todos os Dados Locais",
+    "description": "Tem certeza de que deseja apagar todos os dados locais? Esta ação removerá <strong class=\"text-rose-600 dark:text-rose-400 font-bold\">TODAS</strong> as pessoas, escalas, eventos e endereços armazenados localmente neste navegador.",
+    "note": "Nota: Os dados sincronizados na nuvem (Firestore) não serão afetados por esta ação.",
+    "cancel": "Cancelar",
+    "confirm": "Sim, Limpar Tudo",
+    "clearing": "Limpando...",
+    "closeAria": "Fechar modal"
+  },
+  "systemSection": {
+    "title": "Gerenciador de Escalas Mensais • v1.0.0",
+    "description": "Aplicação Single Page Application (SPA) 100% client-side com persistência local em IndexedDB/LocalStorage, autenticação obrigatória via Firebase Auth e sincronização sob demanda no plano Spark do Firestore."
+  }
+}
+
