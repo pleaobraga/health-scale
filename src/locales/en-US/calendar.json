@@ -21,6 +21,8 @@
   "confirmClearMonth": "Are you sure you want to clear all shifts for {{month}}?",
   "exportExcel": "Export Excel",
   "exportExcelTooltip": "Export to Excel (.xlsx)",
+  "actionsMenu": "Options",
+  "actionsMenuTooltip": "More options and schedule actions",
   "fullscreen": "Fullscreen",
   "fullscreenTooltip": "Open calendar in fullscreen mode",
   "fullscreenSubtitle": "Panoramic overview of all monthly shifts and rosters",

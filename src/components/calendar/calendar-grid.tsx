@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CloudDownload,
@@ -8,11 +9,13 @@ import {
   Eye,
   FileSpreadsheet,
   Maximize2,
+  MoreHorizontal,
+  Printer,
   RotateCcw,
   Trash2,
   Wand2,
 } from 'lucide-react'
-import { use, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CalendarHeader } from './calendar-header'
@@ -29,6 +32,8 @@ export function CalendarGrid() {
 
   const [isPullingCloud, setIsPullingCloud] = useState(false)
   const [pullSuccess, setPullSuccess] = useState(false)
+  const [isActionsOpen, setIsActionsOpen] = useState(false)
+  const actionsMenuRef = useRef<HTMLDivElement>(null)
 
   const {
     currentMonth,
@@ -68,6 +73,40 @@ export function CalendarGrid() {
       setIsPullingCloud(false)
     }
   }
+
+  const handlePrint = () => {
+    setFullScreenModalOpen(true)
+    setTimeout(() => {
+      window.print()
+    }, 200)
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        actionsMenuRef.current &&
+        !actionsMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsActionsOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsActionsOpen(false)
+      }
+    }
+
+    if (isActionsOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isActionsOpen])
 
   const daysGrid = getMonthCalendarGrid(currentMonth)
 
@@ -179,97 +218,139 @@ export function CalendarGrid() {
             </div>
           )}
 
-          {/* Mode Switch Toggle Button */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-            <button
-              type="button"
-              onClick={() => {
-                if (isEditMode) toggleEditMode()
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                !isEditMode
-                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{t('calendar:viewMode')}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!isEditMode) toggleEditMode()
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                isEditMode
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>{t('calendar:editMode')}</span>
-            </button>
-          </div>
-
-          {/* Pull from Cloud Button */}
+          {/* Mode Switch Button (Toggles between Edição and Visualização) */}
           <button
             type="button"
-            onClick={handlePullCloud}
-            disabled={isPullingCloud}
-            title={t('common:actions.pullCloudTooltip')}
-            aria-label={t('common:actions.pullCloud')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-xs font-bold transition shadow-2xs disabled:opacity-50"
+            onClick={toggleEditMode}
+            title={isEditMode ? t('calendar:viewMode') : t('calendar:editMode')}
+            aria-label={isEditMode ? t('calendar:viewMode') : t('calendar:editMode')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${
+              isEditMode
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+            }`}
           >
-            {pullSuccess ? (
-              <Check className="w-3.5 h-3.5 text-emerald-500" />
+            {isEditMode ? (
+              <>
+                <Eye className="w-3.5 h-3.5" />
+                <span>{t('calendar:viewMode')}</span>
+              </>
             ) : (
-              <CloudDownload
-                className={`w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 ${
-                  isPullingCloud ? 'animate-bounce' : ''
+              <>
+                <Edit3 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>{t('calendar:editMode')}</span>
+              </>
+            )}
+          </button>
+
+          {/* Grouped Actions Dropdown (Always visible on all screen sizes) */}
+          <div ref={actionsMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsActionsOpen(!isActionsOpen)}
+              title={t('calendar:actionsMenuTooltip')}
+              aria-label={t('calendar:actionsMenu')}
+              aria-expanded={isActionsOpen}
+              aria-haspopup="menu"
+              data-testid="calendar-actions-dropdown-trigger"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+            >
+              <MoreHorizontal className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+              <span className="hidden sm:inline">{t('calendar:actionsMenu')}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                  isActionsOpen ? 'rotate-180' : ''
                 }`}
               />
+            </button>
+
+            {isActionsOpen && (
+              <div
+                role="menu"
+                aria-label={t('calendar:actionsMenu')}
+                data-testid="calendar-actions-dropdown-menu"
+                className="absolute right-0 top-full mt-2 z-50 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
+              >
+                {/* Option 1: Puxar Dados da Nuvem */}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsActionsOpen(false)
+                    void handlePullCloud()
+                  }}
+                  disabled={isPullingCloud}
+                  className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {pullSuccess ? (
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                    ) : (
+                      <CloudDownload
+                        className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 ${
+                          isPullingCloud ? 'animate-bounce' : ''
+                        }`}
+                      />
+                    )}
+                    <span className="truncate">
+                      {pullSuccess
+                        ? t('common:actions.pullSuccess')
+                        : isPullingCloud
+                          ? t('common:actions.pullingCloud')
+                          : t('common:actions.pullCloud')}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Option 2: Exportar Excel */}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsActionsOpen(false)
+                    exportScheduleToExcel({
+                      month: currentMonth,
+                      persons,
+                      assignments,
+                      events,
+                    })
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">{t('calendar:exportExcel')}</span>
+                </button>
+
+                {/* Option 3: Imprimir / PDF */}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsActionsOpen(false)
+                    handlePrint()
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <Printer className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
+                  <span className="truncate">{t('calendar:printPdf')}</span>
+                </button>
+
+                {/* Option 4: Tela Cheia */}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsActionsOpen(false)
+                    setFullScreenModalOpen(true)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition"
+                >
+                  <Maximize2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                  <span className="truncate">{t('calendar:fullscreen')}</span>
+                </button>
+              </div>
             )}
-            <span className="hidden sm:inline">
-              {pullSuccess
-                ? t('common:actions.pullSuccess')
-                : isPullingCloud
-                  ? t('common:actions.pullingCloud')
-                  : t('common:actions.pullCloud')}
-            </span>
-          </button>
-
-          {/* Export to Excel Button */}
-          <button
-            type="button"
-            onClick={() =>
-              exportScheduleToExcel({
-                month: currentMonth,
-                persons,
-                assignments,
-                events,
-              })
-            }
-            title={t('calendar:exportExcelTooltip')}
-            aria-label={t('calendar:exportExcel')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition shadow-2xs"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="hidden sm:inline">
-              {t('calendar:exportExcel')}
-            </span>
-          </button>
-
-          {/* Full Screen Modal Button */}
-          <button
-            type="button"
-            onClick={() => setFullScreenModalOpen(true)}
-            title={t('calendar:fullscreenTooltip')}
-            aria-label={t('calendar:fullscreen')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold transition shadow-2xs"
-          >
-            <Maximize2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden sm:inline">{t('calendar:fullscreen')}</span>
-          </button>
+          </div>
         </div>
       </div>
 

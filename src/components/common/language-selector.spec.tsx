@@ -29,6 +29,18 @@ describe('LanguageSelector Component', () => {
     expect(trigger).toBeInTheDocument()
   })
 
+  it('deve renderizar a variante menu centralizada para cabeçalhos e gavetas mobile', () => {
+    render(<LanguageSelector variant="menu" />)
+
+    const trigger = screen.getByRole('button', {
+      name: /idioma atual: português \(brasil\)/i,
+    })
+    expect(trigger).toBeInTheDocument()
+    expect(trigger).toHaveClass('justify-center')
+    expect(trigger).toHaveClass('rounded-2xl')
+    expect(screen.getByText('Português (Brasil)')).toBeInTheDocument()
+  })
+
   it('deve abrir o menu ao clicar e alternar o idioma para English (US)', async () => {
     render(<LanguageSelector variant="full" />)
 

@@ -54,7 +54,7 @@ describe('CalendarGrid Component', () => {
     expect(screen.getByText(/outubro/i)).toBeInTheDocument()
   })
 
-  it('deve renderizar o botão de puxar dados da nuvem e disparar pullCloudData ao clicar', async () => {
+  it('deve renderizar o botão de puxar dados da nuvem no menu de opções e disparar pullCloudData ao clicar', async () => {
     const pullCloudDataMock = vi.fn().mockResolvedValue({
       success: true,
       message: 'Dados sincronizados!',
@@ -67,7 +67,10 @@ describe('CalendarGrid Component', () => {
       </AuthProvider>,
     )
 
-    const pullButton = screen.getByRole('button', {
+    const trigger = screen.getByTestId('calendar-actions-dropdown-trigger')
+    fireEvent.click(trigger)
+
+    const pullButton = screen.getByRole('menuitem', {
       name: /puxar dados da nuvem/i,
     })
     expect(pullButton).toBeInTheDocument()
@@ -76,21 +79,109 @@ describe('CalendarGrid Component', () => {
 
     expect(pullCloudDataMock).toHaveBeenCalledWith('2026-10', true)
 
+    // Reopen to verify feedback state
+    fireEvent.click(trigger)
     await waitFor(() => {
       expect(screen.getByText(/atualizado!/i)).toBeInTheDocument()
     })
   })
 
-  it('deve alternar entre modo de visualização e edição', () => {
+  it('deve alternar entre modo de visualização e edição usando o botão único', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
       </AuthProvider>,
     )
 
+    // Button starts as "Edição"
     const editModeButton = screen.getByRole('button', { name: /edição/i })
+    expect(editModeButton).toBeInTheDocument()
     fireEvent.click(editModeButton)
 
+    // Store is now in edit mode and button text changes to "Visualização"
     expect(useScheduleStore.getState().isEditMode).toBe(true)
+    const viewModeButton = screen.getByRole('button', { name: /visualização/i })
+    expect(viewModeButton).toBeInTheDocument()
+
+    // Clicking it switches back to view mode and button reverts to "Edição"
+    fireEvent.click(viewModeButton)
+    expect(useScheduleStore.getState().isEditMode).toBe(false)
+    expect(screen.getByRole('button', { name: /edição/i })).toBeInTheDocument()
+  })
+
+  it('deve abrir o menu de ações ao clicar no gatilho e exibir as 4 opções agrupadas', () => {
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const trigger = screen.getByTestId('calendar-actions-dropdown-trigger')
+    expect(trigger).toBeInTheDocument()
+
+    // Menu initially closed
+    expect(
+      screen.queryByTestId('calendar-actions-dropdown-menu'),
+    ).not.toBeInTheDocument()
+
+    // Open dropdown
+    fireEvent.click(trigger)
+    expect(
+      screen.getByTestId('calendar-actions-dropdown-menu'),
+    ).toBeInTheDocument()
+
+    // Options inside menu
+    expect(
+      screen.getByRole('menuitem', { name: /puxar dados da nuvem/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('menuitem', { name: /exportar excel/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('menuitem', { name: /imprimir \/ pdf/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('menuitem', { name: /tela cheia/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('deve disparar tela cheia ao selecionar Tela Cheia no menu dropdown', () => {
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const trigger = screen.getByTestId('calendar-actions-dropdown-trigger')
+    fireEvent.click(trigger)
+
+    const fullscreenOption = screen.getByRole('menuitem', {
+      name: /tela cheia/i,
+    })
+    fireEvent.click(fullscreenOption)
+
+    expect(useScheduleStore.getState().isFullScreenModalOpen).toBe(true)
+    expect(
+      screen.queryByTestId('calendar-actions-dropdown-menu'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('deve fechar o dropdown ao pressionar a tecla Escape', () => {
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const trigger = screen.getByTestId('calendar-actions-dropdown-trigger')
+    fireEvent.click(trigger)
+    expect(
+      screen.getByTestId('calendar-actions-dropdown-menu'),
+    ).toBeInTheDocument()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(
+      screen.queryByTestId('calendar-actions-dropdown-menu'),
+    ).not.toBeInTheDocument()
   })
 })

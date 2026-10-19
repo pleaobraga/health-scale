@@ -449,7 +449,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             {/* Language Selector */}
             <div className="w-full">
               <LanguageSelector
-                variant="full"
+                variant="menu"
                 align="top"
                 className="w-full"
               />

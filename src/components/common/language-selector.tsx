@@ -27,14 +27,16 @@ const SUPPORTED_LANGUAGES: LanguageOption[] = [
 ]
 
 export interface LanguageSelectorProps {
-  variant?: 'compact' | 'full' | 'sidebar'
+  variant?: 'compact' | 'full' | 'sidebar' | 'menu'
   className?: string
+  buttonClassName?: string
   align?: 'top' | 'bottom' | 'left' | 'right'
 }
 
 export function LanguageSelector({
   variant = 'full',
   className = '',
+  buttonClassName = '',
   align = 'top',
 }: LanguageSelectorProps) {
   const { i18n, t } = useTranslation('common')
@@ -117,7 +119,7 @@ export function LanguageSelector({
           aria-label={`Idioma atual: ${currentOption.label}`}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
-          className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+          className={`w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${buttonClassName}`}
         >
           <CurrentFlag className="w-5 h-5" />
         </button>
@@ -129,7 +131,7 @@ export function LanguageSelector({
           aria-label={`Idioma atual: ${currentOption.label}`}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition-colors focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${buttonClassName}`}
         >
           <div className="w-5 h-5 flex items-center justify-center shrink-0">
             <CurrentFlag className="w-5 h-5" />
@@ -143,6 +145,25 @@ export function LanguageSelector({
             />
           </div>
         </button>
+      ) : variant === 'menu' ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={`Idioma atual: ${currentOption.label}`}
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          className={`w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold shadow-xs transition focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${buttonClassName}`}
+        >
+          <div className="w-5 h-5 flex items-center justify-center shrink-0">
+            <CurrentFlag className="w-5 h-3.5" />
+          </div>
+          <span>{currentOption.label}</span>
+          <ChevronDown
+            className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
       ) : (
         <button
           type="button"
@@ -150,7 +171,7 @@ export function LanguageSelector({
           aria-label={`Idioma atual: ${currentOption.label}`}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
-          className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-2xs transition focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+          className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold shadow-2xs transition focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${buttonClassName}`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <CurrentFlag className="w-5 h-3.5" />
@@ -171,7 +192,9 @@ export function LanguageSelector({
           aria-label={t('languages.select', {
             defaultValue: 'Opções de idioma',
           })}
-          className={`absolute ${menuPlacementClass} z-50 min-w-[200px] w-full max-w-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150`}
+          className={`absolute ${menuPlacementClass} z-50 ${
+            variant === 'menu' ? 'w-full' : 'min-w-[200px] w-full max-w-xs'
+          } bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150`}
         >
           <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-1">
             <Globe className="w-3 h-3" />

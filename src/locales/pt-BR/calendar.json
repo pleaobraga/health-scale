@@ -21,6 +21,8 @@
   "confirmClearMonth": "Deseja realmente limpar todas as escalas de {{month}}?",
   "exportExcel": "Exportar Excel",
   "exportExcelTooltip": "Exportar para Excel (.xlsx)",
+  "actionsMenu": "Opções",
+  "actionsMenuTooltip": "Mais opções e ações da escala",
   "fullscreen": "Tela Cheia",
   "fullscreenTooltip": "Abrir calendário em tela cheia",
   "fullscreenSubtitle": "Visualização panorâmica de todas as escalas e plantões do mês",
