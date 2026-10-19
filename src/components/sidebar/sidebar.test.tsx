@@ -1,16 +1,16 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { describe, it, expect, beforeEach } from 'vitest'
 
-import { Sidebar } from './sidebar';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { Sidebar } from './sidebar'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
 const renderSidebar = () =>
   render(
     <MemoryRouter>
       <Sidebar />
     </MemoryRouter>
-  );
+  )
 
 describe('Sidebar Component (Pessoas do Mês)', () => {
   beforeEach(() => {
@@ -29,87 +29,87 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
       assignments: {},
       currentMonth: '2026-10',
       isEditMode: false,
-    });
-  });
+    })
+  })
 
   it('deve listar APENAS as pessoas vinculadas ao mês corrente', () => {
-    renderSidebar();
+    renderSidebar()
 
     // p1 and p2 are in the month
-    expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
-    expect(screen.getByText('Dr. Lucas Oliveira')).toBeInTheDocument();
+    expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument()
+    expect(screen.getByText('Dr. Lucas Oliveira')).toBeInTheDocument()
 
     // p3 is NOT in month 2026-10 and must not appear in the list
-    expect(screen.queryByText('Enf. Beatriz Lima')).not.toBeInTheDocument();
-    expect(screen.getByText(/2 vinculadas/i)).toBeInTheDocument();
-  });
+    expect(screen.queryByText('Enf. Beatriz Lima')).not.toBeInTheDocument()
+    expect(screen.getByText(/2 vinculadas/i)).toBeInTheDocument()
+  })
 
   it('deve exibir estado vazio e botão "+ Adicionar Pessoas ao Mês" quando não houver participantes no mês', () => {
     useScheduleStore.setState({
       monthParticipants: {
         '2026-10': [],
       },
-    });
+    })
 
-    renderSidebar();
+    renderSidebar()
 
-    expect(screen.getByText('Nenhuma pessoa no mês')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /\+ adicionar pessoas ao mês/i })).toBeInTheDocument();
-  });
+    expect(screen.getByText('Nenhuma pessoa no mês')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /\+ adicionar pessoas ao mês/i })).toBeInTheDocument()
+  })
 
   it('deve abrir modal de vinculação e adicionar nova pessoa ao mês', () => {
-    renderSidebar();
+    renderSidebar()
 
-    const vincularBtn = screen.getByRole('button', { name: /vincular/i });
-    fireEvent.click(vincularBtn);
+    const vincularBtn = screen.getByRole('button', { name: /vincular/i })
+    fireEvent.click(vincularBtn)
 
-    expect(screen.getByText('Vincular Pessoas ao Mês')).toBeInTheDocument();
+    expect(screen.getByText('Vincular Pessoas ao Mês')).toBeInTheDocument()
     // Enf. Beatriz Lima is the only eligible person (non-participant)
-    expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument();
+    expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument()
 
     // Select Enf. Beatriz Lima
-    const beatrizCard = screen.getByText('Enf. Beatriz Lima');
-    fireEvent.click(beatrizCard);
+    const beatrizCard = screen.getByText('Enf. Beatriz Lima')
+    fireEvent.click(beatrizCard)
 
     // Click "Adicionar Selecionados"
-    const addSelectedBtn = screen.getByRole('button', { name: /adicionar selecionados/i });
-    fireEvent.click(addSelectedBtn);
+    const addSelectedBtn = screen.getByRole('button', { name: /adicionar selecionados/i })
+    fireEvent.click(addSelectedBtn)
 
     // Now Beatriz should be in the month list
-    expect(useScheduleStore.getState().monthParticipants['2026-10']).toContain('p3');
-    expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument();
-  });
+    expect(useScheduleStore.getState().monthParticipants['2026-10']).toContain('p3')
+    expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument()
+  })
 
   it('deve remover uma pessoa do mês sem excluí-la do cadastro geral de pessoas', () => {
-    renderSidebar();
+    renderSidebar()
 
     const removeBtn = screen.getByRole('button', {
       name: /remover dra\. camila santos deste mês/i,
-    });
-    fireEvent.click(removeBtn);
+    })
+    fireEvent.click(removeBtn)
 
     // No longer in the month
-    expect(useScheduleStore.getState().monthParticipants['2026-10']).not.toContain('p1');
-    expect(screen.queryByText('Dra. Camila Santos')).not.toBeInTheDocument();
+    expect(useScheduleStore.getState().monthParticipants['2026-10']).not.toContain('p1')
+    expect(screen.queryByText('Dra. Camila Santos')).not.toBeInTheDocument()
 
     // BUT remains in the global people registry!
-    expect(useScheduleStore.getState().persons.some((p) => p.id === 'p1')).toBe(true);
-  });
+    expect(useScheduleStore.getState().persons.some((p) => p.id === 'p1')).toBe(true)
+  })
 
   it('deve alternar entre recolhido e expandido ao clicar no botão de alternância', () => {
-    renderSidebar();
+    renderSidebar()
 
-    const toggleBtn = screen.getByTestId('toggle-sidebar-collapse');
-    expect(toggleBtn).toBeInTheDocument();
-    expect(toggleBtn).toHaveTextContent(/recolher/i);
+    const toggleBtn = screen.getByTestId('toggle-sidebar-collapse')
+    expect(toggleBtn).toBeInTheDocument()
+    expect(toggleBtn).toHaveTextContent(/recolher/i)
 
     // Click to collapse/minimize
-    fireEvent.click(toggleBtn);
-    expect(toggleBtn).toHaveTextContent(/expandir/i);
+    fireEvent.click(toggleBtn)
+    expect(toggleBtn).toHaveTextContent(/expandir/i)
 
     // Click again to expand
-    fireEvent.click(toggleBtn);
-    expect(toggleBtn).toHaveTextContent(/recolher/i);
-  });
-});
+    fireEvent.click(toggleBtn)
+    expect(toggleBtn).toHaveTextContent(/recolher/i)
+  })
+})
 

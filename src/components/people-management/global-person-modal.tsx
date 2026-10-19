@@ -1,10 +1,10 @@
-import { X, Check, User, Palette } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { X, Check, User, Palette } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { TAILWIND_PALETTE } from '../../constants/tailwind-colors';
+import { TAILWIND_PALETTE } from '../../constants/tailwind-colors'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface GlobalPersonModalProps {
   isOpen: boolean;
@@ -19,44 +19,44 @@ export function GlobalPersonModal({
   personToEdit,
   onSave,
 }: GlobalPersonModalProps) {
-  const [name, setName] = useState('');
-  const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState('')
+  const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (personToEdit) {
-      setName(personToEdit.name);
-      setSelectedColor(personToEdit.color);
+      setName(personToEdit.name)
+      setSelectedColor(personToEdit.color)
     } else {
-      setName('');
-      setSelectedColor(TAILWIND_PALETTE[0].hex);
+      setName('')
+      setSelectedColor(TAILWIND_PALETTE[0].hex)
     }
-    setError(null);
-  }, [personToEdit, isOpen]);
+    setError(null)
+  }, [personToEdit, isOpen])
 
   // Close on ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = name.trim();
+    e.preventDefault()
+    const trimmed = name.trim()
     if (!trimmed) {
-      setError('Por favor, informe o nome do funcionário.');
-      return;
+      setError('Por favor, informe o nome do funcionário.')
+      return
     }
-    onSave(trimmed, selectedColor);
-    onClose();
-  };
+    onSave(trimmed, selectedColor)
+    onClose()
+  }
 
   return createPortal(
     <div
@@ -122,8 +122,8 @@ export function GlobalPersonModal({
               autoFocus
               value={name}
               onChange={(e) => {
-                setName(e.target.value);
-                if (error) setError(null);
+                setName(e.target.value)
+                if (error) setError(null)
               }}
               placeholder="Ex: Dra. Mariana Costa, Enf. Pedro..."
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-slate-850 text-slate-900 dark:text-white placeholder:text-slate-400 transition"
@@ -149,7 +149,7 @@ export function GlobalPersonModal({
 
             <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 max-h-56 overflow-y-auto">
               {TAILWIND_PALETTE.map((color) => {
-                const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase();
+                const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase()
                 return (
                   <button
                     key={color.hex}
@@ -166,7 +166,7 @@ export function GlobalPersonModal({
                   >
                     {isSelected && <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-sm" />}
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -191,6 +191,6 @@ export function GlobalPersonModal({
       </div>
     </div>,
     document.body
-  );
+  )
 };
 

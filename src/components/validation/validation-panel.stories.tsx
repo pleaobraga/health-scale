@@ -1,7 +1,7 @@
-import { ValidationPanel } from './validation-panel';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { ValidationPanel } from './validation-panel'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof ValidationPanel> = {
   title: 'Validation/ValidationPanel',
@@ -17,9 +17,9 @@ const meta: Meta<typeof ValidationPanel> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof ValidationPanel>;
 
 export const DefaultNotValidated: Story = {
@@ -28,10 +28,10 @@ export const DefaultNotValidated: Story = {
       hasValidated: false,
       validationErrors: [],
       saveFeedback: null,
-    });
-    return <ValidationPanel />;
+    })
+    return <ValidationPanel />
   },
-};
+}
 
 export const AllValidState: Story = {
   render: () => {
@@ -39,10 +39,10 @@ export const AllValidState: Story = {
       hasValidated: true,
       validationErrors: [],
       saveFeedback: 'Escala salva com sucesso no armazenamento local!',
-    });
-    return <ValidationPanel />;
+    })
+    return <ValidationPanel />
   },
-};
+}
 
 export const WithViolationsAndWarnings: Story = {
   render: () => {
@@ -72,8 +72,8 @@ export const WithViolationsAndWarnings: Story = {
         },
       ],
       saveFeedback: null,
-    });
-    return <ValidationPanel />;
+    })
+    return <ValidationPanel />
   },
-};
+}
 

@@ -1,7 +1,7 @@
-import { FullScreenCalendarModal } from './fullscreen-calendar-modal';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { FullScreenCalendarModal } from './fullscreen-calendar-modal'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof FullScreenCalendarModal> = {
   title: 'Modals/FullScreenCalendarModal',
@@ -10,9 +10,9 @@ const meta: Meta<typeof FullScreenCalendarModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof FullScreenCalendarModal>;
 
 export const DefaultOpen: Story = {
@@ -38,10 +38,10 @@ export const DefaultOpen: Story = {
           title: 'Feriado de Nossa Senhora Aparecida',
         },
       ],
-    });
-    return <FullScreenCalendarModal />;
+    })
+    return <FullScreenCalendarModal />
   },
-};
+}
 
 export const WithMonthEvents: Story = {
 
@@ -87,8 +87,8 @@ export const WithMonthEvents: Story = {
           description: 'Pronto Atendimento',
         },
       ],
-    });
-    return <FullScreenCalendarModal />;
+    })
+    return <FullScreenCalendarModal />
   },
-};
+}
 

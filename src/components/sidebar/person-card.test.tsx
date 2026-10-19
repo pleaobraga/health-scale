@@ -1,16 +1,16 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
 
-import { PersonCard } from './person-card';
+import { PersonCard } from './person-card'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 describe('PersonCard Component', () => {
   const mockPerson: Person = {
     id: 'p1',
     name: 'Dra. Camila Santos',
     color: '#3b82f6',
-  };
+  }
 
   it('deve renderizar nome, dias em que está trabalhando e contagem de dias disponíveis', () => {
     render(
@@ -24,15 +24,15 @@ describe('PersonCard Component', () => {
         onEdit={vi.fn()}
         onInsertAllDays={vi.fn()}
       />
-    );
+    )
 
-    expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument();
-    expect(screen.getByText('3 dias trab.')).toBeInTheDocument();
-    expect(screen.getByText('12 dias disp.')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument()
+    expect(screen.getByText('3 dias trab.')).toBeInTheDocument()
+    expect(screen.getByText('12 dias disp.')).toBeInTheDocument()
+  })
 
   it('deve chamar onToggleHighlight ao clicar no botão de visibilidade', () => {
-    const handleToggle = vi.fn();
+    const handleToggle = vi.fn()
     render(
       <PersonCard
         person={mockPerson}
@@ -43,15 +43,15 @@ describe('PersonCard Component', () => {
         onEdit={vi.fn()}
         onInsertAllDays={vi.fn()}
       />
-    );
+    )
 
-    const toggleBtn = screen.getByTitle('Destacar disponibilidade no calendário');
-    fireEvent.click(toggleBtn);
-    expect(handleToggle).toHaveBeenCalledTimes(1);
-  });
+    const toggleBtn = screen.getByTitle('Destacar disponibilidade no calendário')
+    fireEvent.click(toggleBtn)
+    expect(handleToggle).toHaveBeenCalledTimes(1)
+  })
 
   it('deve chamar onEdit ao clicar no botão de edição', () => {
-    const handleEdit = vi.fn();
+    const handleEdit = vi.fn()
     render(
       <PersonCard
         person={mockPerson}
@@ -62,12 +62,12 @@ describe('PersonCard Component', () => {
         onEdit={handleEdit}
         onInsertAllDays={vi.fn()}
       />
-    );
+    )
 
-    const editBtn = screen.getByTitle(/Editar nome, cor ou disponibilidade/i);
-    fireEvent.click(editBtn);
-    expect(handleEdit).toHaveBeenCalledTimes(1);
-  });
+    const editBtn = screen.getByTitle(/Editar nome, cor ou disponibilidade/i)
+    fireEvent.click(editBtn)
+    expect(handleEdit).toHaveBeenCalledTimes(1)
+  })
 
   it('NÃO deve exibir o botão de inserir dias se não estiver no modo de edição', () => {
     render(
@@ -80,12 +80,12 @@ describe('PersonCard Component', () => {
         onEdit={vi.fn()}
         onInsertAllDays={vi.fn()}
       />
-    );
+    )
 
     expect(
       screen.queryByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i)
-    ).not.toBeInTheDocument();
-  });
+    ).not.toBeInTheDocument()
+  })
 
   it('NÃO deve exibir o botão se estiver no modo de edição mas availableDaysCount for 0', () => {
     render(
@@ -98,15 +98,15 @@ describe('PersonCard Component', () => {
         onEdit={vi.fn()}
         onInsertAllDays={vi.fn()}
       />
-    );
+    )
 
     expect(
       screen.queryByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i)
-    ).not.toBeInTheDocument();
-  });
+    ).not.toBeInTheDocument()
+  })
 
   it('DEVE exibir e chamar onInsertAllDays quando isEditMode for true E availableDaysCount > 0', () => {
-    const handleInsert = vi.fn();
+    const handleInsert = vi.fn()
     render(
       <PersonCard
         person={mockPerson}
@@ -117,12 +117,12 @@ describe('PersonCard Component', () => {
         onEdit={vi.fn()}
         onInsertAllDays={handleInsert}
       />
-    );
+    )
 
-    const insertBtn = screen.getByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i);
-    expect(insertBtn).toBeInTheDocument();
+    const insertBtn = screen.getByLabelText(/Inserir todos os dias de Dra. Camila Santos no calendário/i)
+    expect(insertBtn).toBeInTheDocument()
 
-    fireEvent.click(insertBtn);
-    expect(handleInsert).toHaveBeenCalledTimes(1);
-  });
-});
+    fireEvent.click(insertBtn)
+    expect(handleInsert).toHaveBeenCalledTimes(1)
+  })
+})

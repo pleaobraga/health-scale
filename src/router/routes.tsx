@@ -3,6 +3,6 @@ export {
   AppRoutes,
   AppRouter,
   TestAppRouter,
-} from './index';
+} from './index'
 
-export { routeConfig, type RouteItemConfig } from './route-config';
+export { routeConfig, type RouteItemConfig } from './route-config'

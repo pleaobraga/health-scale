@@ -1,14 +1,14 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import { ImportView } from './import-view';
-import { AuthContext } from '../../context/auth-context-base';
-import * as backupService from '../../services/backup-service';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { ImportView } from './import-view'
+import { AuthContext } from '../../context/auth-context-base'
+import * as backupService from '../../services/backup-service'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { AuthContextType } from '../../context/auth-context-base';
-import type { AppDataSnapshot } from '../../types';
+import type { AuthContextType } from '../../context/auth-context-base'
+import type { AppDataSnapshot } from '../../types'
 
 const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
   const contextValue: AuthContextType = {
@@ -23,7 +23,7 @@ const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
     guestProfiles: [],
     deleteGuestProfile: vi.fn(),
     ...authValue,
-  };
+  }
 
   return render(
     <AuthContext value={contextValue}>
@@ -31,52 +31,52 @@ const renderWithRouter = (authValue?: Partial<AuthContextType>) => {
         <ImportView />
       </MemoryRouter>
     </AuthContext>,
-  );
-};
+  )
+}
 
 describe('ImportView Component', () => {
   beforeEach(() => {
-    localStorage.clear();
-    vi.restoreAllMocks();
-    useScheduleStore.setState({ currentView: 'import' });
-  });
+    localStorage.clear()
+    vi.restoreAllMocks()
+    useScheduleStore.setState({ currentView: 'import' })
+  })
 
   it('deve renderizar o banner de boas-vindas e a área de dropzone', async () => {
-    renderWithRouter();
+    renderWithRouter()
 
-    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
-    expect(screen.getByText(/Gerenciador de Escalas Mensais/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /começar do zero/i })).toBeInTheDocument();
-    expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument();
-    expect(screen.getByText(/Clique para selecionar/i)).toBeInTheDocument();
-  });
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
+    expect(screen.getByText(/Gerenciador de Escalas Mensais/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /começar do zero/i })).toBeInTheDocument()
+    expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+    expect(screen.getByText(/Clique para selecionar/i)).toBeInTheDocument()
+  })
 
   it('deve permitir começar do zero limpando dados e navegando para a tela de pessoas', async () => {
-    renderWithRouter();
+    renderWithRouter()
 
-    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
-    const startZeroBtn = screen.getByRole('button', { name: /começar do zero/i });
-    fireEvent.click(startZeroBtn);
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
+    const startZeroBtn = screen.getByRole('button', { name: /começar do zero/i })
+    fireEvent.click(startZeroBtn)
 
-    expect(useScheduleStore.getState().currentView).toBe('people');
-    expect(useScheduleStore.getState().persons).toEqual([]);
-  });
+    expect(useScheduleStore.getState().currentView).toBe('people')
+    expect(useScheduleStore.getState().persons).toEqual([])
+  })
 
   it('deve exibir mensagem de erro quando arquivo inválido for selecionado', async () => {
-    renderWithRouter();
+    renderWithRouter()
 
-    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
 
-    const invalidFile = new File(['corrupt-data'], 'bad.json', { type: 'application/json' });
-    const input = screen.getByTestId('backup-file-input');
+    const invalidFile = new File(['corrupt-data'], 'bad.json', { type: 'application/json' })
+    const input = screen.getByTestId('backup-file-input')
 
-    fireEvent.change(input, { target: { files: [invalidFile] } });
+    fireEvent.change(input, { target: { files: [invalidFile] } })
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toBeInTheDocument();
-      expect(screen.getByText(/Erro ao validar arquivo/i)).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+      expect(screen.getByText(/Erro ao validar arquivo/i)).toBeInTheDocument()
+    })
+  })
 
   it('deve processar arquivo válido e exibir os contadores de prévia', async () => {
     const validSnapshot: AppDataSnapshot = {
@@ -89,28 +89,28 @@ describe('ImportView Component', () => {
       availabilities: [],
       assignments: { '2026-10-01': ['p1'] },
       events: [{ id: 'e1', date: '2026-10-01', title: 'Plantão' }],
-    };
+    }
 
     const validFile = new File([JSON.stringify(validSnapshot)], 'backup.json', {
       type: 'application/json',
-    });
+    })
 
-    renderWithRouter();
+    renderWithRouter()
 
-    const input = screen.getByTestId('backup-file-input');
-    fireEvent.change(input, { target: { files: [validFile] } });
+    const input = screen.getByTestId('backup-file-input')
+    fireEvent.change(input, { target: { files: [validFile] } })
 
     await waitFor(() => {
-      expect(screen.getByText(/Prévia do Backup Válido/i)).toBeInTheDocument();
-      expect(screen.getByText('Dr. Lucas')).toBeInTheDocument();
-      expect(screen.getByText('Dra. Camila')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /restaurar backup/i })).toBeInTheDocument();
-    });
-  });
+      expect(screen.getByText(/Prévia do Backup Válido/i)).toBeInTheDocument()
+      expect(screen.getByText('Dr. Lucas')).toBeInTheDocument()
+      expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /restaurar backup/i })).toBeInTheDocument()
+    })
+  })
 
   it('deve restaurar diretamente quando a aplicação estiver 100% vazia (sem modal de sobrescrita)', async () => {
-    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false);
-    const restoreSpy = vi.spyOn(backupService, 'restoreAppData').mockResolvedValue();
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false)
+    const restoreSpy = vi.spyOn(backupService, 'restoreAppData').mockResolvedValue()
 
     const validSnapshot: AppDataSnapshot = {
       exportedAt: '2026-10-17T12:00:00.000Z',
@@ -119,32 +119,32 @@ describe('ImportView Component', () => {
       availabilities: [],
       assignments: {},
       events: [],
-    };
+    }
 
     const validFile = new File([JSON.stringify(validSnapshot)], 'backup.json', {
       type: 'application/json',
-    });
+    })
 
-    renderWithRouter();
+    renderWithRouter()
 
-    const input = screen.getByTestId('backup-file-input');
-    fireEvent.change(input, { target: { files: [validFile] } });
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /restaurar backup/i })).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /restaurar backup/i }));
+    const input = screen.getByTestId('backup-file-input')
+    fireEvent.change(input, { target: { files: [validFile] } })
 
     await waitFor(() => {
-      expect(restoreSpy).toHaveBeenCalledTimes(1);
-      expect(screen.queryByText(/Atenção: Sobrescrita de Dados/i)).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.getByRole('button', { name: /restaurar backup/i })).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /restaurar backup/i }))
+
+    await waitFor(() => {
+      expect(restoreSpy).toHaveBeenCalledTimes(1)
+      expect(screen.queryByText(/Atenção: Sobrescrita de Dados/i)).not.toBeInTheDocument()
+    })
+  })
 
   it('deve abrir modal de sobrescrita quando já existirem dados cadastrados localmente', async () => {
-    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true);
-    const restoreSpy = vi.spyOn(backupService, 'restoreAppData').mockResolvedValue();
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+    const restoreSpy = vi.spyOn(backupService, 'restoreAppData').mockResolvedValue()
 
     const validSnapshot: AppDataSnapshot = {
       exportedAt: '2026-10-17T12:00:00.000Z',
@@ -153,73 +153,73 @@ describe('ImportView Component', () => {
       availabilities: [],
       assignments: {},
       events: [],
-    };
+    }
 
     const validFile = new File([JSON.stringify(validSnapshot)], 'backup.json', {
       type: 'application/json',
-    });
+    })
 
-    renderWithRouter();
+    renderWithRouter()
 
-    const input = screen.getByTestId('backup-file-input');
-    fireEvent.change(input, { target: { files: [validFile] } });
+    const input = screen.getByTestId('backup-file-input')
+    fireEvent.change(input, { target: { files: [validFile] } })
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /restaurar backup/i })).toBeInTheDocument();
-    });
+      expect(screen.getByRole('button', { name: /restaurar backup/i })).toBeInTheDocument()
+    })
 
-    fireEvent.click(screen.getByRole('button', { name: /restaurar backup/i }));
+    fireEvent.click(screen.getByRole('button', { name: /restaurar backup/i }))
 
     // Confirmation modal should be opened
     await waitFor(() => {
-      expect(screen.getByText(/Atenção: Sobrescrita de Dados/i)).toBeInTheDocument();
+      expect(screen.getByText(/Atenção: Sobrescrita de Dados/i)).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: /sim, sobrescrever dados/i })
-      ).toBeInTheDocument();
-    });
+      ).toBeInTheDocument()
+    })
 
     // Clicking destructive confirm executes restore
-    fireEvent.click(screen.getByRole('button', { name: /sim, sobrescrever dados/i }));
+    fireEvent.click(screen.getByRole('button', { name: /sim, sobrescrever dados/i }))
 
     await waitFor(() => {
-      expect(restoreSpy).toHaveBeenCalledTimes(1);
-    });
-  });
+      expect(restoreSpy).toHaveBeenCalledTimes(1)
+    })
+  })
 
   it('não deve exibir os botões de puxar da nuvem quando o usuário não for admin', async () => {
-    renderWithRouter({ isAdmin: false });
+    renderWithRouter({ isAdmin: false })
 
-    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
-    expect(screen.queryByTestId('admin-cloud-pull-card')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('banner-pull-cloud-button')).not.toBeInTheDocument();
-  });
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
+    expect(screen.queryByTestId('admin-cloud-pull-card')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('banner-pull-cloud-button')).not.toBeInTheDocument()
+  })
 
   it('deve exibir os botões de puxar da nuvem quando o usuário for admin e executar a sincronização', async () => {
     const pullCloudDataMock = vi.fn().mockResolvedValue({
       success: true,
       message: 'Dados da nuvem sincronizados com sucesso!',
-    });
+    })
 
     useScheduleStore.setState({
       pullCloudData: pullCloudDataMock,
-    });
+    })
 
-    renderWithRouter({ isAdmin: true, role: 'admin' });
+    renderWithRouter({ isAdmin: true, role: 'admin' })
 
-    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument();
-    expect(screen.getByTestId('admin-cloud-pull-card')).toBeInTheDocument();
-    expect(screen.getByTestId('banner-pull-cloud-button')).toBeInTheDocument();
+    expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
+    expect(screen.getByTestId('admin-cloud-pull-card')).toBeInTheDocument()
+    expect(screen.getByTestId('banner-pull-cloud-button')).toBeInTheDocument()
 
-    const pullBtn = screen.getByTestId('import-pull-cloud-button');
-    fireEvent.click(pullBtn);
+    const pullBtn = screen.getByTestId('import-pull-cloud-button')
+    fireEvent.click(pullBtn)
 
     await waitFor(() => {
-      expect(pullCloudDataMock).toHaveBeenCalledTimes(1);
-      expect(screen.getByTestId('cloud-feedback-banner')).toBeInTheDocument();
+      expect(pullCloudDataMock).toHaveBeenCalledTimes(1)
+      expect(screen.getByTestId('cloud-feedback-banner')).toBeInTheDocument()
       expect(
         screen.getByText(/Dados da nuvem sincronizados com sucesso!/i),
-      ).toBeInTheDocument();
-    });
-  });
-});
+      ).toBeInTheDocument()
+    })
+  })
+})
 

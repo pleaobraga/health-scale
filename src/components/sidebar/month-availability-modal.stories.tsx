@@ -1,6 +1,6 @@
-import { MonthAvailabilityModal } from './month-availability-modal';
+import { MonthAvailabilityModal } from './month-availability-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof MonthAvailabilityModal> = {
   title: 'Sidebar/MonthAvailabilityModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof MonthAvailabilityModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof MonthAvailabilityModal>;
 
 export const DefaultOpen: Story = {
@@ -27,5 +27,5 @@ export const DefaultOpen: Story = {
     initialAvailableDays: [2, 4, 6, 8, 10, 12, 14, 16],
     onSave: (personId, days) => console.log('Saved availability:', { personId, days }),
   },
-};
+}
 

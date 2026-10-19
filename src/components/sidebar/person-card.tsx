@@ -1,7 +1,7 @@
-import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react';
-import React, { useState } from 'react';
+import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react'
+import React, { useState } from 'react'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface PersonCardProps {
   person: Person;
@@ -26,16 +26,16 @@ export function PersonCard({
   onInsertAllDays,
   onRemoveFromMonth,
 }: PersonCardProps) {
-  const [justInserted, setJustInserted] = useState(false);
+  const [justInserted, setJustInserted] = useState(false)
 
-  const canInsertAllDays = isEditMode && availableDaysCount > 0;
+  const canInsertAllDays = isEditMode && availableDaysCount > 0
 
   const handleInsert = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onInsertAllDays();
-    setJustInserted(true);
-    setTimeout(() => setJustInserted(false), 1500);
-  };
+    e.stopPropagation()
+    onInsertAllDays()
+    setJustInserted(true)
+    setTimeout(() => setJustInserted(false), 1500)
+  }
   return (
     <div
       className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all ${
@@ -126,8 +126,8 @@ export function PersonCard({
           <button
             type="button"
             onClick={(e) => {
-              e.stopPropagation();
-              onRemoveFromMonth();
+              e.stopPropagation()
+              onRemoveFromMonth()
             }}
             title={`Remover ${person.name} deste mês`}
             aria-label={`Remover ${person.name} deste mês`}
@@ -138,5 +138,5 @@ export function PersonCard({
         )}
       </div>
     </div>
-  );
+  )
 };

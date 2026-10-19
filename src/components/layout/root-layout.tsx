@@ -1,56 +1,56 @@
-import { useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { useCloudSync } from '../../hooks/use-cloud-sync';
-import { hasExistingLocalData } from '../../services/backup-service';
-import { useScheduleStore } from '../../store/use-schedule-store';
-import { ErrorBoundary } from '../common/error-boundary';
-import { DayEventsModal } from '../modals/day-events-modal';
-import { FullScreenCalendarModal } from '../modals/fullscreen-calendar-modal';
-import { UnsavedChangesModal } from '../modals/unsaved-changes-modal';
-import { HoverSidebar } from '../navigation/hover-sidebar';
+import { useCloudSync } from '../../hooks/use-cloud-sync'
+import { hasExistingLocalData } from '../../services/backup-service'
+import { useScheduleStore } from '../../store/use-schedule-store'
+import { ErrorBoundary } from '../common/error-boundary'
+import { DayEventsModal } from '../modals/day-events-modal'
+import { FullScreenCalendarModal } from '../modals/fullscreen-calendar-modal'
+import { UnsavedChangesModal } from '../modals/unsaved-changes-modal'
+import { HoverSidebar } from '../navigation/hover-sidebar'
 
 export function RootLayout() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const setCurrentView = useScheduleStore((state) => state.setCurrentView);
+  const navigate = useNavigate()
+  const location = useLocation()
+  const setCurrentView = useScheduleStore((state) => state.setCurrentView)
 
   // Mount admin-conditional cloud sync
-  useCloudSync();
+  useCloudSync()
 
   // Sync store's currentView with route changes
   useEffect(() => {
-    const path = location.pathname;
+    const path = location.pathname
     if (path === '/' || path === '/calendario') {
-      setCurrentView('calendar');
+      setCurrentView('calendar')
     } else if (path.startsWith('/pessoas')) {
-      setCurrentView('people');
+      setCurrentView('people')
     } else if (path.startsWith('/importar')) {
-      setCurrentView('import');
+      setCurrentView('import')
     } else if (path.startsWith('/configuracoes')) {
-      setCurrentView('settings');
+      setCurrentView('settings')
     } else if (path.startsWith('/usuarios')) {
-      setCurrentView('users');
+      setCurrentView('users')
     }
-  }, [location.pathname, setCurrentView]);
+  }, [location.pathname, setCurrentView])
 
   // Onboarding redirection check for empty storage on initial root route
   useEffect(() => {
     const isRootOrCalendar =
-      location.pathname === '/' || location.pathname === '/calendario';
+      location.pathname === '/' || location.pathname === '/calendario'
 
     if (isRootOrCalendar) {
-      let isMounted = true;
+      let isMounted = true
       hasExistingLocalData().then((hasData) => {
         if (isMounted && !hasData) {
-          navigate('/importar', { replace: true });
+          navigate('/importar', { replace: true })
         }
-      });
+      })
       return () => {
-        isMounted = false;
-      };
+        isMounted = false
+      }
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate])
 
   return (
     <div
@@ -72,6 +72,6 @@ export function RootLayout() {
       <FullScreenCalendarModal />
       <UnsavedChangesModal />
     </div>
-  );
+  )
 }
 

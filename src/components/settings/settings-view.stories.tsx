@@ -1,11 +1,11 @@
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom'
 
-import { SettingsView } from './settings-view';
-import { AuthContext } from '../../context/auth-context';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { SettingsView } from './settings-view'
+import { AuthContext } from '../../context/auth-context'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { AuthContextType } from '../../context/auth-context';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { AuthContextType } from '../../context/auth-context'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof SettingsView> = {
   title: 'Settings/SettingsView',
@@ -30,7 +30,7 @@ const meta: Meta<typeof SettingsView> = {
         logout: async () => {},
         guestProfiles: [],
         deleteGuestProfile: () => {},
-      };
+      }
 
       return (
         <AuthContext value={mockAuth}>
@@ -40,12 +40,12 @@ const meta: Meta<typeof SettingsView> = {
             </div>
           </MemoryRouter>
         </AuthContext>
-      );
+      )
     },
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof SettingsView>;
 
 export const DefaultSettings: Story = {
@@ -56,7 +56,7 @@ export const DefaultSettings: Story = {
       ],
       assignments: {},
       events: [],
-    });
-    return <SettingsView />;
+    })
+    return <SettingsView />
   },
-};
+}

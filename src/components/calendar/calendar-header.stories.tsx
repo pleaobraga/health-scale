@@ -1,6 +1,6 @@
-import { CalendarHeader } from './calendar-header';
+import { CalendarHeader } from './calendar-header'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof CalendarHeader> = {
   title: 'Calendar/CalendarHeader',
@@ -16,10 +16,10 @@ const meta: Meta<typeof CalendarHeader> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof CalendarHeader>;
 
-export const Default: Story = {};
+export const Default: Story = {}
 

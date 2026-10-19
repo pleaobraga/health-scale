@@ -1,6 +1,6 @@
-import { ConfirmOverwriteModal } from './confirm-overwrite-modal';
+import { ConfirmOverwriteModal } from './confirm-overwrite-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof ConfirmOverwriteModal> = {
   title: 'Import/ConfirmOverwriteModal',
@@ -15,16 +15,16 @@ const meta: Meta<typeof ConfirmOverwriteModal> = {
     onConfirm: () => alert('Confirmado!'),
     onCancel: () => alert('Cancelado!'),
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof ConfirmOverwriteModal>;
 
-export const DefaultOpen: Story = {};
+export const DefaultOpen: Story = {}
 
 export const RestoringState: Story = {
   args: {
     isRestoring: true,
   },
-};
+}
 

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import React from 'react'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
-import { useAuth } from '../../context/auth-context';
+import { useAuth } from '../../context/auth-context'
 
 export interface PrivateRouteProps {
   children?: React.ReactNode;
@@ -13,8 +13,8 @@ export interface PrivateRouteProps {
  * redirects unauthenticated users to #/login, preserving location state.
  */
 export function PrivateRoute({ children }: PrivateRouteProps) {
-  const { user, loading } = useAuth();
-  const location = useLocation();
+  const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
     return (
@@ -29,13 +29,13 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  return children ? children : <Outlet />;
+  return children ? children : <Outlet />
 }
 

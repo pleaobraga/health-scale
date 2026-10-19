@@ -1,6 +1,6 @@
-import { CreateUserModal } from './create-user-modal';
+import { CreateUserModal } from './create-user-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof CreateUserModal> = {
   title: 'Users/CreateUserModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof CreateUserModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof CreateUserModal>;
 
 export const DefaultOpen: Story = {
@@ -20,5 +20,5 @@ export const DefaultOpen: Story = {
     onClose: () => console.log('Close CreateUserModal'),
     onUserCreated: () => console.log('User created callback'),
   },
-};
+}
 

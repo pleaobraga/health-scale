@@ -1,30 +1,30 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
 
-import { DayEventsModal } from './day-events-modal';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { DayEventsModal } from './day-events-modal'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
 describe('DayEventsModal', () => {
   beforeEach(() => {
     useScheduleStore.setState({
       selectedDateForEvents: null,
       events: [],
-    });
-  });
+    })
+  })
 
   it('não deve renderizar quando selectedDateForEvents for null', () => {
-    render(<DayEventsModal />);
-    expect(screen.queryByText('Eventos do Dia')).not.toBeInTheDocument();
-  });
+    render(<DayEventsModal />)
+    expect(screen.queryByText('Eventos do Dia')).not.toBeInTheDocument()
+  })
 
   it('deve exibir mensagem de nenhum evento cadastrado quando a lista estiver vazia', () => {
-    useScheduleStore.setState({ selectedDateForEvents: '2026-10-15' });
-    render(<DayEventsModal />);
+    useScheduleStore.setState({ selectedDateForEvents: '2026-10-15' })
+    render(<DayEventsModal />)
 
-    expect(screen.getByText('Eventos do Dia')).toBeInTheDocument();
-    expect(screen.getByText(/Nenhum evento registrado para este dia/i)).toBeInTheDocument();
-    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Eventos do Dia')).toBeInTheDocument()
+    expect(screen.getByText(/Nenhum evento registrado para este dia/i)).toBeInTheDocument()
+    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()
+  })
 
   it('deve listar eventos existentes do dia com botão de editar e excluir', () => {
     useScheduleStore.setState({
@@ -38,46 +38,46 @@ describe('DayEventsModal', () => {
           description: 'Equipe de UTI',
         },
       ],
-    });
+    })
 
-    render(<DayEventsModal />);
+    render(<DayEventsModal />)
 
-    expect(screen.getByText('Plantão Noturno')).toBeInTheDocument();
-    expect(screen.getByText('19:00')).toBeInTheDocument();
-    expect(screen.getByText('Equipe de UTI')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Editar evento Plantão Noturno/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Excluir evento Plantão Noturno/i })).toBeInTheDocument();
-  });
+    expect(screen.getByText('Plantão Noturno')).toBeInTheDocument()
+    expect(screen.getByText('19:00')).toBeInTheDocument()
+    expect(screen.getByText('Equipe de UTI')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Editar evento Plantão Noturno/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Excluir evento Plantão Noturno/i })).toBeInTheDocument()
+  })
 
   it('deve permitir adicionar um novo evento com horário e descrição', () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [],
-    });
+    })
 
-    render(<DayEventsModal />);
+    render(<DayEventsModal />)
 
-    const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica');
-    fireEvent.change(titleInput, { target: { value: 'Reunião Geral' } });
+    const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
+    fireEvent.change(titleInput, { target: { value: 'Reunião Geral' } })
 
-    const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i);
-    fireEvent.change(timeInput, { target: { value: '14:30' } });
+    const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i)
+    fireEvent.change(timeInput, { target: { value: '14:30' } })
 
-    const descInput = screen.getByPlaceholderText('Detalhes adicionais...');
-    fireEvent.change(descInput, { target: { value: 'Sala de reuniões 2' } });
+    const descInput = screen.getByPlaceholderText('Detalhes adicionais...')
+    fireEvent.change(descInput, { target: { value: 'Sala de reuniões 2' } })
 
-    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i });
-    fireEvent.click(submitBtn);
+    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    fireEvent.click(submitBtn)
 
-    const storeEvents = useScheduleStore.getState().events;
-    expect(storeEvents).toHaveLength(1);
+    const storeEvents = useScheduleStore.getState().events
+    expect(storeEvents).toHaveLength(1)
     expect(storeEvents[0]).toMatchObject({
       date: '2026-10-15',
       title: 'Reunião Geral',
       time: '14:30',
       description: 'Sala de reuniões 2',
-    });
-  });
+    })
+  })
 
   it('deve preencher o formulário ao clicar no botão de editar e atualizar o evento com sucesso', () => {
     useScheduleStore.setState({
@@ -91,44 +91,44 @@ describe('DayEventsModal', () => {
           description: 'Troca de turno',
         },
       ],
-    });
+    })
 
-    render(<DayEventsModal />);
+    render(<DayEventsModal />)
 
     // Click edit button for event
-    const editBtn = screen.getByRole('button', { name: /Editar evento Plantão Manhã/i });
-    fireEvent.click(editBtn);
+    const editBtn = screen.getByRole('button', { name: /Editar evento Plantão Manhã/i })
+    fireEvent.click(editBtn)
 
     // Form title should change to "Editar Evento"
-    expect(screen.getByText('Editar Evento')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Salvar Alterações/i })).toBeInTheDocument();
-    expect(screen.getByText('Cancelar Edição')).toBeInTheDocument();
+    expect(screen.getByText('Editar Evento')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Salvar Alterações/i })).toBeInTheDocument()
+    expect(screen.getByText('Cancelar Edição')).toBeInTheDocument()
 
-    const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica');
-    expect(titleInput).toHaveValue('Plantão Manhã');
+    const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
+    expect(titleInput).toHaveValue('Plantão Manhã')
 
-    const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i);
-    expect(timeInput).toHaveValue('07:00');
+    const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i)
+    expect(timeInput).toHaveValue('07:00')
 
-    const descInput = screen.getByPlaceholderText('Detalhes adicionais...');
-    expect(descInput).toHaveValue('Troca de turno');
+    const descInput = screen.getByPlaceholderText('Detalhes adicionais...')
+    expect(descInput).toHaveValue('Troca de turno')
 
     // Modify title and time
-    fireEvent.change(titleInput, { target: { value: 'Plantão Noturno Extra' } });
-    fireEvent.change(timeInput, { target: { value: '22:00' } });
-    fireEvent.change(descInput, { target: { value: 'Equipe ampliada' } });
+    fireEvent.change(titleInput, { target: { value: 'Plantão Noturno Extra' } })
+    fireEvent.change(timeInput, { target: { value: '22:00' } })
+    fireEvent.change(descInput, { target: { value: 'Equipe ampliada' } })
 
-    const saveBtn = screen.getByRole('button', { name: /Salvar Alterações/i });
-    fireEvent.click(saveBtn);
+    const saveBtn = screen.getByRole('button', { name: /Salvar Alterações/i })
+    fireEvent.click(saveBtn)
 
-    const storeEvents = useScheduleStore.getState().events;
-    expect(storeEvents[0].title).toBe('Plantão Noturno Extra');
-    expect(storeEvents[0].time).toBe('22:00');
-    expect(storeEvents[0].description).toBe('Equipe ampliada');
+    const storeEvents = useScheduleStore.getState().events
+    expect(storeEvents[0].title).toBe('Plantão Noturno Extra')
+    expect(storeEvents[0].time).toBe('22:00')
+    expect(storeEvents[0].description).toBe('Equipe ampliada')
 
     // Form should return to initial state for new event
-    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()
+  })
 
   it('deve permitir cancelar a edição voltando ao formulário de novo evento', () => {
     useScheduleStore.setState({
@@ -141,37 +141,37 @@ describe('DayEventsModal', () => {
           time: '08:00',
         },
       ],
-    });
+    })
 
-    render(<DayEventsModal />);
+    render(<DayEventsModal />)
 
-    const editBtn = screen.getByRole('button', { name: /Editar evento Plantão Manhã/i });
-    fireEvent.click(editBtn);
+    const editBtn = screen.getByRole('button', { name: /Editar evento Plantão Manhã/i })
+    fireEvent.click(editBtn)
 
-    expect(screen.getByText('Editar Evento')).toBeInTheDocument();
+    expect(screen.getByText('Editar Evento')).toBeInTheDocument()
 
-    const cancelBtn = screen.getByText('Cancelar Edição');
-    fireEvent.click(cancelBtn);
+    const cancelBtn = screen.getByText('Cancelar Edição')
+    fireEvent.click(cancelBtn)
 
-    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')).toHaveValue('');
-    expect(screen.getByLabelText(/Horário \(Opcional\)/i)).toHaveValue('');
-  });
+    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')).toHaveValue('')
+    expect(screen.getByLabelText(/Horário \(Opcional\)/i)).toHaveValue('')
+  })
 
   it('deve exibir erro caso tente salvar evento sem título', () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [],
-    });
+    })
 
-    render(<DayEventsModal />);
+    render(<DayEventsModal />)
 
-    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i });
-    fireEvent.click(submitBtn);
+    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    fireEvent.click(submitBtn)
 
-    expect(screen.getByText('O título do evento é obrigatório.')).toBeInTheDocument();
-    expect(useScheduleStore.getState().events).toHaveLength(0);
-  });
+    expect(screen.getByText('O título do evento é obrigatório.')).toBeInTheDocument()
+    expect(useScheduleStore.getState().events).toHaveLength(0)
+  })
 
   it('deve permitir excluir um evento cadastrado', () => {
     useScheduleStore.setState({
@@ -183,15 +183,15 @@ describe('DayEventsModal', () => {
           title: 'Evento para Excluir',
         },
       ],
-    });
+    })
 
-    render(<DayEventsModal />);
+    render(<DayEventsModal />)
 
-    const deleteBtn = screen.getByRole('button', { name: /Excluir evento Evento para Excluir/i });
-    fireEvent.click(deleteBtn);
+    const deleteBtn = screen.getByRole('button', { name: /Excluir evento Evento para Excluir/i })
+    fireEvent.click(deleteBtn)
 
-    expect(useScheduleStore.getState().events).toHaveLength(0);
-  });
+    expect(useScheduleStore.getState().events).toHaveLength(0)
+  })
 
   it('deve renderizar o ícone de relógio com classe para dark theme quando houver horário', () => {
     useScheduleStore.setState({
@@ -204,13 +204,13 @@ describe('DayEventsModal', () => {
           time: '19:00',
         },
       ],
-    });
+    })
 
-    render(<DayEventsModal />);
-    const clockIcon = document.body.querySelector('.lucide-clock');
-    expect(clockIcon).toBeInTheDocument();
-    expect(clockIcon).toHaveClass('dark:text-indigo-400');
-  });
+    render(<DayEventsModal />)
+    const clockIcon = document.body.querySelector('.lucide-clock')
+    expect(clockIcon).toBeInTheDocument()
+    expect(clockIcon).toHaveClass('dark:text-indigo-400')
+  })
 
-});
+})
 

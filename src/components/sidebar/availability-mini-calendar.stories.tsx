@@ -1,6 +1,6 @@
-import { AvailabilityMiniCalendar } from './availability-mini-calendar';
+import { AvailabilityMiniCalendar } from './availability-mini-calendar'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof AvailabilityMiniCalendar> = {
   title: 'Sidebar/AvailabilityMiniCalendar',
@@ -16,9 +16,9 @@ const meta: Meta<typeof AvailabilityMiniCalendar> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof AvailabilityMiniCalendar>;
 
 export const DefaultOddDays: Story = {
@@ -28,7 +28,7 @@ export const DefaultOddDays: Story = {
     onChange: (days) => console.log('Days changed:', days),
     accentColor: '#3b82f6',
   },
-};
+}
 
 export const EvenDaysEmerald: Story = {
   args: {
@@ -37,7 +37,7 @@ export const EvenDaysEmerald: Story = {
     onChange: (days) => console.log('Days changed:', days),
     accentColor: '#10b981',
   },
-};
+}
 
 export const EmptySelection: Story = {
   args: {
@@ -46,5 +46,5 @@ export const EmptySelection: Story = {
     onChange: (days) => console.log('Days changed:', days),
     accentColor: '#8b5cf6',
   },
-};
+}
 

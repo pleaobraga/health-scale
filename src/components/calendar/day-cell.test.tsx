@@ -1,10 +1,10 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
 
-import { DayCell } from './day-cell';
+import { DayCell } from './day-cell'
 
-import type { Person, CalendarEvent } from '../../types';
-import type { CalendarDayInfo } from '../../utils/date-utils';
+import type { Person, CalendarEvent } from '../../types'
+import type { CalendarDayInfo } from '../../utils/date-utils'
 
 describe('DayCell Component', () => {
   const mockDayInfo: CalendarDayInfo = {
@@ -14,12 +14,12 @@ describe('DayCell Component', () => {
     isCurrentMonth: true,
     isToday: false,
     dayOfWeek: 4,
-  };
+  }
 
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila', color: '#3b82f6' },
     { id: 'p2', name: 'Dr. Lucas', color: '#10b981' },
-  ];
+  ]
 
   it('deve exibir o número do dia com cor padrão quando NÃO houver eventos', () => {
     render(
@@ -37,17 +37,17 @@ describe('DayCell Component', () => {
         onRemovePerson={vi.fn()}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    const dayNumber = screen.getByText('15');
-    expect(dayNumber).toBeInTheDocument();
-    expect(dayNumber.className).not.toContain('text-red-600 font-extrabold');
-  });
+    const dayNumber = screen.getByText('15')
+    expect(dayNumber).toBeInTheDocument()
+    expect(dayNumber.className).not.toContain('text-red-600 font-extrabold')
+  })
 
   it('deve exibir o número do dia em VERMELHO DE DESTAQUE quando houver 1 ou mais eventos', () => {
     const mockEvents: CalendarEvent[] = [
       { id: 'ev-1', date: '2026-10-15', title: 'Reunião Geral' },
-    ];
+    ]
 
     render(
       <DayCell
@@ -64,15 +64,15 @@ describe('DayCell Component', () => {
         onRemovePerson={vi.fn()}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    const dayNumber = screen.getByText('15');
-    expect(dayNumber).toBeInTheDocument();
-    expect(dayNumber.className).toContain('text-red-600 font-extrabold');
-  });
+    const dayNumber = screen.getByText('15')
+    expect(dayNumber).toBeInTheDocument()
+    expect(dayNumber.className).toContain('text-red-600 font-extrabold')
+  })
 
   it('deve disparar abertura de eventos ao clicar no botão de calendário', () => {
-    const handleOpenEvents = vi.fn();
+    const handleOpenEvents = vi.fn()
     render(
       <DayCell
         dayInfo={mockDayInfo}
@@ -88,12 +88,12 @@ describe('DayCell Component', () => {
         onRemovePerson={vi.fn()}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    const eventBtn = screen.getByTitle(/Ver ou adicionar eventos/i);
-    fireEvent.click(eventBtn);
-    expect(handleOpenEvents).toHaveBeenCalledTimes(1);
-  });
+    const eventBtn = screen.getByTitle(/Ver ou adicionar eventos/i)
+    fireEvent.click(eventBtn)
+    expect(handleOpenEvents).toHaveBeenCalledTimes(1)
+  })
 
   it('no Modo Leitura, exibe badge com o nome da pessoa alocada', () => {
     render(
@@ -111,13 +111,13 @@ describe('DayCell Component', () => {
         onRemovePerson={vi.fn()}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    expect(screen.getByText('Dra. Camila')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
+  })
 
   it('no Modo Edição, exibe tags com botão ✕ para remoção', () => {
-    const handleRemove = vi.fn();
+    const handleRemove = vi.fn()
     render(
       <DayCell
         dayInfo={mockDayInfo}
@@ -133,15 +133,15 @@ describe('DayCell Component', () => {
         onRemovePerson={handleRemove}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    expect(screen.getByText('Dra. Camila')).toBeInTheDocument();
-    expect(screen.getByText('Dr. Lucas')).toBeInTheDocument();
+    expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
+    expect(screen.getByText('Dr. Lucas')).toBeInTheDocument()
 
-    const removeBtn = screen.getByTitle('Remover Dra. Camila deste dia');
-    fireEvent.click(removeBtn);
-    expect(handleRemove).toHaveBeenCalledWith('p1');
-  });
+    const removeBtn = screen.getByTitle('Remover Dra. Camila deste dia')
+    fireEvent.click(removeBtn)
+    expect(handleRemove).toHaveBeenCalledWith('p1')
+  })
 
   it('exibe badge de disponibilidade quando o profissional está selecionado para destaque', () => {
     render(
@@ -159,16 +159,16 @@ describe('DayCell Component', () => {
         onRemovePerson={vi.fn()}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    expect(screen.getByText('Disp.')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Disp.')).toBeInTheDocument()
+  })
 
   it('deve destacar o dia atual com background diferenciado na DayCell sem criar círculo ao redor do número do dia', () => {
     const todayInfo: CalendarDayInfo = {
       ...mockDayInfo,
       isToday: true,
-    };
+    }
 
     const { container } = render(
       <DayCell
@@ -185,14 +185,14 @@ describe('DayCell Component', () => {
         onRemovePerson={vi.fn()}
         onAddPerson={vi.fn()}
       />
-    );
+    )
 
-    const cellElement = container.firstChild as HTMLElement;
-    expect(cellElement.className).toContain('bg-indigo-50/70');
+    const cellElement = container.firstChild as HTMLElement
+    expect(cellElement.className).toContain('bg-indigo-50/70')
 
-    const dayNumber = screen.getByText('15');
-    expect(dayNumber.className).not.toContain('bg-indigo-600 text-white');
-    expect(dayNumber.className).toContain('text-indigo-600');
-  });
-});
+    const dayNumber = screen.getByText('15')
+    expect(dayNumber.className).not.toContain('bg-indigo-600 text-white')
+    expect(dayNumber.className).toContain('text-indigo-600')
+  })
+})
 

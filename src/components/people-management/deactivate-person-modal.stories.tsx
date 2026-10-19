@@ -1,6 +1,6 @@
-import { DeactivatePersonModal } from './deactivate-person-modal';
+import { DeactivatePersonModal } from './deactivate-person-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof DeactivatePersonModal> = {
   title: 'PeopleManagement/DeactivatePersonModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof DeactivatePersonModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof DeactivatePersonModal>;
 
 export const Default: Story = {
@@ -26,5 +26,5 @@ export const Default: Story = {
     onClose: () => {},
     onConfirm: () => {},
   },
-};
+}
 

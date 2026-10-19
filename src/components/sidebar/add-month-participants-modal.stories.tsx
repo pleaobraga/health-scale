@@ -1,6 +1,6 @@
-import { AddMonthParticipantsModal } from './add-month-participants-modal';
+import { AddMonthParticipantsModal } from './add-month-participants-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof AddMonthParticipantsModal> = {
   title: 'Sidebar/AddMonthParticipantsModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof AddMonthParticipantsModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof AddMonthParticipantsModal>;
 
 export const DefaultOpen: Story = {
@@ -27,5 +27,5 @@ export const DefaultOpen: Story = {
     currentParticipantIds: ['1'],
     onAddParticipants: (ids) => console.log('Added participants:', ids),
   },
-};
+}
 

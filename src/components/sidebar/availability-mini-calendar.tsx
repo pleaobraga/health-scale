@@ -1,6 +1,6 @@
-import { Sparkles, Eraser, CheckSquare, Calendar } from 'lucide-react';
+import { Sparkles, Eraser, CheckSquare, Calendar } from 'lucide-react'
 
-import { formatMonthYear, getDaysCountInMonth } from '../../utils/date-utils';
+import { formatMonthYear, getDaysCountInMonth } from '../../utils/date-utils'
 
 export interface AvailabilityMiniCalendarProps {
   month: string; // 'YYYY-MM'
@@ -15,32 +15,32 @@ export function AvailabilityMiniCalendar({
   onChange,
   accentColor = '#3b82f6',
 }: AvailabilityMiniCalendarProps) {
-  const totalDays = getDaysCountInMonth(month);
-  const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1);
+  const totalDays = getDaysCountInMonth(month)
+  const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1)
 
   const toggleDay = (day: number) => {
     if (selectedDays.includes(day)) {
-      onChange(selectedDays.filter((d) => d !== day));
+      onChange(selectedDays.filter((d) => d !== day))
     } else {
-      onChange([...selectedDays, day].sort((a, b) => a - b));
+      onChange([...selectedDays, day].sort((a, b) => a - b))
     }
-  };
+  }
 
   const selectEven = () => {
-    onChange(daysArray.filter((d) => d % 2 === 0));
-  };
+    onChange(daysArray.filter((d) => d % 2 === 0))
+  }
 
   const selectOdd = () => {
-    onChange(daysArray.filter((d) => d % 2 !== 0));
-  };
+    onChange(daysArray.filter((d) => d % 2 !== 0))
+  }
 
   const selectAll = () => {
-    onChange([...daysArray]);
-  };
+    onChange([...daysArray])
+  }
 
   const clearAll = () => {
-    onChange([]);
-  };
+    onChange([])
+  }
 
   return (
     <div className="space-y-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3.5 transition-colors">
@@ -93,7 +93,7 @@ export function AvailabilityMiniCalendar({
       {/* Days grid */}
       <div className="grid grid-cols-7 gap-1 pt-1">
         {daysArray.map((day) => {
-          const isSelected = selectedDays.includes(day);
+          const isSelected = selectedDays.includes(day)
           return (
             <button
               key={day}
@@ -112,9 +112,9 @@ export function AvailabilityMiniCalendar({
             >
               {day}
             </button>
-          );
+          )
         })}
       </div>
     </div>
-  );
+  )
 };

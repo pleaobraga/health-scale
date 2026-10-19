@@ -1,12 +1,12 @@
-import { create } from 'zustand';
+import { create } from 'zustand'
 
-import { CloudSyncService } from '../services/cloud-sync-service';
-import { PersonService } from '../services/person-service';
-import { StorageService } from '../services/storage-service';
-import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/date-utils';
-import { validateSchedule } from '../utils/validate-schedule';
+import { CloudSyncService } from '../services/cloud-sync-service'
+import { PersonService } from '../services/person-service'
+import { StorageService } from '../services/storage-service'
+import { getPreviousMonth, getNextMonth, getMonthDaysArray } from '../utils/date-utils'
+import { validateSchedule } from '../utils/validate-schedule'
 
-import type { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types';
+import type { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab } from '../types'
 
 interface ScheduleStore {
   // Navigation & UI state
@@ -94,21 +94,21 @@ interface ScheduleStore {
 
 const getInitialDarkMode = (): boolean => {
   try {
-    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('theme') : null;
-    if (saved) return saved === 'dark';
+    const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('theme') : null
+    if (saved) return saved === 'dark'
     return Boolean(
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-color-scheme: dark)')?.matches
-    );
+    )
   } catch {
-    return false;
+    return false
   }
-};
+}
 
-const initialDarkMode = getInitialDarkMode();
+const initialDarkMode = getInitialDarkMode()
 if (typeof document !== 'undefined' && initialDarkMode) {
-  document.documentElement.classList.add('dark');
+  document.documentElement.classList.add('dark')
 }
 
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
@@ -138,49 +138,49 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   setUnsavedModalOpen: (open) => set({ isUnsavedModalOpen: open }),
 
   discardChanges: () => {
-    const { savedAssignments } = get();
+    const { savedAssignments } = get()
     set({
       assignments: { ...savedAssignments },
       hasUnsavedChanges: false,
       hasValidated: false,
       validationErrors: [],
       isUnsavedModalOpen: false,
-    });
+    })
   },
 
   setCurrentMonth: (month) => {
-    set({ currentMonth: month, hasValidated: false, validationErrors: [] });
+    set({ currentMonth: month, hasValidated: false, validationErrors: [] })
   },
 
   goToPreviousMonth: () => {
-    const prev = getPreviousMonth(get().currentMonth);
-    set({ currentMonth: prev, hasValidated: false, validationErrors: [] });
+    const prev = getPreviousMonth(get().currentMonth)
+    set({ currentMonth: prev, hasValidated: false, validationErrors: [] })
   },
 
   goToNextMonth: () => {
-    const next = getNextMonth(get().currentMonth);
-    set({ currentMonth: next, hasValidated: false, validationErrors: [] });
+    const next = getNextMonth(get().currentMonth)
+    set({ currentMonth: next, hasValidated: false, validationErrors: [] })
   },
 
   toggleEditMode: () => {
-    const currentMode = get().isEditMode;
+    const currentMode = get().isEditMode
     if (!currentMode) {
       // Entering edit mode: snapshot current saved assignments
       set({
         isEditMode: true,
         savedAssignments: { ...get().assignments },
         hasUnsavedChanges: false,
-      });
+      })
     } else {
       // Trying to switch back to visualization: check for unsaved changes
       if (get().hasUnsavedChanges) {
-        set({ isUnsavedModalOpen: true });
+        set({ isUnsavedModalOpen: true })
       } else {
         set({
           isEditMode: false,
           hasValidated: false,
           validationErrors: [],
-        });
+        })
       }
     }
   },
@@ -191,16 +191,16 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         isEditMode: true,
         savedAssignments: { ...get().assignments },
         hasUnsavedChanges: false,
-      });
+      })
     } else {
       if (get().hasUnsavedChanges) {
-        set({ isUnsavedModalOpen: true });
+        set({ isUnsavedModalOpen: true })
       } else {
         set({
           isEditMode: false,
           hasValidated: false,
           validationErrors: [],
-        });
+        })
       }
     }
   },
@@ -208,61 +208,61 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   setHighlightedPersonId: (id) => {
     set((state) => ({
       highlightedPersonId: state.highlightedPersonId === id ? null : id,
-    }));
+    }))
   },
 
   setSelectedDateForEvents: (dateStr) => {
-    set({ selectedDateForEvents: dateStr });
+    set({ selectedDateForEvents: dateStr })
   },
 
   setFullScreenModalOpen: (open) => {
-    set({ isFullScreenModalOpen: open });
+    set({ isFullScreenModalOpen: open })
   },
 
   addPersonToMonth: (personId, month) => {
-    const current = get().monthParticipants[month] || [];
-    if (current.includes(personId)) return;
+    const current = get().monthParticipants[month] || []
+    if (current.includes(personId)) return
     const updated = {
       ...get().monthParticipants,
       [month]: [...current, personId],
-    };
-    StorageService.saveMonthParticipants(updated);
-    set({ monthParticipants: updated });
+    }
+    StorageService.saveMonthParticipants(updated)
+    set({ monthParticipants: updated })
   },
 
   addPersonsToMonth: (personIds, month) => {
-    const current = get().monthParticipants[month] || [];
-    const newIds = personIds.filter((id) => !current.includes(id));
-    if (newIds.length === 0) return;
+    const current = get().monthParticipants[month] || []
+    const newIds = personIds.filter((id) => !current.includes(id))
+    if (newIds.length === 0) return
     const updated = {
       ...get().monthParticipants,
       [month]: [...current, ...newIds],
-    };
-    StorageService.saveMonthParticipants(updated);
-    set({ monthParticipants: updated });
+    }
+    StorageService.saveMonthParticipants(updated)
+    set({ monthParticipants: updated })
   },
 
   removePersonFromMonth: (personId, month) => {
-    const current = get().monthParticipants[month] || [];
-    const updatedForMonth = current.filter((id) => id !== personId);
+    const current = get().monthParticipants[month] || []
+    const updatedForMonth = current.filter((id) => id !== personId)
     const updatedParticipants = {
       ...get().monthParticipants,
       [month]: updatedForMonth,
-    };
+    }
 
     // Also remove from assignments of this month
-    const currentAssignments = { ...get().assignments };
-    let hasAssignmentChanges = false;
+    const currentAssignments = { ...get().assignments }
+    let hasAssignmentChanges = false
     Object.keys(currentAssignments).forEach((dateStr) => {
       if (dateStr.startsWith(month) && currentAssignments[dateStr].includes(personId)) {
-        currentAssignments[dateStr] = currentAssignments[dateStr].filter((id) => id !== personId);
-        hasAssignmentChanges = true;
+        currentAssignments[dateStr] = currentAssignments[dateStr].filter((id) => id !== personId)
+        hasAssignmentChanges = true
       }
-    });
+    })
 
-    StorageService.saveMonthParticipants(updatedParticipants);
+    StorageService.saveMonthParticipants(updatedParticipants)
     if (hasAssignmentChanges) {
-      StorageService.saveAssignments(currentAssignments);
+      StorageService.saveAssignments(currentAssignments)
     }
 
     set({
@@ -270,15 +270,15 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       assignments: currentAssignments,
       hasUnsavedChanges: get().isEditMode && hasAssignmentChanges ? true : get().hasUnsavedChanges,
       highlightedPersonId: get().highlightedPersonId === personId ? null : get().highlightedPersonId,
-    });
+    })
   },
 
   addPerson: (name, color, availableDays = []) => {
-    const id = `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const newPerson: Person = { id, name, color, active: true };
-    const updatedPersons = [...get().persons, newPerson];
+    const id = `p_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
+    const newPerson: Person = { id, name, color, active: true }
+    const updatedPersons = [...get().persons, newPerson]
 
-    let updatedAvails = [...get().availabilities];
+    let updatedAvails = [...get().availabilities]
     if (availableDays.length > 0) {
       updatedAvails = [
         ...updatedAvails,
@@ -287,88 +287,88 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
           month: get().currentMonth,
           availableDays,
         },
-      ];
+      ]
     }
 
-    StorageService.savePersons(updatedPersons);
-    StorageService.saveAvailabilities(updatedAvails);
+    StorageService.savePersons(updatedPersons)
+    StorageService.saveAvailabilities(updatedAvails)
 
     if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updatedPersons);
+      CloudSyncService.savePeopleToCloud(updatedPersons)
     }
 
     set({
       persons: updatedPersons,
       availabilities: updatedAvails,
-    });
+    })
   },
 
   updatePerson: (id, name, color) => {
-    const updated = get().persons.map((p) => (p.id === id ? { ...p, name, color } : p));
-    StorageService.savePersons(updated);
+    const updated = get().persons.map((p) => (p.id === id ? { ...p, name, color } : p))
+    StorageService.savePersons(updated)
     if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updated);
+      CloudSyncService.savePeopleToCloud(updated)
     }
-    set({ persons: updated });
+    set({ persons: updated })
   },
 
   canDeletePerson: (id) => {
-    return PersonService.canDeletePerson(id, get().assignments);
+    return PersonService.canDeletePerson(id, get().assignments)
   },
 
   deactivatePerson: (id) => {
     const updatedPersons = get().persons.map((p) =>
       p.id === id ? { ...p, active: false } : p
-    );
-    StorageService.savePersons(updatedPersons);
+    )
+    StorageService.savePersons(updatedPersons)
     if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updatedPersons);
+      CloudSyncService.savePeopleToCloud(updatedPersons)
     }
     set({
       persons: updatedPersons,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
-    });
+    })
   },
 
   reactivatePerson: (id) => {
     const updatedPersons = get().persons.map((p) =>
       p.id === id ? { ...p, active: true } : p
-    );
-    StorageService.savePersons(updatedPersons);
+    )
+    StorageService.savePersons(updatedPersons)
     if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updatedPersons);
+      CloudSyncService.savePeopleToCloud(updatedPersons)
     }
-    set({ persons: updatedPersons });
+    set({ persons: updatedPersons })
   },
 
   deletePerson: (id, force = false) => {
     if (!force && !get().canDeletePerson(id)) {
-      console.warn(`Não é possível excluir o profissional ${id} permanentemente: possui histórico em escalas.`);
-      return false;
+      console.warn(`Não é possível excluir o profissional ${id} permanentemente: possui histórico em escalas.`)
+      return false
     }
 
-    const updatedPersons = get().persons.filter((p) => p.id !== id);
-    const updatedAvails = get().availabilities.filter((a) => a.personId !== id);
+    const updatedPersons = get().persons.filter((p) => p.id !== id)
+    const updatedAvails = get().availabilities.filter((a) => a.personId !== id)
 
     // Also remove from all monthParticipants
-    const updatedMonthParticipants = { ...get().monthParticipants };
+    const updatedMonthParticipants = { ...get().monthParticipants }
     Object.keys(updatedMonthParticipants).forEach((m) => {
-      updatedMonthParticipants[m] = updatedMonthParticipants[m].filter((pId) => pId !== id);
-    });
+      updatedMonthParticipants[m] = updatedMonthParticipants[m].filter((pId) => pId !== id)
+    })
 
     // Also remove person from assignments
-    const currentAssignments = { ...get().assignments };
+    const currentAssignments = { ...get().assignments }
     Object.keys(currentAssignments).forEach((dateStr) => {
-      currentAssignments[dateStr] = currentAssignments[dateStr].filter((pId) => pId !== id);
-    });
+      currentAssignments[dateStr] = currentAssignments[dateStr].filter((pId) => pId !== id)
+    })
 
-    StorageService.savePersons(updatedPersons);
-    StorageService.saveAvailabilities(updatedAvails);
-    StorageService.saveAssignments(currentAssignments);
-    StorageService.saveMonthParticipants(updatedMonthParticipants);
+    StorageService.savePersons(updatedPersons)
+    StorageService.saveAvailabilities(updatedAvails)
+    StorageService.saveAssignments(currentAssignments)
+    StorageService.saveMonthParticipants(updatedMonthParticipants)
 
     if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updatedPersons);
+      CloudSyncService.savePeopleToCloud(updatedPersons)
     }
 
     set({
@@ -378,66 +378,66 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       savedAssignments: { ...currentAssignments },
       monthParticipants: updatedMonthParticipants,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
-    });
-    return true;
+    })
+    return true
   },
 
   setPersonAvailability: (personId, month, availableDays) => {
     const existingIndex = get().availabilities.findIndex(
       (a) => a.personId === personId && a.month === month
-    );
-    let updated: MonthlyAvailability[];
+    )
+    let updated: MonthlyAvailability[]
     if (existingIndex >= 0) {
-      updated = [...get().availabilities];
-      updated[existingIndex] = { personId, month, availableDays };
+      updated = [...get().availabilities]
+      updated[existingIndex] = { personId, month, availableDays }
     } else {
-      updated = [...get().availabilities, { personId, month, availableDays }];
+      updated = [...get().availabilities, { personId, month, availableDays }]
     }
-    StorageService.saveAvailabilities(updated);
-    set({ availabilities: updated });
+    StorageService.saveAvailabilities(updated)
+    set({ availabilities: updated })
   },
 
   togglePersonDayAvailability: (personId, month, day) => {
-    const existing = get().availabilities.find((a) => a.personId === personId && a.month === month);
-    const currentDays = existing ? existing.availableDays : [];
+    const existing = get().availabilities.find((a) => a.personId === personId && a.month === month)
+    const currentDays = existing ? existing.availableDays : []
     const newDays = currentDays.includes(day)
       ? currentDays.filter((d) => d !== day)
-      : [...currentDays, day].sort((a, b) => a - b);
+      : [...currentDays, day].sort((a, b) => a - b)
 
-    get().setPersonAvailability(personId, month, newDays);
+    get().setPersonAvailability(personId, month, newDays)
   },
 
   setQuickAvailability: (personId, month, type) => {
-    const totalDays = getMonthDaysArray(month);
-    let newDays: number[] = [];
+    const totalDays = getMonthDaysArray(month)
+    let newDays: number[] = []
 
     if (type === 'even') {
-      newDays = totalDays.filter((d) => d % 2 === 0);
+      newDays = totalDays.filter((d) => d % 2 === 0)
     } else if (type === 'odd') {
-      newDays = totalDays.filter((d) => d % 2 !== 0);
+      newDays = totalDays.filter((d) => d % 2 !== 0)
     } else if (type === 'all') {
-      newDays = [...totalDays];
+      newDays = [...totalDays]
     } else if (type === 'clear') {
-      newDays = [];
+      newDays = []
     }
 
-    get().setPersonAvailability(personId, month, newDays);
+    get().setPersonAvailability(personId, month, newDays)
   },
 
   populateMonthWithAvailableCandidates: (month) => {
-    const days = getMonthDaysArray(month);
-    const currentAssignments = { ...get().assignments };
-    const { availabilities } = get();
-    let hasChanges = false;
+    const days = getMonthDaysArray(month)
+    const currentAssignments = { ...get().assignments }
+    const { availabilities } = get()
+    let hasChanges = false
 
     days.forEach((dayNum) => {
-      const dayStr = dayNum.toString().padStart(2, '0');
-      const dateStr = `${month}-${dayStr}`;
+      const dayStr = dayNum.toString().padStart(2, '0')
+      const dateStr = `${month}-${dayStr}`
 
       // If the day already has assignments, we do not overwrite them completely unless empty
       if (!currentAssignments[dateStr] || currentAssignments[dateStr].length === 0) {
         // Find everyone registered in this month who has marked availability for this day
-        const monthParticipantIds = get().monthParticipants[month] || [];
+        const monthParticipantIds = get().monthParticipants[month] || []
         const candidates = availabilities
           .filter(
             (a) =>
@@ -445,29 +445,29 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
               monthParticipantIds.includes(a.personId) &&
               a.availableDays.includes(dayNum)
           )
-          .map((a) => a.personId);
+          .map((a) => a.personId)
 
         if (candidates.length > 0) {
-          currentAssignments[dateStr] = candidates;
-          hasChanges = true;
+          currentAssignments[dateStr] = candidates
+          hasChanges = true
         }
       }
-    });
+    })
 
     if (hasChanges) {
-      set({ assignments: currentAssignments, hasUnsavedChanges: true });
+      set({ assignments: currentAssignments, hasUnsavedChanges: true })
     }
   },
 
   clearMonthAssignments: (month) => {
-    const currentAssignments = { ...get().assignments };
-    let hasChanges = false;
+    const currentAssignments = { ...get().assignments }
+    let hasChanges = false
     Object.keys(currentAssignments).forEach((dateStr) => {
       if (dateStr.startsWith(month)) {
-        delete currentAssignments[dateStr];
-        hasChanges = true;
+        delete currentAssignments[dateStr]
+        hasChanges = true
       }
-    });
+    })
 
     if (hasChanges) {
       set({
@@ -475,30 +475,30 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         hasUnsavedChanges: true,
         hasValidated: false,
         validationErrors: [],
-      });
+      })
     }
   },
 
   insertAllPersonDaysToMonth: (personId, month) => {
     const avail = get().availabilities.find(
       (a) => a.personId === personId && a.month === month
-    );
-    const totalMonthDays = getMonthDaysArray(month);
+    )
+    const totalMonthDays = getMonthDaysArray(month)
     const daysToAssign =
-      avail && avail.availableDays.length > 0 ? avail.availableDays : totalMonthDays;
+      avail && avail.availableDays.length > 0 ? avail.availableDays : totalMonthDays
 
-    const currentAssignments = { ...get().assignments };
-    let hasChanges = false;
+    const currentAssignments = { ...get().assignments }
+    let hasChanges = false
 
     daysToAssign.forEach((dayNum) => {
-      const dayStr = dayNum.toString().padStart(2, '0');
-      const dateStr = `${month}-${dayStr}`;
-      const dayList = currentAssignments[dateStr] || [];
+      const dayStr = dayNum.toString().padStart(2, '0')
+      const dateStr = `${month}-${dayStr}`
+      const dayList = currentAssignments[dateStr] || []
       if (!dayList.includes(personId)) {
-        currentAssignments[dateStr] = [...dayList, personId];
-        hasChanges = true;
+        currentAssignments[dateStr] = [...dayList, personId]
+        hasChanges = true
       }
-    });
+    })
 
     if (hasChanges) {
       set({
@@ -506,58 +506,58 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         hasUnsavedChanges: true,
         hasValidated: false,
         validationErrors: [],
-      });
+      })
     }
   },
 
   removePersonFromDay: (dateStr, personId) => {
-    const current = get().assignments[dateStr] || [];
-    const updatedForDay = current.filter((id) => id !== personId);
+    const current = get().assignments[dateStr] || []
+    const updatedForDay = current.filter((id) => id !== personId)
     const updated = {
       ...get().assignments,
       [dateStr]: updatedForDay,
-    };
-    set({ assignments: updated, hasUnsavedChanges: true });
+    }
+    set({ assignments: updated, hasUnsavedChanges: true })
   },
 
   addPersonToDay: (dateStr, personId) => {
-    const current = get().assignments[dateStr] || [];
-    if (current.includes(personId)) return;
+    const current = get().assignments[dateStr] || []
+    if (current.includes(personId)) return
     const updated = {
       ...get().assignments,
       [dateStr]: [...current, personId],
-    };
-    set({ assignments: updated, hasUnsavedChanges: true });
+    }
+    set({ assignments: updated, hasUnsavedChanges: true })
   },
 
   setDayAssignments: (dateStr, personIds) => {
     const updated = {
       ...get().assignments,
       [dateStr]: personIds,
-    };
-    set({ assignments: updated, hasUnsavedChanges: true });
+    }
+    set({ assignments: updated, hasUnsavedChanges: true })
   },
 
   addEvent: (eventData) => {
-    const id = `ev_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const newEvent: CalendarEvent = { ...eventData, id };
-    const updated = [...get().events, newEvent];
-    StorageService.saveEvents(updated);
-    set({ events: updated });
+    const id = `ev_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
+    const newEvent: CalendarEvent = { ...eventData, id }
+    const updated = [...get().events, newEvent]
+    StorageService.saveEvents(updated)
+    set({ events: updated })
   },
 
   updateEvent: (eventId, updatedData) => {
     const updated = get().events.map((e) =>
       e.id === eventId ? { ...e, ...updatedData } : e
-    );
-    StorageService.saveEvents(updated);
-    set({ events: updated });
+    )
+    StorageService.saveEvents(updated)
+    set({ events: updated })
   },
 
   deleteEvent: (eventId) => {
-    const updated = get().events.filter((e) => e.id !== eventId);
-    StorageService.saveEvents(updated);
-    set({ events: updated });
+    const updated = get().events.filter((e) => e.id !== eventId)
+    StorageService.saveEvents(updated)
+    set({ events: updated })
   },
 
 
@@ -567,28 +567,28 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       allAssignments: get().assignments,
       persons: get().persons,
       availabilities: get().availabilities,
-    });
-    set({ validationErrors: errors, hasValidated: true });
-    return errors;
+    })
+    set({ validationErrors: errors, hasValidated: true })
+    return errors
   },
 
   saveSchedule: async () => {
-    set({ isSaving: true });
+    set({ isSaving: true })
     // Save everything in storage
-    StorageService.savePersons(get().persons);
-    StorageService.saveAvailabilities(get().availabilities);
-    StorageService.saveAssignments(get().assignments);
-    StorageService.saveEvents(get().events);
-    StorageService.saveMonthParticipants(get().monthParticipants);
+    StorageService.savePersons(get().persons)
+    StorageService.saveAvailabilities(get().availabilities)
+    StorageService.saveAssignments(get().assignments)
+    StorageService.saveEvents(get().events)
+    StorageService.saveMonthParticipants(get().monthParticipants)
 
     // Commit draft into savedAssignments
     set({
       savedAssignments: { ...get().assignments },
       hasUnsavedChanges: false,
-    });
+    })
 
     // If cloud sync is active, explicitly push to Firestore
-    let cloudSaved = false;
+    let cloudSaved = false
     if (CloudSyncService.isSyncEnabled()) {
       try {
         cloudSaved = await CloudSyncService.saveMonthToCloud(get().currentMonth, {
@@ -596,106 +596,106 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
           monthParticipants: get().monthParticipants,
           availabilities: get().availabilities,
           events: get().events,
-        });
+        })
       } catch (err) {
-        console.error('Failed to sync schedule to cloud:', err);
+        console.error('Failed to sync schedule to cloud:', err)
       }
     }
 
     // Execute audit validation
-    const errors = get().validateCurrentSchedule();
+    const errors = get().validateCurrentSchedule()
 
-    const errorCount = errors.filter((e) => e.severity === 'error').length;
-    const warningCount = errors.filter((e) => e.severity === 'warning').length;
+    const errorCount = errors.filter((e) => e.severity === 'error').length
+    const warningCount = errors.filter((e) => e.severity === 'warning').length
 
     let msg = cloudSaved
       ? 'Escala salva e sincronizada na nuvem com sucesso!'
-      : 'Escala salva com sucesso no armazenamento local!';
+      : 'Escala salva com sucesso no armazenamento local!'
     if (errorCount > 0) {
-      msg = `Escala salva, porém existem ${errorCount} erro(s) e ${warningCount} aviso(s) que precisam de atenção.`;
+      msg = `Escala salva, porém existem ${errorCount} erro(s) e ${warningCount} aviso(s) que precisam de atenção.`
     } else if (warningCount > 0) {
-      msg = `Escala salva com sucesso! (com ${warningCount} aviso(s) informativo(s)).`;
+      msg = `Escala salva com sucesso! (com ${warningCount} aviso(s) informativo(s)).`
     }
 
     set({
       isSaving: false,
       saveFeedback: msg,
-    });
+    })
 
     setTimeout(() => {
-      set({ saveFeedback: null });
-    }, 5000);
+      set({ saveFeedback: null })
+    }, 5000)
   },
 
   pullCloudData: async (month?: string) => {
-    const targetMonth = month || get().currentMonth;
+    const targetMonth = month || get().currentMonth
     if (!CloudSyncService.isSyncEnabled()) {
       return {
         success: false,
         message: 'A sincronização na nuvem precisa estar ativada.',
-      };
+      }
     }
 
     try {
-      const { monthData, persons } = await CloudSyncService.pullAllFromCloud(targetMonth);
+      const { monthData, persons } = await CloudSyncService.pullAllFromCloud(targetMonth)
 
       if (!monthData && !persons) {
         return {
           success: false,
           message: 'Nenhum dado encontrado na nuvem para sincronizar.',
-        };
+        }
       }
 
       if (persons && persons.length > 0) {
-        StorageService.savePersons(persons);
-        set({ persons });
+        StorageService.savePersons(persons)
+        set({ persons })
       }
 
       if (monthData) {
         if (monthData.assignments) {
-          StorageService.saveAssignments(monthData.assignments);
+          StorageService.saveAssignments(monthData.assignments)
           set({
             assignments: monthData.assignments,
             savedAssignments: { ...monthData.assignments },
-          });
+          })
         }
         if (monthData.monthParticipants) {
-          StorageService.saveMonthParticipants(monthData.monthParticipants);
-          set({ monthParticipants: monthData.monthParticipants });
+          StorageService.saveMonthParticipants(monthData.monthParticipants)
+          set({ monthParticipants: monthData.monthParticipants })
         }
         if (monthData.availabilities) {
-          StorageService.saveAvailabilities(monthData.availabilities);
-          set({ availabilities: monthData.availabilities });
+          StorageService.saveAvailabilities(monthData.availabilities)
+          set({ availabilities: monthData.availabilities })
         }
         if (monthData.events) {
-          StorageService.saveEvents(monthData.events);
-          set({ events: monthData.events });
+          StorageService.saveEvents(monthData.events)
+          set({ events: monthData.events })
         }
       }
 
       return {
         success: true,
         message: 'Dados locais atualizados a partir da nuvem com sucesso!',
-      };
+      }
     } catch (err) {
-      console.error('Failed to pull data from cloud:', err);
+      console.error('Failed to pull data from cloud:', err)
       return {
         success: false,
         message: 'Erro ao tentar buscar dados na nuvem.',
-      };
+      }
     }
   },
 
   dismissValidation: () => {
-    set({ hasValidated: false, validationErrors: [] });
+    set({ hasValidated: false, validationErrors: [] })
   },
 
   reloadFromStorage: () => {
-    const persons = StorageService.getPersons();
-    const monthParticipants = StorageService.getMonthParticipants();
-    const availabilities = StorageService.getAvailabilities();
-    const assignments = StorageService.getAssignments();
-    const events = StorageService.getEvents();
+    const persons = StorageService.getPersons()
+    const monthParticipants = StorageService.getMonthParticipants()
+    const availabilities = StorageService.getAvailabilities()
+    const assignments = StorageService.getAssignments()
+    const events = StorageService.getEvents()
 
     set({
       persons,
@@ -707,21 +707,21 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       validationErrors: [],
       hasValidated: false,
       hasUnsavedChanges: false,
-    });
+    })
   },
 
   toggleDarkMode: () => {
-    const nextDark = !get().isDarkMode;
+    const nextDark = !get().isDarkMode
     if (typeof document !== 'undefined') {
       if (nextDark) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
+        document.documentElement.classList.add('dark')
+        localStorage.setItem('theme', 'dark')
       } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
+        document.documentElement.classList.remove('dark')
+        localStorage.setItem('theme', 'light')
       }
     }
-    set({ isDarkMode: nextDark });
+    set({ isDarkMode: nextDark })
   },
-}));
+}))
 

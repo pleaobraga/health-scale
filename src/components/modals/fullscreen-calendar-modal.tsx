@@ -6,13 +6,13 @@ import {
   Printer,
   FileSpreadsheet,
   Calendar as CalendarIcon,
-} from 'lucide-react';
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+} from 'lucide-react'
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { useScheduleStore } from '../../store/use-schedule-store';
-import { getMonthCalendarGrid, formatMonthYear, formatDateWithWeekday } from '../../utils/date-utils';
-import { exportScheduleToExcel } from '../../utils/export-to-excel';
+import { useScheduleStore } from '../../store/use-schedule-store'
+import { getMonthCalendarGrid, formatMonthYear, formatDateWithWeekday } from '../../utils/date-utils'
+import { exportScheduleToExcel } from '../../utils/export-to-excel'
 
 const WEEKDAYS = [
   { short: 'Dom', full: 'Domingo', isWeekend: true },
@@ -22,7 +22,7 @@ const WEEKDAYS = [
   { short: 'Qui', full: 'Quinta-feira', isWeekend: false },
   { short: 'Sex', full: 'Sexta-feira', isWeekend: false },
   { short: 'Sáb', full: 'Sábado', isWeekend: true },
-];
+]
 
 export function FullScreenCalendarModal() {
   const {
@@ -34,38 +34,38 @@ export function FullScreenCalendarModal() {
     persons,
     assignments,
     events,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
-  const daysGrid = getMonthCalendarGrid(currentMonth);
-  const personMap = new Map(persons.map((p) => [p.id, p]));
+  const daysGrid = getMonthCalendarGrid(currentMonth)
+  const personMap = new Map(persons.map((p) => [p.id, p]))
 
   // Events of the current month sorted chronologically by date and time
   const monthEvents = events
     .filter((e) => e.date.startsWith(currentMonth))
     .sort((a, b) => {
-      const dateCompare = a.date.localeCompare(b.date);
-      if (dateCompare !== 0) return dateCompare;
-      const timeCompare = (a.time || '').localeCompare(b.time || '');
-      if (timeCompare !== 0) return timeCompare;
-      return a.title.localeCompare(b.title);
-    });
+      const dateCompare = a.date.localeCompare(b.date)
+      if (dateCompare !== 0) return dateCompare
+      const timeCompare = (a.time || '').localeCompare(b.time || '')
+      if (timeCompare !== 0) return timeCompare
+      return a.title.localeCompare(b.title)
+    })
 
   // Close on ESC key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isFullScreenModalOpen) {
-        setFullScreenModalOpen(false);
+        setFullScreenModalOpen(false)
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullScreenModalOpen, setFullScreenModalOpen]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isFullScreenModalOpen, setFullScreenModalOpen])
 
-  if (!isFullScreenModalOpen) return null;
+  if (!isFullScreenModalOpen) return null
 
   const handlePrint = () => {
-    window.print();
-  };
+    window.print()
+  }
 
   const handleExportExcel = () => {
     exportScheduleToExcel({
@@ -73,8 +73,8 @@ export function FullScreenCalendarModal() {
       persons,
       assignments,
       events,
-    });
-  };
+    })
+  }
 
   return createPortal(
     <div
@@ -179,9 +179,9 @@ export function FullScreenCalendarModal() {
           {/* Grid Cells */}
           <div className="flex-1 grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 auto-rows-fr overflow-y-auto print:overflow-visible print:border-l-2 print:border-slate-400 print:h-auto">
             {daysGrid.map((dayInfo) => {
-              const assigned = assignments[dayInfo.dateStr] || [];
-              const dayEvents = events.filter((e) => e.date === dayInfo.dateStr);
-              const hasEvents = dayEvents.length > 0;
+              const assigned = assignments[dayInfo.dateStr] || []
+              const dayEvents = events.filter((e) => e.date === dayInfo.dateStr)
+              const hasEvents = dayEvents.length > 0
 
               return (
                 <div
@@ -230,8 +230,8 @@ export function FullScreenCalendarModal() {
                       </div>
                     ) : (
                       assigned.map((personId) => {
-                        const person = personMap.get(personId);
-                        if (!person) return null;
+                        const person = personMap.get(personId)
+                        if (!person) return null
 
                         return (
                           <div
@@ -248,7 +248,7 @@ export function FullScreenCalendarModal() {
                           >
                             <span className="truncate">{person.name}</span>
                           </div>
-                        );
+                        )
                       })
                     )}
 
@@ -259,7 +259,7 @@ export function FullScreenCalendarModal() {
                     )}
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -298,11 +298,11 @@ export function FullScreenCalendarModal() {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-200 print:divide-slate-200">
                 {monthEvents.map((event) => {
-                  const { formattedDate, weekday } = formatDateWithWeekday(event.date);
-                  const assignedIds = assignments[event.date] || [];
+                  const { formattedDate, weekday } = formatDateWithWeekday(event.date)
+                  const assignedIds = assignments[event.date] || []
                   const assignedNames = assignedIds
                     .map((id) => personMap.get(id)?.name)
-                    .filter(Boolean);
+                    .filter(Boolean)
 
                   return (
                     <tr
@@ -343,7 +343,7 @@ export function FullScreenCalendarModal() {
                         )}
                       </td>
                     </tr>
-                  );
+                  )
                 })}
               </tbody>
             </table>
@@ -355,6 +355,6 @@ export function FullScreenCalendarModal() {
 
 
     document.body
-  );
+  )
 };
 

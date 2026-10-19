@@ -1,6 +1,6 @@
-import { GlobalPersonModal } from './global-person-modal';
+import { GlobalPersonModal } from './global-person-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof GlobalPersonModal> = {
   title: 'PeopleManagement/GlobalPersonModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof GlobalPersonModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof GlobalPersonModal>;
 
 export const AddNew: Story = {
@@ -21,7 +21,7 @@ export const AddNew: Story = {
     personToEdit: null,
     onSave: (name, color) => console.log('Save person:', { name, color }),
   },
-};
+}
 
 export const EditExisting: Story = {
   args: {
@@ -34,5 +34,5 @@ export const EditExisting: Story = {
     },
     onSave: (name, color) => console.log('Save person:', { name, color }),
   },
-};
+}
 

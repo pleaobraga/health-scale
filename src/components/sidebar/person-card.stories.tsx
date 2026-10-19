@@ -1,6 +1,6 @@
-import { PersonCard } from './person-card';
+import { PersonCard } from './person-card'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof PersonCard> = {
   title: 'Sidebar/PersonCard',
@@ -16,9 +16,9 @@ const meta: Meta<typeof PersonCard> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof PersonCard>;
 
 export const Default: Story = {
@@ -36,14 +36,14 @@ export const Default: Story = {
     onEdit: () => {},
     onInsertAllDays: () => {},
   },
-};
+}
 
 export const Highlighted: Story = {
   args: {
     ...Default.args,
     isHighlighted: true,
   },
-};
+}
 
 export const EmeraldDoctor: Story = {
   args: {
@@ -57,12 +57,12 @@ export const EmeraldDoctor: Story = {
     onToggleHighlight: () => {},
     onEdit: () => {},
   },
-};
+}
 
 // Exactly one CssCheck across the project asserting a concrete computed style
 export const CssCheck: Story = {
   args: {
     ...Default.args,
   },
-};
+}
 

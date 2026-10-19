@@ -1,8 +1,8 @@
-import { AlertTriangle, Trash2, X } from 'lucide-react';
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { AlertTriangle, Trash2, X } from 'lucide-react'
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -20,14 +20,14 @@ export function ConfirmDeleteModal({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
-  if (!isOpen || !person) return null;
+  if (!isOpen || !person) return null
 
   return createPortal(
     <div
@@ -89,8 +89,8 @@ export function ConfirmDeleteModal({
           <button
             type="button"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-xs"
           >
@@ -101,6 +101,6 @@ export function ConfirmDeleteModal({
       </div>
     </div>,
     document.body
-  );
+  )
 };
 

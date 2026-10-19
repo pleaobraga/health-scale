@@ -1,6 +1,6 @@
-import { ConfirmDeleteModal } from './confirm-delete-modal';
+import { ConfirmDeleteModal } from './confirm-delete-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof ConfirmDeleteModal> = {
   title: 'PeopleManagement/ConfirmDeleteModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof ConfirmDeleteModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof ConfirmDeleteModal>;
 
 export const DefaultOpen: Story = {
@@ -25,5 +25,5 @@ export const DefaultOpen: Story = {
     onClose: () => console.log('Closed modal'),
     onConfirm: () => console.log('Confirmed delete'),
   },
-};
+}
 

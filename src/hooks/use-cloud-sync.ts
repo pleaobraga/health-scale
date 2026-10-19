@@ -5,4 +5,4 @@
  */
 export const useCloudSync = () => {
   // Sync operates explicitly via saveSchedule / person actions and manual pull in Settings.
-};
+}

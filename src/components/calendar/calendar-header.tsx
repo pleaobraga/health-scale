@@ -6,7 +6,7 @@ const WEEKDAYS = [
   { short: 'Qui', full: 'Quinta-feira', isWeekend: false },
   { short: 'Sex', full: 'Sexta-feira', isWeekend: false },
   { short: 'Sáb', full: 'Sábado', isWeekend: true },
-];
+]
 
 export function CalendarHeader() {
   return (
@@ -23,5 +23,5 @@ export function CalendarHeader() {
         </div>
       ))}
     </div>
-  );
+  )
 };

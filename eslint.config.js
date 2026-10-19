@@ -41,6 +41,7 @@ export default tseslint.config(
         'no-console': ['warn', { allow: ['warn', 'error'] }],
         'no-debugger': 'error',
         'react/jsx-no-useless-fragment': 'warn',
+        'semi': ['error', 'never'],
         'import/first': 'error',
         'import/no-duplicates': 'error',
         'import/no-default-export': 'error',

@@ -1,7 +1,7 @@
-import { PersonManagementCard } from './person-management-card';
+import { PersonManagementCard } from './person-management-card'
 
-import type { Person } from '../../types';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Person } from '../../types'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof PersonManagementCard> = {
   title: 'PeopleManagement/PersonManagementCard',
@@ -17,9 +17,9 @@ const meta: Meta<typeof PersonManagementCard> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof PersonManagementCard>;
 
 const mockActivePerson: Person = {
@@ -27,14 +27,14 @@ const mockActivePerson: Person = {
   name: 'Dra. Ana Paula Carvalho',
   color: '#3b82f6',
   active: true,
-};
+}
 
 const mockInactivePerson: Person = {
   id: 'p-2',
   name: 'Dr. Roberto Souza',
   color: '#8b5cf6',
   active: false,
-};
+}
 
 export const ActiveState: Story = {
   args: {
@@ -47,7 +47,7 @@ export const ActiveState: Story = {
     onDeleteRequest: () => {},
     onReactivate: () => {},
   },
-};
+}
 
 export const InactiveStateWithHistory: Story = {
   args: {
@@ -60,7 +60,7 @@ export const InactiveStateWithHistory: Story = {
     onDeleteRequest: () => {},
     onReactivate: () => {},
   },
-};
+}
 
 export const InactiveStateWithoutHistory: Story = {
   args: {
@@ -73,5 +73,5 @@ export const InactiveStateWithoutHistory: Story = {
     onDeleteRequest: () => {},
     onReactivate: () => {},
   },
-};
+}
 

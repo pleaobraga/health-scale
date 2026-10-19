@@ -1,17 +1,17 @@
-import { UserPlus, Users, Sparkles, Search, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { UserPlus, Users, Sparkles, Search, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { AddMonthParticipantsModal } from './add-month-participants-modal';
-import { MonthAvailabilityModal } from './month-availability-modal';
-import { PersonCard } from './person-card';
-import { useScheduleStore } from '../../store/use-schedule-store';
-import { formatMonthYear } from '../../utils/date-utils';
+import { AddMonthParticipantsModal } from './add-month-participants-modal'
+import { MonthAvailabilityModal } from './month-availability-modal'
+import { PersonCard } from './person-card'
+import { useScheduleStore } from '../../store/use-schedule-store'
+import { formatMonthYear } from '../../utils/date-utils'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export function Sidebar() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const {
     persons,
     monthParticipants,
@@ -26,41 +26,41 @@ export function Sidebar() {
     setPersonAvailability,
     insertAllPersonDaysToMonth,
     setCurrentView,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [personForAvailability, setPersonForAvailability] = useState<Person | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [personForAvailability, setPersonForAvailability] = useState<Person | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   // Persons assigned to this month
-  const currentParticipantIds = monthParticipants[currentMonth] || [];
-  const monthPersons = persons.filter((p) => currentParticipantIds.includes(p.id));
+  const currentParticipantIds = monthParticipants[currentMonth] || []
+  const monthPersons = persons.filter((p) => currentParticipantIds.includes(p.id))
 
   const filteredPersons = monthPersons.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
-  );
+  )
 
   const getPersonAvailableDays = (personId: string): number[] => {
     const avail = availabilities.find(
       (a) => a.personId === personId && a.month === currentMonth
-    );
-    return avail ? avail.availableDays : [];
-  };
+    )
+    return avail ? avail.availableDays : []
+  }
 
   const getPersonWorkingDaysCount = (personId: string): number => {
-    let count = 0;
+    let count = 0
     Object.entries(assignments).forEach(([dateStr, personIds]) => {
       if (dateStr.startsWith(currentMonth) && personIds.includes(personId)) {
-        count++;
+        count++
       }
-    });
-    return count;
-  };
+    })
+    return count
+  }
 
   const handleSaveAvailability = (personId: string, days: number[]) => {
-    setPersonAvailability(personId, currentMonth, days);
-  };
+    setPersonAvailability(personId, currentMonth, days)
+  }
 
   return (
     <aside className="w-full lg:h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col shadow-xs overflow-hidden transition-all duration-300">
@@ -70,7 +70,7 @@ export function Sidebar() {
           className="flex items-center gap-2 cursor-pointer lg:cursor-default select-none"
           onClick={() => {
             if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-              setIsCollapsed(!isCollapsed);
+              setIsCollapsed(!isCollapsed)
             }
           }}
           title="Clique para alternar visualização do painel"
@@ -179,8 +179,8 @@ export function Sidebar() {
             </div>
           ) : (
             filteredPersons.map((person) => {
-              const availDays = getPersonAvailableDays(person.id);
-              const workingDays = getPersonWorkingDaysCount(person.id);
+              const availDays = getPersonAvailableDays(person.id)
+              const workingDays = getPersonWorkingDaysCount(person.id)
               return (
                 <PersonCard
                   key={person.id}
@@ -194,7 +194,7 @@ export function Sidebar() {
                   onInsertAllDays={() => insertAllPersonDaysToMonth(person.id, currentMonth)}
                   onRemoveFromMonth={() => removePersonFromMonth(person.id, currentMonth)}
                 />
-              );
+              )
             })
           )}
         </div>
@@ -219,8 +219,8 @@ export function Sidebar() {
         currentParticipantIds={currentParticipantIds}
         onAddParticipants={(ids) => addPersonsToMonth(ids, currentMonth)}
         onGoToGlobalManagement={() => {
-          setCurrentView('people');
-          navigate('/pessoas');
+          setCurrentView('people')
+          navigate('/pessoas')
         }}
       />
 
@@ -236,5 +236,5 @@ export function Sidebar() {
         onSave={handleSaveAvailability}
       />
     </aside>
-  );
+  )
 };

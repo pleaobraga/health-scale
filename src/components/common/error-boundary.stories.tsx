@@ -1,7 +1,7 @@
-import { ErrorBoundary } from './error-boundary';
+import { ErrorBoundary } from './error-boundary'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ReactNode } from 'react'
 
 const meta: Meta<typeof ErrorBoundary> = {
   title: 'Common/ErrorBoundary',
@@ -10,13 +10,13 @@ const meta: Meta<typeof ErrorBoundary> = {
   parameters: {
     layout: 'padded',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof ErrorBoundary>;
 
 function BuggyComponent(): ReactNode {
-  throw new Error('Falha de demonstração capturada pelo ErrorBoundary');
+  throw new Error('Falha de demonstração capturada pelo ErrorBoundary')
 }
 
 export const ErrorState: Story = {
@@ -25,7 +25,7 @@ export const ErrorState: Story = {
       <BuggyComponent />
     </ErrorBoundary>
   ),
-};
+}
 
 export const NormalState: Story = {
   render: () => (
@@ -35,4 +35,4 @@ export const NormalState: Story = {
       </div>
     </ErrorBoundary>
   ),
-};
+}

@@ -12,158 +12,158 @@ import {
   Database,
   Cloud,
   RefreshCw,
-} from 'lucide-react';
-import React, { use, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+} from 'lucide-react'
+import React, { use, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { ConfirmOverwriteModal } from './confirm-overwrite-modal';
-import { AuthContext } from '../../context/auth-context';
+import { ConfirmOverwriteModal } from './confirm-overwrite-modal'
+import { AuthContext } from '../../context/auth-context'
 import {
   validateAndParseBackup,
   restoreAppData,
   hasExistingLocalData,
-} from '../../services/backup-service';
-import { CloudSyncService } from '../../services/cloud-sync-service';
-import { StorageService } from '../../services/storage-service';
-import { useScheduleStore } from '../../store/use-schedule-store';
+} from '../../services/backup-service'
+import { CloudSyncService } from '../../services/cloud-sync-service'
+import { StorageService } from '../../services/storage-service'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { AppDataSnapshot } from '../../types';
+import type { AppDataSnapshot } from '../../types'
 
 export function ImportView() {
-  const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const auth = use(AuthContext);
-  const isAdmin = auth?.isAdmin ?? false;
+  const auth = use(AuthContext)
+  const isAdmin = auth?.isAdmin ?? false
 
-  const { pullCloudData } = useScheduleStore();
-  const [isPullingCloud, setIsPullingCloud] = useState(false);
+  const { pullCloudData } = useScheduleStore()
+  const [isPullingCloud, setIsPullingCloud] = useState(false)
   const [cloudFeedback, setCloudFeedback] = useState<{
     type: 'success' | 'error';
     message: string;
-  } | null>(null);
+  } | null>(null)
 
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [parsedData, setParsedData] = useState<AppDataSnapshot | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
-  const [isStorageEmpty, setIsStorageEmpty] = useState<boolean | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [parsedData, setParsedData] = useState<AppDataSnapshot | null>(null)
+  const [isValidating, setIsValidating] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [isRestoring, setIsRestoring] = useState(false)
+  const [isStorageEmpty, setIsStorageEmpty] = useState<boolean | null>(null)
 
   const handlePullCloudData = async () => {
     try {
-      setIsPullingCloud(true);
-      setCloudFeedback(null);
+      setIsPullingCloud(true)
+      setCloudFeedback(null)
 
       // Auto-enable sync if not already enabled
       if (!CloudSyncService.isSyncEnabled()) {
-        CloudSyncService.setSyncEnabled(true);
+        CloudSyncService.setSyncEnabled(true)
       }
 
-      const result = await pullCloudData();
+      const result = await pullCloudData()
       if (result.success) {
         setCloudFeedback({
           type: 'success',
           message: `${result.message} Redirecionando para a escala...`,
-        });
+        })
         setTimeout(() => {
-          navigate('/calendario');
-        }, 1200);
+          navigate('/calendario')
+        }, 1200)
       } else {
         setCloudFeedback({
           type: 'error',
           message: result.message,
-        });
-        setTimeout(() => setCloudFeedback(null), 5000);
+        })
+        setTimeout(() => setCloudFeedback(null), 5000)
       }
     } catch {
       setCloudFeedback({
         type: 'error',
         message: 'Falha ao sincronizar dados com a nuvem.',
-      });
-      setTimeout(() => setCloudFeedback(null), 5000);
+      })
+      setTimeout(() => setCloudFeedback(null), 5000)
     } finally {
-      setIsPullingCloud(false);
+      setIsPullingCloud(false)
     }
-  };
+  }
 
   // Check initial local storage state
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
     hasExistingLocalData().then((hasData) => {
       if (mounted) {
-        setIsStorageEmpty(!hasData);
+        setIsStorageEmpty(!hasData)
       }
-    });
+    })
     return () => {
-      mounted = false;
-    };
-  }, []);
+      mounted = false
+    }
+  }, [])
 
   const handleFileProcess = async (file: File) => {
-    setSelectedFile(file);
-    setErrorMessage(null);
-    setIsValidating(true);
-    setParsedData(null);
+    setSelectedFile(file)
+    setErrorMessage(null)
+    setIsValidating(true)
+    setParsedData(null)
 
     try {
-      const snapshot = await validateAndParseBackup(file);
-      setParsedData(snapshot);
+      const snapshot = await validateAndParseBackup(file)
+      setParsedData(snapshot)
     } catch (err: unknown) {
       const message =
         err instanceof Error
           ? err.message
-          : 'Ocorreu um erro inesperado ao processar o arquivo de backup.';
-      setErrorMessage(message);
-      setSelectedFile(null);
+          : 'Ocorreu um erro inesperado ao processar o arquivo de backup.'
+      setErrorMessage(message)
+      setSelectedFile(null)
     } finally {
-      setIsValidating(false);
+      setIsValidating(false)
     }
-  };
+  }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
+    e.preventDefault()
+    setIsDragOver(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      handleFileProcess(file);
+      const file = e.dataTransfer.files[0]
+      handleFileProcess(file)
     }
-  };
+  }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
+    e.preventDefault()
+    setIsDragOver(true)
+  }
 
   const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
+    setIsDragOver(false)
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFileProcess(e.target.files[0]);
+      handleFileProcess(e.target.files[0])
     }
-  };
+  }
 
   const handleClear = () => {
-    setSelectedFile(null);
-    setParsedData(null);
-    setErrorMessage(null);
+    setSelectedFile(null)
+    setParsedData(null)
+    setErrorMessage(null)
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = ''
     }
-  };
+  }
 
   const handleStartZero = () => {
     // Clear storage and store to start clean
-    StorageService.savePersons([]);
-    StorageService.saveAssignments({});
-    StorageService.saveMonthParticipants({});
-    StorageService.saveAvailabilities([]);
-    StorageService.saveEvents([]);
+    StorageService.savePersons([])
+    StorageService.saveAssignments({})
+    StorageService.saveMonthParticipants({})
+    StorageService.saveAvailabilities([])
+    StorageService.saveEvents([])
 
     useScheduleStore.setState({
       persons: [],
@@ -175,53 +175,53 @@ export function ImportView() {
       currentView: 'people',
       hasUnsavedChanges: false,
       isEditMode: false,
-    });
+    })
 
     if (navigate) {
-      navigate('/pessoas');
+      navigate('/pessoas')
     }
-  };
+  }
 
   const handleRestoreClick = async () => {
-    if (!parsedData) return;
+    if (!parsedData) return
 
-    const hasData = await hasExistingLocalData();
+    const hasData = await hasExistingLocalData()
     if (hasData) {
-      setIsConfirmModalOpen(true);
+      setIsConfirmModalOpen(true)
     } else {
-      executeRestore();
+      executeRestore()
     }
-  };
+  }
 
   const executeRestore = async () => {
-    if (!parsedData) return;
+    if (!parsedData) return
 
     try {
-      setIsRestoring(true);
-      await restoreAppData(parsedData);
-      setIsConfirmModalOpen(false);
+      setIsRestoring(true)
+      await restoreAppData(parsedData)
+      setIsConfirmModalOpen(false)
       if (navigate) {
-        navigate('/');
+        navigate('/')
       }
     } catch (err) {
-      console.error('Falha ao restaurar dados:', err);
-      setErrorMessage('Falha ao aplicar os dados do backup. Tente novamente.');
-      setIsRestoring(false);
+      console.error('Falha ao restaurar dados:', err)
+      setErrorMessage('Falha ao aplicar os dados do backup. Tente novamente.')
+      setIsRestoring(false)
     }
-  };
+  }
 
   const formatExportedDate = (isoStr?: string) => {
-    if (!isoStr) return 'Data não informada';
+    if (!isoStr) return 'Data não informada'
     try {
-      const date = new Date(isoStr);
+      const date = new Date(isoStr)
       return new Intl.DateTimeFormat('pt-BR', {
         dateStyle: 'medium',
         timeStyle: 'short',
-      }).format(date);
+      }).format(date)
     } catch {
-      return isoStr;
+      return isoStr
     }
-  };
+  }
 
   return (
     <div className="flex-1 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 md:p-8 flex flex-col items-center custom-scrollbar">
@@ -353,7 +353,7 @@ export function ImportView() {
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
-                fileInputRef.current?.click();
+                fileInputRef.current?.click()
               }
             }}
             className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-3.5 ${
@@ -560,5 +560,5 @@ export function ImportView() {
         isRestoring={isRestoring}
       />
     </div>
-  );
+  )
 };

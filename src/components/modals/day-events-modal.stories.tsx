@@ -1,7 +1,7 @@
-import { DayEventsModal } from './day-events-modal';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { DayEventsModal } from './day-events-modal'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof DayEventsModal> = {
   title: 'Modals/DayEventsModal',
@@ -10,9 +10,9 @@ const meta: Meta<typeof DayEventsModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof DayEventsModal>;
 
 export const WithEvents: Story = {
@@ -34,18 +34,18 @@ export const WithEvents: Story = {
           time: '14:30',
         },
       ],
-    });
-    return <DayEventsModal />;
+    })
+    return <DayEventsModal />
   },
-};
+}
 
 export const WithoutEvents: Story = {
   render: () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [],
-    });
-    return <DayEventsModal />;
+    })
+    return <DayEventsModal />
   },
-};
+}
 

@@ -1,9 +1,9 @@
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom'
 
-import { PeopleManagementView } from './people-management-view';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { PeopleManagementView } from './people-management-view'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof PeopleManagementView> = {
   title: 'PeopleManagement/PeopleManagementView',
@@ -21,9 +21,9 @@ const meta: Meta<typeof PeopleManagementView> = {
       </MemoryRouter>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof PeopleManagementView>;
 
 export const DefaultView: Story = {
@@ -35,7 +35,7 @@ export const DefaultView: Story = {
         { id: '3', name: 'Enf. Roberto Souza', color: '#f59e0b', active: false },
       ],
       currentMonth: '2026-10',
-    });
-    return <PeopleManagementView />;
+    })
+    return <PeopleManagementView />
   },
-};
+}

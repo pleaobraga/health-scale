@@ -1,6 +1,6 @@
-import { CalendarGrid } from './calendar-grid';
-import { Sidebar } from '../sidebar/sidebar';
-import { ValidationPanel } from '../validation/validation-panel';
+import { CalendarGrid } from './calendar-grid'
+import { Sidebar } from '../sidebar/sidebar'
+import { ValidationPanel } from '../validation/validation-panel'
 
 export function CalendarView() {
   return (
@@ -19,6 +19,6 @@ export function CalendarView() {
         <ValidationPanel />
       </div>
     </main>
-  );
+  )
 }
 

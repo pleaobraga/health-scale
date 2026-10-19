@@ -1,9 +1,9 @@
-import { Calendar as CalendarIcon, X, Sparkles } from 'lucide-react';
+import { Calendar as CalendarIcon, X, Sparkles } from 'lucide-react'
 
-import { CandidatePicker } from './candidate-picker';
+import { CandidatePicker } from './candidate-picker'
 
-import type { Person, CalendarEvent } from '../../types';
-import type { CalendarDayInfo } from '../../utils/date-utils';
+import type { Person, CalendarEvent } from '../../types'
+import type { CalendarDayInfo } from '../../utils/date-utils'
 
 export interface DayCellProps {
   dayInfo: CalendarDayInfo;
@@ -36,12 +36,12 @@ export function DayCell({
   onRemovePerson,
   onAddPerson,
 }: DayCellProps) {
-  const { dayNumber, isCurrentMonth, isToday, dateStr } = dayInfo;
-  const hasEvents = events.length > 0;
-  const personMap = new Map<string, Person>(allPersons.map((p) => [p.id, p]));
+  const { dayNumber, isCurrentMonth, isToday, dateStr } = dayInfo
+  const hasEvents = events.length > 0
+  const personMap = new Map<string, Person>(allPersons.map((p) => [p.id, p]))
 
   // Background styling when a person's availability is being highlighted
-  const isTargetOfHighlight = highlightedPerson && isHighlightedPersonAvailable && isCurrentMonth;
+  const isTargetOfHighlight = highlightedPerson && isHighlightedPersonAvailable && isCurrentMonth
 
   return (
     <div
@@ -120,8 +120,8 @@ export function DayCell({
               </div>
             ) : (
               assignedPersonIds.map((personId) => {
-                const person = personMap.get(personId);
-                if (!person) return null;
+                const person = personMap.get(personId)
+                if (!person) return null
 
                 return (
                   <div
@@ -132,7 +132,7 @@ export function DayCell({
                   >
                     <span className="truncate">{person.name}</span>
                   </div>
-                );
+                )
               })
             )}
 
@@ -151,8 +151,8 @@ export function DayCell({
             {/* Candidate / Assigned Tags with '✕' remove button */}
             <div className="flex flex-wrap gap-1">
               {assignedPersonIds.map((personId) => {
-                const person = personMap.get(personId);
-                if (!person) return null;
+                const person = personMap.get(personId)
+                if (!person) return null
 
                 return (
                   <div
@@ -171,7 +171,7 @@ export function DayCell({
                       <X className="w-3 h-3 stroke-[2.5]" />
                     </button>
                   </div>
-                );
+                )
               })}
             </div>
 
@@ -186,7 +186,7 @@ export function DayCell({
                 isPersonAvailable={isPersonAvailable}
                 onSelectPerson={(personId) => {
                   if (isPersonAvailable(personId, dayNumber)) {
-                    onAddPerson(personId);
+                    onAddPerson(personId)
                   }
                 }}
               />
@@ -200,5 +200,5 @@ export function DayCell({
         <div className="absolute top-0 right-0 w-2 h-2 bg-indigo-600 rounded-bl-sm" />
       )}
     </div>
-  );
+  )
 };

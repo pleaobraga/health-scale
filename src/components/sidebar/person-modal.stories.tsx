@@ -1,6 +1,6 @@
-import { PersonModal } from './person-modal';
+import { PersonModal } from './person-modal'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof PersonModal> = {
   title: 'Sidebar/PersonModal',
@@ -9,9 +9,9 @@ const meta: Meta<typeof PersonModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof PersonModal>;
 
 export const AddNewPerson: Story = {
@@ -23,7 +23,7 @@ export const AddNewPerson: Story = {
     initialAvailableDays: [],
     onSave: (name, color, days) => console.log('Save person:', { name, color, days }),
   },
-};
+}
 
 export const EditExistingPerson: Story = {
   args: {
@@ -39,5 +39,5 @@ export const EditExistingPerson: Story = {
     onSave: (name, color, days) => console.log('Save person:', { name, color, days }),
     onDelete: (id) => console.log('Delete person:', id),
   },
-};
+}
 

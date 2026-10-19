@@ -5,9 +5,9 @@ import {
   Save,
   ShieldCheck,
   RotateCcw,
-} from 'lucide-react';
+} from 'lucide-react'
 
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { useScheduleStore } from '../../store/use-schedule-store'
 
 export function ValidationPanel() {
   const {
@@ -18,31 +18,31 @@ export function ValidationPanel() {
     isSaving,
     saveFeedback,
     dismissValidation,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
-  const errorsCount = validationErrors.filter((e) => e.severity === 'error').length;
-  const warningsCount = validationErrors.filter((e) => e.severity === 'warning').length;
+  const errorsCount = validationErrors.filter((e) => e.severity === 'error').length
+  const warningsCount = validationErrors.filter((e) => e.severity === 'warning').length
 
   const handleValidate = () => {
-    validateCurrentSchedule();
-  };
+    validateCurrentSchedule()
+  }
 
   const getRuleBadge = (rule: string) => {
     switch (rule) {
       case 'consecutive_days':
-        return { label: 'Descanso Consecutivo', color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800' };
+        return { label: 'Descanso Consecutivo', color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800' }
       case 'weekly_limit':
-        return { label: 'Limite Semanal', color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800' };
+        return { label: 'Limite Semanal', color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800' }
       case 'multi_assigned':
-        return { label: 'Conflito de Alocação', color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800' };
+        return { label: 'Conflito de Alocação', color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800' }
       case 'empty_day':
-        return { label: 'Dia Vazio', color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' };
+        return { label: 'Dia Vazio', color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
       case 'not_available':
-        return { label: 'Indisponibilidade', color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' };
+        return { label: 'Indisponibilidade', color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' }
       default:
-        return { label: 'Auditoria', color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' };
+        return { label: 'Auditoria', color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
     }
-  };
+  }
 
   return (
     <div className="space-y-4 pt-2">
@@ -132,8 +132,8 @@ export function ValidationPanel() {
           ) : (
             <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
               {validationErrors.map((err) => {
-                const badge = getRuleBadge(err.rule);
-                const isCritical = err.severity === 'error';
+                const badge = getRuleBadge(err.rule)
+                const isCritical = err.severity === 'error'
 
                 return (
                   <div
@@ -174,12 +174,12 @@ export function ValidationPanel() {
                       </p>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
         </div>
       )}
     </div>
-  );
+  )
 };

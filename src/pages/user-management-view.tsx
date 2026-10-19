@@ -1,17 +1,17 @@
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore'
 import {
   ShieldCheck,
   UserPlus,
   RefreshCw,
   Search,
   User as UserIcon,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 
-import { CreateUserModal } from '../components/users/create-user-modal';
-import { db } from '../services/firebase';
+import { CreateUserModal } from '../components/users/create-user-modal'
+import { db } from '../services/firebase'
 
-import type { UserRole } from '../context/auth-context';
+import type { UserRole } from '../context/auth-context'
 
 export interface AppUserRecord {
   uid: string;
@@ -22,55 +22,55 @@ export interface AppUserRecord {
 }
 
 export function UserManagementView() {
-  const [users, setUsers] = useState<AppUserRecord[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [errorFeedback, setErrorFeedback] = useState<string | null>(null);
+  const [users, setUsers] = useState<AppUserRecord[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [errorFeedback, setErrorFeedback] = useState<string | null>(null)
 
   const fetchUsers = async () => {
     try {
-      setIsLoading(true);
-      setErrorFeedback(null);
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
+      setIsLoading(true)
+      setErrorFeedback(null)
+      const usersRef = collection(db, 'users')
+      const q = query(usersRef, orderBy('createdAt', 'desc'))
+      const snapshot = await getDocs(q)
 
-      const loadedUsers: AppUserRecord[] = [];
+      const loadedUsers: AppUserRecord[] = []
       snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
+        const data = docSnap.data()
         loadedUsers.push({
           uid: docSnap.id,
           name: data.name || 'Sem Nome',
           email: data.email || '',
           role: data.role || 'user',
           createdAt: data.createdAt,
-        });
-      });
+        })
+      })
 
-      setUsers(loadedUsers);
+      setUsers(loadedUsers)
     } catch (err) {
-      console.error('Error fetching users from Firestore:', err);
+      console.error('Error fetching users from Firestore:', err)
       setErrorFeedback(
         'Não foi possível carregar a lista de usuários do Firestore.',
-      );
+      )
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    void fetchUsers();
-  }, []);
+    void fetchUsers()
+  }, [])
 
   const filteredUsers = users.filter((u) => {
-    const term = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase()
     return (
       u.name.toLowerCase().includes(term) ||
       u.email.toLowerCase().includes(term) ||
       u.role.toLowerCase().includes(term)
-    );
-  });
+    )
+  })
 
   return (
     <div
@@ -168,7 +168,7 @@ export function UserManagementView() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredUsers.map((appUser) => {
-              const isAdmin = appUser.role === 'admin';
+              const isAdmin = appUser.role === 'admin'
 
               return (
                 <div
@@ -213,7 +213,7 @@ export function UserManagementView() {
                     {isAdmin ? 'Admin' : 'Usuário'}
                   </span>
                 </div>
-              );
+              )
             })}
           </div>
         )}
@@ -226,5 +226,5 @@ export function UserManagementView() {
         />
       </div>
     </div>
-  );
+  )
 }

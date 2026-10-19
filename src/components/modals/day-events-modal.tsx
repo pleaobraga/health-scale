@@ -8,14 +8,14 @@ import {
   Calendar,
   AlertCircle,
   RotateCcw,
-} from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+} from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { useScheduleStore } from '../../store/use-schedule-store';
-import { formatDisplayDate } from '../../utils/date-utils';
+import { useScheduleStore } from '../../store/use-schedule-store'
+import { formatDisplayDate } from '../../utils/date-utils'
 
-import type { CalendarEvent } from '../../types';
+import type { CalendarEvent } from '../../types'
 
 export function DayEventsModal() {
   const {
@@ -25,79 +25,79 @@ export function DayEventsModal() {
     addEvent,
     updateEvent,
     deleteEvent,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
-  const [editingEventId, setEditingEventId] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [time, setTime] = useState('');
-  const [description, setDescription] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null)
+  const [title, setTitle] = useState('')
+  const [time, setTime] = useState('')
+  const [description, setDescription] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   // Reset form when modal opens or date changes
   useEffect(() => {
-    setEditingEventId(null);
-    setTitle('');
-    setTime('');
-    setDescription('');
-    setError(null);
-  }, [selectedDateForEvents]);
+    setEditingEventId(null)
+    setTitle('')
+    setTime('')
+    setDescription('')
+    setError(null)
+  }, [selectedDateForEvents])
 
-  if (!selectedDateForEvents) return null;
+  if (!selectedDateForEvents) return null
 
-  const dayEvents = events.filter((e) => e.date === selectedDateForEvents);
+  const dayEvents = events.filter((e) => e.date === selectedDateForEvents)
 
   const handleStartEdit = (ev: CalendarEvent) => {
-    setEditingEventId(ev.id);
-    setTitle(ev.title);
-    setTime(ev.time || '');
-    setDescription(ev.description || '');
-    setError(null);
-  };
+    setEditingEventId(ev.id)
+    setTitle(ev.title)
+    setTime(ev.time || '')
+    setDescription(ev.description || '')
+    setError(null)
+  }
 
   const handleCancelEdit = () => {
-    setEditingEventId(null);
-    setTitle('');
-    setTime('');
-    setDescription('');
-    setError(null);
-  };
+    setEditingEventId(null)
+    setTitle('')
+    setTime('')
+    setDescription('')
+    setError(null)
+  }
 
   const handleDeleteEvent = (eventId: string) => {
     if (editingEventId === eventId) {
-      handleCancelEdit();
+      handleCancelEdit()
     }
-    deleteEvent(eventId);
-  };
+    deleteEvent(eventId)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!title.trim()) {
-      setError('O título do evento é obrigatório.');
-      return;
+      setError('O título do evento é obrigatório.')
+      return
     }
 
-    const finalTime = time.trim() || undefined;
+    const finalTime = time.trim() || undefined
 
     if (editingEventId) {
       updateEvent(editingEventId, {
         title: title.trim(),
         time: finalTime,
         description: description.trim() || undefined,
-      });
-      handleCancelEdit();
+      })
+      handleCancelEdit()
     } else {
       addEvent({
         date: selectedDateForEvents,
         title: title.trim(),
         time: finalTime,
         description: description.trim() || undefined,
-      });
-      setTitle('');
-      setTime('');
-      setDescription('');
-      setError(null);
+      })
+      setTitle('')
+      setTime('')
+      setDescription('')
+      setError(null)
     }
-  };
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
@@ -147,7 +147,7 @@ export function DayEventsModal() {
             ) : (
               <div className="space-y-2">
                 {dayEvents.map((ev) => {
-                  const isBeingEdited = editingEventId === ev.id;
+                  const isBeingEdited = editingEventId === ev.id
                   return (
                     <div
                       key={ev.id}
@@ -203,7 +203,7 @@ export function DayEventsModal() {
                         </button>
                       </div>
                     </div>
-                  );
+                  )
                 })}
               </div>
             )}
@@ -256,8 +256,8 @@ export function DayEventsModal() {
                 type="text"
                 value={title}
                 onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (error) setError(null);
+                  setTitle(e.target.value)
+                  if (error) setError(null)
                 }}
                 placeholder="Ex: Auditoria ou Reunião Clínica"
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
@@ -338,5 +338,5 @@ export function DayEventsModal() {
       </div>
     </div>,
     document.body
-  );
+  )
 };

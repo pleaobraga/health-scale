@@ -1,6 +1,6 @@
-import { Sidebar } from './sidebar';
+import { Sidebar } from './sidebar'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof Sidebar> = {
   title: 'Sidebar/Sidebar',
@@ -16,10 +16,10 @@ const meta: Meta<typeof Sidebar> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof Sidebar>;
 
-export const Default: Story = {};
+export const Default: Story = {}
 

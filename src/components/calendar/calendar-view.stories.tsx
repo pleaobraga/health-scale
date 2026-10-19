@@ -1,9 +1,9 @@
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom'
 
-import { CalendarView } from './calendar-view';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { CalendarView } from './calendar-view'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof CalendarView> = {
   title: 'Calendar/CalendarView',
@@ -21,9 +21,9 @@ const meta: Meta<typeof CalendarView> = {
       </MemoryRouter>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof CalendarView>;
 
 export const DefaultCalendar: Story = {
@@ -41,7 +41,7 @@ export const DefaultCalendar: Story = {
         '2026-10-01': ['1'],
         '2026-10-02': ['2'],
       },
-    });
-    return <CalendarView />;
+    })
+    return <CalendarView />
   },
-};
+}

@@ -3,15 +3,15 @@ import {
   getDoc,
   setDoc,
   serverTimestamp
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
-import { auth, db } from './firebase';
+import { auth, db } from './firebase'
 
-import type { MonthlyAvailability, CalendarEvent, Person } from '../types';
+import type { MonthlyAvailability, CalendarEvent, Person } from '../types'
 import type {
-  DocumentData} from 'firebase/firestore';
+  DocumentData} from 'firebase/firestore'
 
-export const CLOUD_SYNC_STORAGE_KEY = 'scale_manager_cloud_sync_enabled';
+export const CLOUD_SYNC_STORAGE_KEY = 'scale_manager_cloud_sync_enabled'
 
 export interface MonthScheduleDoc {
   month: string; // 'YYYY-MM'
@@ -29,10 +29,10 @@ export class CloudSyncService {
    */
   static isSyncEnabled(): boolean {
     try {
-      if (typeof localStorage === 'undefined') return false;
-      return localStorage.getItem(CLOUD_SYNC_STORAGE_KEY) === 'true';
+      if (typeof localStorage === 'undefined') return false
+      return localStorage.getItem(CLOUD_SYNC_STORAGE_KEY) === 'true'
     } catch {
-      return false;
+      return false
     }
   }
 
@@ -42,10 +42,10 @@ export class CloudSyncService {
   static setSyncEnabled(enabled: boolean): void {
     try {
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(CLOUD_SYNC_STORAGE_KEY, enabled ? 'true' : 'false');
+        localStorage.setItem(CLOUD_SYNC_STORAGE_KEY, enabled ? 'true' : 'false')
       }
     } catch (err) {
-      console.error('Failed to update sync enabled state:', err);
+      console.error('Failed to update sync enabled state:', err)
     }
   }
 
@@ -54,13 +54,13 @@ export class CloudSyncService {
    * No emails are hardcoded.
    */
   static async isCurrentUserAdmin(): Promise<boolean> {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return false;
+    const uid = auth.currentUser?.uid
+    if (!uid) return false
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      return userDoc.exists() && userDoc.data()?.role === 'admin';
+      const userDoc = await getDoc(doc(db, 'users', uid))
+      return userDoc.exists() && userDoc.data()?.role === 'admin'
     } catch {
-      return false;
+      return false
     }
   }
 
@@ -72,20 +72,20 @@ export class CloudSyncService {
     month: string,
     isAdmin?: boolean,
   ): Promise<MonthScheduleDoc | null> {
-    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin();
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
     if (!authorized || !this.isSyncEnabled()) {
-      return null;
+      return null
     }
 
     try {
-      const docRef = doc(db, 'schedules', month);
-      const snapshot = await getDoc(docRef);
+      const docRef = doc(db, 'schedules', month)
+      const snapshot = await getDoc(docRef)
 
       if (!snapshot.exists()) {
-        return null;
+        return null
       }
 
-      const data = snapshot.data() as DocumentData;
+      const data = snapshot.data() as DocumentData
       return {
         month,
         assignments: data.assignments,
@@ -93,10 +93,10 @@ export class CloudSyncService {
         availabilities: data.availabilities,
         events: data.events,
         updatedAt: data.updatedAt,
-      };
+      }
     } catch (err) {
-      console.error(`Failed to fetch schedule for ${month} from Firestore:`, err);
-      return null;
+      console.error(`Failed to fetch schedule for ${month} from Firestore:`, err)
+      return null
     }
   }
 
@@ -104,24 +104,24 @@ export class CloudSyncService {
    * Pulls master personnel list from Firestore on-demand.
    */
   static async fetchPeopleFromCloud(isAdmin?: boolean): Promise<Person[] | null> {
-    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin();
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
     if (!authorized || !this.isSyncEnabled()) {
-      return null;
+      return null
     }
 
     try {
-      const docRef = doc(db, 'schedules', '_master_people');
-      const snapshot = await getDoc(docRef);
+      const docRef = doc(db, 'schedules', '_master_people')
+      const snapshot = await getDoc(docRef)
 
       if (!snapshot.exists()) {
-        return null;
+        return null
       }
 
-      const data = snapshot.data() as DocumentData;
-      return (data.persons as Person[]) || null;
+      const data = snapshot.data() as DocumentData
+      return (data.persons as Person[]) || null
     } catch (err) {
-      console.error('Failed to fetch people from Firestore:', err);
-      return null;
+      console.error('Failed to fetch people from Firestore:', err)
+      return null
     }
   }
 
@@ -138,8 +138,8 @@ export class CloudSyncService {
     const [monthData, persons] = await Promise.all([
       this.fetchMonthFromCloud(month, isAdmin),
       this.fetchPeopleFromCloud(isAdmin),
-    ]);
-    return { monthData, persons };
+    ])
+    return { monthData, persons }
   }
 
   /**
@@ -156,13 +156,13 @@ export class CloudSyncService {
     },
     isAdmin?: boolean,
   ): Promise<boolean> {
-    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin();
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
     if (!authorized || !this.isSyncEnabled()) {
-      return false;
+      return false
     }
 
     try {
-      const docRef = doc(db, 'schedules', month);
+      const docRef = doc(db, 'schedules', month)
       await setDoc(
         docRef,
         {
@@ -171,11 +171,11 @@ export class CloudSyncService {
           updatedAt: serverTimestamp(),
         },
         { merge: true },
-      );
-      return true;
+      )
+      return true
     } catch (err) {
-      console.error(`Failed to save schedule for ${month} to Firestore:`, err);
-      return false;
+      console.error(`Failed to save schedule for ${month} to Firestore:`, err)
+      return false
     }
   }
 
@@ -183,13 +183,13 @@ export class CloudSyncService {
    * Syncs master personnel to Firestore when saving if sync is active.
    */
   static async savePeopleToCloud(persons: Person[], isAdmin?: boolean): Promise<boolean> {
-    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin();
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
     if (!authorized || !this.isSyncEnabled()) {
-      return false;
+      return false
     }
 
     try {
-      const docRef = doc(db, 'schedules', '_master_people');
+      const docRef = doc(db, 'schedules', '_master_people')
       await setDoc(
         docRef,
         {
@@ -197,11 +197,11 @@ export class CloudSyncService {
           updatedAt: serverTimestamp(),
         },
         { merge: true },
-      );
-      return true;
+      )
+      return true
     } catch (err) {
-      console.error('Failed to sync people with Firestore:', err);
-      return false;
+      console.error('Failed to sync people with Firestore:', err)
+      return false
     }
   }
 }

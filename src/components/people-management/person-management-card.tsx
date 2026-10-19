@@ -1,6 +1,6 @@
-import { Edit2, Trash2, CalendarCheck2, RotateCcw, UserX, CheckCircle, ShieldAlert } from 'lucide-react';
+import { Edit2, Trash2, CalendarCheck2, RotateCcw, UserX, CheckCircle, ShieldAlert } from 'lucide-react'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface PersonManagementCardProps {
   person: Person;
@@ -23,7 +23,7 @@ export function PersonManagementCard({
   onDeleteRequest,
   onReactivate,
 }: PersonManagementCardProps) {
-  const isActive = person.active !== false;
+  const isActive = person.active !== false
 
   return (
     <div
@@ -155,7 +155,7 @@ export function PersonManagementCard({
               disabled={!canDelete}
               onClick={() => {
                 if (canDelete) {
-                  onDeleteRequest(person);
+                  onDeleteRequest(person)
                 }
               }}
               title={
@@ -180,5 +180,5 @@ export function PersonManagementCard({
         )}
       </div>
     </div>
-  );
+  )
 };

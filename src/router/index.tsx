@@ -1,18 +1,18 @@
-import { Routes, Route, Navigate, MemoryRouter, HashRouter } from 'react-router-dom';
+import { Routes, Route, Navigate, MemoryRouter, HashRouter } from 'react-router-dom'
 
-import { AdminRoute } from '../components/auth/admin-route';
-import { PrivateRoute } from '../components/auth/private-route';
-import { CalendarView } from '../components/calendar/calendar-view';
-import { ErrorBoundary } from '../components/common/error-boundary';
-import { ImportView } from '../components/import/import-view';
-import { RootLayout } from '../components/layout/root-layout';
-import { PeopleManagementView } from '../components/people-management/people-management-view';
-import { SettingsView } from '../components/settings/settings-view';
-import { AuthProvider } from '../context/auth-context';
-import { LoginPage } from '../pages/login-page';
-import { UserManagementView } from '../pages/user-management-view';
+import { AdminRoute } from '../components/auth/admin-route'
+import { PrivateRoute } from '../components/auth/private-route'
+import { CalendarView } from '../components/calendar/calendar-view'
+import { ErrorBoundary } from '../components/common/error-boundary'
+import { ImportView } from '../components/import/import-view'
+import { RootLayout } from '../components/layout/root-layout'
+import { PeopleManagementView } from '../components/people-management/people-management-view'
+import { SettingsView } from '../components/settings/settings-view'
+import { AuthProvider } from '../context/auth-context'
+import { LoginPage } from '../pages/login-page'
+import { UserManagementView } from '../pages/user-management-view'
 
-import type { AuthContextType } from '../context/auth-context';
+import type { AuthContextType } from '../context/auth-context'
 
 /**
  * Main application routes tree.
@@ -48,7 +48,7 @@ export function AppRoutes() {
         </Route>
       </Route>
     </Routes>
-  );
+  )
 }
 
 /**
@@ -64,7 +64,7 @@ export function AppRouter() {
         </HashRouter>
       </AuthProvider>
     </ErrorBoundary>
-  );
+  )
 }
 
 export interface TestAppRouterProps {
@@ -90,7 +90,7 @@ export function TestAppRouter({
     loading: false,
     login: async () => {},
     logout: async () => {},
-  };
+  }
 
   return (
     <ErrorBoundary>
@@ -100,5 +100,5 @@ export function TestAppRouter({
         </MemoryRouter>
       </AuthProvider>
     </ErrorBoundary>
-  );
+  )
 }

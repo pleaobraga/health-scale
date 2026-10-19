@@ -15,4 +15,4 @@ export const routeConfig: RouteItemConfig[] = [
   { path: '/importar', label: 'Importar Dados' },
   { path: '/configuracoes', label: 'Configurações Gerais' },
   { path: '/usuarios', label: 'Gestão de Usuários', adminOnly: true },
-];
+]

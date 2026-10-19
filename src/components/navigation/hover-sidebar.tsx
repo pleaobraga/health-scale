@@ -14,30 +14,30 @@ import {
   User as UserIcon,
   Users,
   X,
-} from 'lucide-react';
-import React, { use, useState } from 'react';
-import { NavLink, useInRouterContext } from 'react-router-dom';
+} from 'lucide-react'
+import React, { use, useState } from 'react'
+import { NavLink, useInRouterContext } from 'react-router-dom'
 
-import { AuthContext } from '../../context/auth-context';
-import { exportAppData } from '../../services/backup-service';
-import { CloudSyncService } from '../../services/cloud-sync-service';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { AuthContext } from '../../context/auth-context'
+import { exportAppData } from '../../services/backup-service'
+import { CloudSyncService } from '../../services/cloud-sync-service'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { NavigationTab } from '../../types';
+import type { NavigationTab } from '../../types'
 
 export function HoverSidebar() {
   const { currentView, setCurrentView, isDarkMode, toggleDarkMode } =
-    useScheduleStore();
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportSuccess, setExportSuccess] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const inRouter = useInRouterContext();
+    useScheduleStore()
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const inRouter = useInRouterContext()
 
-  const auth = use(AuthContext);
-  const user = auth?.user;
-  const isAdmin = auth?.isAdmin ?? false;
-  const isGuest = auth?.isGuest ?? false;
-  const isSyncEnabled = CloudSyncService.isSyncEnabled();
+  const auth = use(AuthContext)
+  const user = auth?.user
+  const isAdmin = auth?.isAdmin ?? false
+  const isGuest = auth?.isGuest ?? false
+  const isSyncEnabled = CloudSyncService.isSyncEnabled()
 
   const navItems: {
     id: NavigationTab;
@@ -74,7 +74,7 @@ export function HoverSidebar() {
       icon: Settings,
       end: false,
     },
-  ];
+  ]
 
   if (isAdmin) {
     navItems.push({
@@ -83,31 +83,31 @@ export function HoverSidebar() {
       label: 'Gestão de Usuários',
       icon: ShieldCheck,
       end: false,
-    });
+    })
   }
 
   const handleExport = async () => {
     try {
-      setIsExporting(true);
-      await exportAppData();
-      setExportSuccess(true);
-      setTimeout(() => setExportSuccess(false), 2500);
+      setIsExporting(true)
+      await exportAppData()
+      setExportSuccess(true)
+      setTimeout(() => setExportSuccess(false), 2500)
     } catch (err) {
-      console.error('Erro ao exportar backup:', err);
+      console.error('Erro ao exportar backup:', err)
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   const handleLogout = async () => {
     try {
       if (auth?.logout) {
-        await auth.logout();
+        await auth.logout()
       }
     } catch (err) {
-      console.error('Erro ao realizar logout:', err);
+      console.error('Erro ao realizar logout:', err)
     }
-  };
+  }
 
   return (
     <>
@@ -235,8 +235,8 @@ export function HoverSidebar() {
               aria-label="Navegação em tela cheia"
             >
               {navItems.map((item) => {
-                const Icon = item.icon;
-                const isSelected = currentView === item.id;
+                const Icon = item.icon
+                const isSelected = currentView === item.id
 
                 if (inRouter) {
                   return (
@@ -245,8 +245,8 @@ export function HoverSidebar() {
                       to={item.path}
                       end={item.end}
                       onClick={() => {
-                        setCurrentView(item.id);
-                        setIsMobileMenuOpen(false);
+                        setCurrentView(item.id)
+                        setIsMobileMenuOpen(false)
                       }}
                       title={item.label}
                       aria-label={item.label}
@@ -263,7 +263,7 @@ export function HoverSidebar() {
                       </div>
                       <span>{item.label}</span>
                     </NavLink>
-                  );
+                  )
                 }
 
                 return (
@@ -271,8 +271,8 @@ export function HoverSidebar() {
                     key={item.id}
                     type="button"
                     onClick={() => {
-                      setCurrentView(item.id);
-                      setIsMobileMenuOpen(false);
+                      setCurrentView(item.id)
+                      setIsMobileMenuOpen(false)
                     }}
                     title={item.label}
                     aria-label={item.label}
@@ -287,7 +287,7 @@ export function HoverSidebar() {
                     </div>
                     <span>{item.label}</span>
                   </button>
-                );
+                )
               })}
             </nav>
           </div>
@@ -410,8 +410,8 @@ export function HoverSidebar() {
             aria-label="Menu Principal"
           >
             {navItems.map((item) => {
-              const Icon = item.icon;
-              const isSelected = currentView === item.id;
+              const Icon = item.icon
+              const isSelected = currentView === item.id
 
               if (inRouter) {
                 return (
@@ -437,7 +437,7 @@ export function HoverSidebar() {
                       {item.label}
                     </span>
                   </NavLink>
-                );
+                )
               }
 
               return (
@@ -460,7 +460,7 @@ export function HoverSidebar() {
                     {item.label}
                   </span>
                 </button>
-              );
+              )
             })}
           </nav>
         </div>
@@ -553,5 +553,5 @@ export function HoverSidebar() {
         </div>
       </aside>
     </>
-  );
+  )
 }

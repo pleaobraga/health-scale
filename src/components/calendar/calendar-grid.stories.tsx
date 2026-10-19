@@ -1,6 +1,6 @@
-import { CalendarGrid } from './calendar-grid';
+import { CalendarGrid } from './calendar-grid'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof CalendarGrid> = {
   title: 'Calendar/CalendarGrid',
@@ -16,10 +16,10 @@ const meta: Meta<typeof CalendarGrid> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof CalendarGrid>;
 
-export const Default: Story = {};
+export const Default: Story = {}
 

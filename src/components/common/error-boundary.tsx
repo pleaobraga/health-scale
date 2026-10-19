@@ -1,5 +1,5 @@
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import React, { Component, type ReactNode } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react'
+import React, { Component, type ReactNode } from 'react'
 
 export interface ErrorBoundaryProps {
   children: ReactNode;
@@ -16,21 +16,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   public override state: ErrorBoundaryState = {
     hasError: false,
     error: null,
-  };
+  }
 
   public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   public override componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     // In React 19, caught errors are reported cleanly to error boundaries
-    console.error('ErrorBoundary caught an unhandled render error:', error, errorInfo);
+    console.error('ErrorBoundary caught an unhandled render error:', error, errorInfo)
   }
 
   private handleReset = (): void => {
-    this.props.onReset?.();
-    this.setState({ hasError: false, error: null });
-  };
+    this.props.onReset?.()
+    this.setState({ hasError: false, error: null })
+  }
 
   public override render(): ReactNode {
     if (this.state.hasError) {
@@ -38,11 +38,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback(
           this.state.error ?? new Error('Erro desconhecido'),
           this.handleReset,
-        );
+        )
       }
 
       if (this.props.fallback) {
-        return this.props.fallback;
+        return this.props.fallback
       }
 
       return (
@@ -79,10 +79,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <span>Tentar novamente</span>
           </button>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 

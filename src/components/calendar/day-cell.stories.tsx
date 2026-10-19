@@ -1,14 +1,14 @@
-import { DayCell } from './day-cell';
+import { DayCell } from './day-cell'
 
-import type { Person } from '../../types';
-import type { CalendarDayInfo } from '../../utils/date-utils';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Person } from '../../types'
+import type { CalendarDayInfo } from '../../utils/date-utils'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const mockPersons: Person[] = [
   { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6' },
   { id: 'p2', name: 'Dr. Lucas Oliveira', color: '#10b981' },
   { id: 'p3', name: 'Enf. Beatriz Lima', color: '#8b5cf6' },
-];
+]
 
 const baseDayInfo: CalendarDayInfo = {
   date: new Date(2026, 9, 15),
@@ -17,7 +17,7 @@ const baseDayInfo: CalendarDayInfo = {
   isCurrentMonth: true,
   isToday: false,
   dayOfWeek: 4,
-};
+}
 
 const meta: Meta<typeof DayCell> = {
   title: 'Calendar/DayCell',
@@ -33,9 +33,9 @@ const meta: Meta<typeof DayCell> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof DayCell>;
 
 export const ReadingModeAssigned: Story = {
@@ -53,7 +53,7 @@ export const ReadingModeAssigned: Story = {
     onRemovePerson: () => {},
     onAddPerson: () => {},
   },
-};
+}
 
 export const WithEventsRedDayNumber: Story = {
   args: {
@@ -64,21 +64,21 @@ export const WithEventsRedDayNumber: Story = {
       { id: 'ev-2', date: '2026-10-12', title: 'Reunião de Alinhamento', time: '14:00' },
     ],
   },
-};
+}
 
 export const EmptyDay: Story = {
   args: {
     ...ReadingModeAssigned.args,
     assignedPersonIds: [],
   },
-};
+}
 
 export const AllocationConflict: Story = {
   args: {
     ...ReadingModeAssigned.args,
     assignedPersonIds: ['p1', 'p2'],
   },
-};
+}
 
 export const EditModeWithCandidates: Story = {
   args: {
@@ -86,7 +86,7 @@ export const EditModeWithCandidates: Story = {
     isEditMode: true,
     assignedPersonIds: ['p1', 'p2', 'p3'],
   },
-};
+}
 
 export const HighlightedAvailability: Story = {
   args: {
@@ -95,7 +95,7 @@ export const HighlightedAvailability: Story = {
     highlightedPerson: mockPersons[0],
     isHighlightedPersonAvailable: true,
   },
-};
+}
 
 export const TodayHighlighted: Story = {
   args: {
@@ -105,5 +105,5 @@ export const TodayHighlighted: Story = {
       isToday: true,
     },
   },
-};
+}
 

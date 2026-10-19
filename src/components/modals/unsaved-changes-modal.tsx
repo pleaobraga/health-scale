@@ -1,8 +1,8 @@
-import { AlertTriangle, Save, Trash2, X } from 'lucide-react';
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { AlertTriangle, Save, Trash2, X } from 'lucide-react'
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { useScheduleStore } from '../../store/use-schedule-store'
 
 export function UnsavedChangesModal() {
   const {
@@ -10,34 +10,34 @@ export function UnsavedChangesModal() {
     setUnsavedModalOpen,
     saveSchedule,
     discardChanges,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
   // Close on ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isUnsavedModalOpen) {
-        setUnsavedModalOpen(false);
+        setUnsavedModalOpen(false)
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isUnsavedModalOpen, setUnsavedModalOpen]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isUnsavedModalOpen, setUnsavedModalOpen])
 
-  if (!isUnsavedModalOpen) return null;
+  if (!isUnsavedModalOpen) return null
 
   const handleSaveAndExit = () => {
-    saveSchedule();
-    useScheduleStore.setState({ isEditMode: false, isUnsavedModalOpen: false });
-  };
+    saveSchedule()
+    useScheduleStore.setState({ isEditMode: false, isUnsavedModalOpen: false })
+  }
 
   const handleDiscardAndExit = () => {
-    discardChanges();
-    useScheduleStore.setState({ isEditMode: false, isUnsavedModalOpen: false });
-  };
+    discardChanges()
+    useScheduleStore.setState({ isEditMode: false, isUnsavedModalOpen: false })
+  }
 
   const handleCancel = () => {
-    setUnsavedModalOpen(false);
-  };
+    setUnsavedModalOpen(false)
+  }
 
   return createPortal(
     <div
@@ -119,6 +119,6 @@ export function UnsavedChangesModal() {
       </div>
     </div>,
     document.body
-  );
+  )
 };
 

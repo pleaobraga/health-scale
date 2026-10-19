@@ -1,4 +1,4 @@
-import type { Person, MonthlyAvailability, CalendarEvent, GuestProfile, GuestDataset } from '../types';
+import type { Person, MonthlyAvailability, CalendarEvent, GuestProfile, GuestDataset } from '../types'
 
 const STORAGE_KEYS = {
   PERSONS: 'scale_manager_persons_v1',
@@ -9,9 +9,9 @@ const STORAGE_KEYS = {
   GUEST_PROFILES: 'scale_manager_guest_profiles_v1',
   ACTIVE_GUEST_ID: 'scale_manager_active_guest_id_v1',
   GUEST_DATA_PREFIX: 'scale_manager_guest_data_v1_',
-};
+}
 
-let isRestoringDataset = false;
+let isRestoringDataset = false
 
 export class StorageService {
   /**
@@ -19,29 +19,29 @@ export class StorageService {
    */
   static getPersons(): Person[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.PERSONS);
+      const data = localStorage.getItem(STORAGE_KEYS.PERSONS)
       if (!data) {
-        return [];
+        return []
       }
-      const parsed: Person[] = JSON.parse(data);
+      const parsed: Person[] = JSON.parse(data)
       return parsed.map((p) => ({
         ...p,
         active: p.active !== false,
-      }));
+      }))
     } catch (err) {
-      console.error('Failed to load persons from localStorage:', err);
-      return [];
+      console.error('Failed to load persons from localStorage:', err)
+      return []
     }
   }
 
   static savePersons(persons: Person[]): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons));
+      localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest();
+        StorageService.snapshotActiveGuest()
       }
     } catch (err) {
-      console.error('Failed to save persons to localStorage:', err);
+      console.error('Failed to save persons to localStorage:', err)
     }
   }
 
@@ -50,25 +50,25 @@ export class StorageService {
    */
   static getAvailabilities(): MonthlyAvailability[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.AVAILABILITIES);
+      const data = localStorage.getItem(STORAGE_KEYS.AVAILABILITIES)
       if (!data) {
-        return [];
+        return []
       }
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (err) {
-      console.error('Failed to load availabilities from localStorage:', err);
-      return [];
+      console.error('Failed to load availabilities from localStorage:', err)
+      return []
     }
   }
 
   static saveAvailabilities(availabilities: MonthlyAvailability[]): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.AVAILABILITIES, JSON.stringify(availabilities));
+      localStorage.setItem(STORAGE_KEYS.AVAILABILITIES, JSON.stringify(availabilities))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest();
+        StorageService.snapshotActiveGuest()
       }
     } catch (err) {
-      console.error('Failed to save availabilities to localStorage:', err);
+      console.error('Failed to save availabilities to localStorage:', err)
     }
   }
 
@@ -77,25 +77,25 @@ export class StorageService {
    */
   static getAssignments(): Record<string, string[]> {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS);
+      const data = localStorage.getItem(STORAGE_KEYS.ASSIGNMENTS)
       if (!data) {
-        return {};
+        return {}
       }
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (err) {
-      console.error('Failed to load assignments from localStorage:', err);
-      return {};
+      console.error('Failed to load assignments from localStorage:', err)
+      return {}
     }
   }
 
   static saveAssignments(assignments: Record<string, string[]>): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments));
+      localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest();
+        StorageService.snapshotActiveGuest()
       }
     } catch (err) {
-      console.error('Failed to save assignments to localStorage:', err);
+      console.error('Failed to save assignments to localStorage:', err)
     }
   }
 
@@ -104,25 +104,25 @@ export class StorageService {
    */
   static getEvents(): CalendarEvent[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.EVENTS);
+      const data = localStorage.getItem(STORAGE_KEYS.EVENTS)
       if (!data) {
-        return [];
+        return []
       }
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (err) {
-      console.error('Failed to load events from localStorage:', err);
-      return [];
+      console.error('Failed to load events from localStorage:', err)
+      return []
     }
   }
 
   static saveEvents(events: CalendarEvent[]): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events));
+      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest();
+        StorageService.snapshotActiveGuest()
       }
     } catch (err) {
-      console.error('Failed to save events to localStorage:', err);
+      console.error('Failed to save events to localStorage:', err)
     }
   }
 
@@ -131,25 +131,25 @@ export class StorageService {
    */
   static getMonthParticipants(): Record<string, string[]> {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.MONTH_PARTICIPANTS);
+      const data = localStorage.getItem(STORAGE_KEYS.MONTH_PARTICIPANTS)
       if (!data) {
-        return {};
+        return {}
       }
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (err) {
-      console.error('Failed to load month participants from localStorage:', err);
-      return {};
+      console.error('Failed to load month participants from localStorage:', err)
+      return {}
     }
   }
 
   static saveMonthParticipants(data: Record<string, string[]>): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.MONTH_PARTICIPANTS, JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEYS.MONTH_PARTICIPANTS, JSON.stringify(data))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest();
+        StorageService.snapshotActiveGuest()
       }
     } catch (err) {
-      console.error('Failed to save month participants to localStorage:', err);
+      console.error('Failed to save month participants to localStorage:', err)
     }
   }
 
@@ -157,11 +157,11 @@ export class StorageService {
    * Reset all active storage keys
    */
   static resetToDefault(): void {
-    localStorage.removeItem(STORAGE_KEYS.PERSONS);
-    localStorage.removeItem(STORAGE_KEYS.AVAILABILITIES);
-    localStorage.removeItem(STORAGE_KEYS.ASSIGNMENTS);
-    localStorage.removeItem(STORAGE_KEYS.EVENTS);
-    localStorage.removeItem(STORAGE_KEYS.MONTH_PARTICIPANTS);
+    localStorage.removeItem(STORAGE_KEYS.PERSONS)
+    localStorage.removeItem(STORAGE_KEYS.AVAILABILITIES)
+    localStorage.removeItem(STORAGE_KEYS.ASSIGNMENTS)
+    localStorage.removeItem(STORAGE_KEYS.EVENTS)
+    localStorage.removeItem(STORAGE_KEYS.MONTH_PARTICIPANTS)
   }
 
   /**
@@ -169,71 +169,71 @@ export class StorageService {
    */
   static getGuestProfiles(): GuestProfile[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.GUEST_PROFILES);
+      const data = localStorage.getItem(STORAGE_KEYS.GUEST_PROFILES)
       if (!data) {
-        return [];
+        return []
       }
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (err) {
-      console.error('Failed to load guest profiles from localStorage:', err);
-      return [];
+      console.error('Failed to load guest profiles from localStorage:', err)
+      return []
     }
   }
 
   static saveGuestProfiles(profiles: GuestProfile[]): void {
     try {
-      localStorage.setItem(STORAGE_KEYS.GUEST_PROFILES, JSON.stringify(profiles));
+      localStorage.setItem(STORAGE_KEYS.GUEST_PROFILES, JSON.stringify(profiles))
     } catch (err) {
-      console.error('Failed to save guest profiles to localStorage:', err);
+      console.error('Failed to save guest profiles to localStorage:', err)
     }
   }
 
   static getActiveGuestId(): string | null {
     try {
-      return localStorage.getItem(STORAGE_KEYS.ACTIVE_GUEST_ID);
+      return localStorage.getItem(STORAGE_KEYS.ACTIVE_GUEST_ID)
     } catch {
-      return null;
+      return null
     }
   }
 
   static setActiveGuestId(id: string | null): void {
     try {
       if (id) {
-        localStorage.setItem(STORAGE_KEYS.ACTIVE_GUEST_ID, id);
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_GUEST_ID, id)
       } else {
-        localStorage.removeItem(STORAGE_KEYS.ACTIVE_GUEST_ID);
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_GUEST_ID)
       }
     } catch (err) {
-      console.error('Failed to set active guest id in localStorage:', err);
+      console.error('Failed to set active guest id in localStorage:', err)
     }
   }
 
   static getGuestDataset(guestId: string): GuestDataset | null {
     try {
-      const data = localStorage.getItem(`${STORAGE_KEYS.GUEST_DATA_PREFIX}${guestId}`);
+      const data = localStorage.getItem(`${STORAGE_KEYS.GUEST_DATA_PREFIX}${guestId}`)
       if (!data) {
-        return null;
+        return null
       }
-      return JSON.parse(data);
+      return JSON.parse(data)
     } catch (err) {
-      console.error('Failed to load guest dataset from localStorage:', err);
-      return null;
+      console.error('Failed to load guest dataset from localStorage:', err)
+      return null
     }
   }
 
   static saveGuestDataset(guestId: string, dataset: GuestDataset): void {
     try {
-      localStorage.setItem(`${STORAGE_KEYS.GUEST_DATA_PREFIX}${guestId}`, JSON.stringify(dataset));
+      localStorage.setItem(`${STORAGE_KEYS.GUEST_DATA_PREFIX}${guestId}`, JSON.stringify(dataset))
     } catch (err) {
-      console.error('Failed to save guest dataset to localStorage:', err);
+      console.error('Failed to save guest dataset to localStorage:', err)
     }
   }
 
   static deleteGuestDataset(guestId: string): void {
     try {
-      localStorage.removeItem(`${STORAGE_KEYS.GUEST_DATA_PREFIX}${guestId}`);
+      localStorage.removeItem(`${STORAGE_KEYS.GUEST_DATA_PREFIX}${guestId}`)
     } catch (err) {
-      console.error('Failed to delete guest dataset from localStorage:', err);
+      console.error('Failed to delete guest dataset from localStorage:', err)
     }
   }
 
@@ -244,28 +244,28 @@ export class StorageService {
       assignments: StorageService.getAssignments(),
       events: StorageService.getEvents(),
       monthParticipants: StorageService.getMonthParticipants(),
-    };
+    }
   }
 
   static restoreDataset(dataset: Partial<GuestDataset>): void {
-    isRestoringDataset = true;
+    isRestoringDataset = true
     try {
-      StorageService.savePersons(dataset.persons || []);
-      StorageService.saveAvailabilities(dataset.availabilities || []);
-      StorageService.saveAssignments(dataset.assignments || {});
-      StorageService.saveEvents(dataset.events || []);
-      StorageService.saveMonthParticipants(dataset.monthParticipants || {});
+      StorageService.savePersons(dataset.persons || [])
+      StorageService.saveAvailabilities(dataset.availabilities || [])
+      StorageService.saveAssignments(dataset.assignments || {})
+      StorageService.saveEvents(dataset.events || [])
+      StorageService.saveMonthParticipants(dataset.monthParticipants || {})
     } finally {
-      isRestoringDataset = false;
-      StorageService.snapshotActiveGuest();
+      isRestoringDataset = false
+      StorageService.snapshotActiveGuest()
     }
   }
 
   static snapshotActiveGuest(): void {
-    const activeId = StorageService.getActiveGuestId();
+    const activeId = StorageService.getActiveGuestId()
     if (activeId) {
-      const dataset = StorageService.getCurrentDataset();
-      StorageService.saveGuestDataset(activeId, dataset);
+      const dataset = StorageService.getCurrentDataset()
+      StorageService.saveGuestDataset(activeId, dataset)
     }
   }
 }

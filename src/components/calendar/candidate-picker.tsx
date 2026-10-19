@@ -1,7 +1,7 @@
-import { Plus, Check } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Plus, Check } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface CandidatePickerProps {
   dateStr: string;
@@ -20,36 +20,36 @@ export function CandidatePicker({
   isPersonAvailable,
   onSelectPerson,
 }: CandidatePickerProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const unassignedPersons = allPersons.filter(
     (p) => !assignedPersonIds.includes(p.id)
-  );
+  )
 
   const availablePersons = unassignedPersons.filter((p) =>
     isPersonAvailable(p.id, dayNumber)
-  );
+  )
 
   const unavailablePersons = unassignedPersons.filter(
     (p) => !isPersonAvailable(p.id, dayNumber)
-  );
+  )
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
-    };
+    }
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
-  if (unassignedPersons.length === 0) return null;
+  if (unassignedPersons.length === 0) return null
 
   return (
     <div className="relative inline-block" ref={containerRef}>
@@ -81,8 +81,8 @@ export function CandidatePicker({
                 key={person.id}
                 type="button"
                 onClick={() => {
-                  onSelectPerson(person.id);
-                  setIsOpen(false);
+                  onSelectPerson(person.id)
+                  setIsOpen(false)
                 }}
                 className="w-full text-left px-2.5 py-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between text-xs transition cursor-pointer"
                 title={`Adicionar ${person.name}`}
@@ -139,5 +139,5 @@ export function CandidatePicker({
         </div>
       )}
     </div>
-  );
+  )
 };

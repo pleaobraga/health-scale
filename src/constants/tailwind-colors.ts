@@ -50,7 +50,7 @@ export const TAILWIND_PALETTE: PaletteColor[] = [
   { hex: '#334155', name: 'Grafite Chumbo', tailwindClass: 'bg-slate-700' },
   { hex: '#1e293b', name: 'Aço Escuro', tailwindClass: 'bg-slate-800' },
   { hex: '#0f172a', name: 'Preto Ônix', tailwindClass: 'bg-slate-900' },
-];
+]
 
 export const DEFAULT_PERSON_COLORS = [
   '#1d4ed8', // 1. Royal Blue
@@ -63,4 +63,4 @@ export const DEFAULT_PERSON_COLORS = [
   '#c026d3', // 8. Vibrant Magenta
   '#78350f', // 9. Coffee Chocolate
   '#1e293b', // 10. Dark Steel
-];
+]

@@ -1,4 +1,4 @@
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react'
 export interface ConfirmOverwriteModalProps {
   isOpen: boolean;
   onConfirm: () => void;
@@ -12,7 +12,7 @@ export function ConfirmOverwriteModal({
   onCancel,
   isRestoring = false,
 }: ConfirmOverwriteModalProps) {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div
@@ -69,6 +69,6 @@ export function ConfirmOverwriteModal({
         </div>
       </div>
     </div>
-  );
+  )
 };
 

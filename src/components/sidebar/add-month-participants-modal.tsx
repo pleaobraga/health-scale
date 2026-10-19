@@ -1,10 +1,10 @@
-import { UserPlus, Check, X, Users, CheckSquare, Square, Search } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { UserPlus, Check, X, Users, CheckSquare, Square, Search } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { formatMonthYear } from '../../utils/date-utils';
+import { formatMonthYear } from '../../utils/date-utils'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface AddMonthParticipantsModalProps {
   isOpen: boolean;
@@ -25,59 +25,59 @@ export function AddMonthParticipantsModal({
   onAddParticipants,
   onGoToGlobalManagement,
 }: AddMonthParticipantsModalProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [modalSearch, setModalSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [modalSearch, setModalSearch] = useState('')
 
   // Eligible persons are ACTIVE global persons NOT yet in this month
   const eligiblePersons = allPersons.filter(
     (p) => p.active !== false && !currentParticipantIds.includes(p.id)
-  );
+  )
 
   const filteredEligible = eligiblePersons.filter((p) =>
     p.name.toLowerCase().includes(modalSearch.toLowerCase().trim())
-  );
+  )
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedIds([]);
-      setModalSearch('');
+      setSelectedIds([])
+      setModalSearch('')
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
+    )
+  }
 
   const selectAll = () => {
     if (selectedIds.length === eligiblePersons.length) {
-      setSelectedIds([]);
+      setSelectedIds([])
     } else {
-      setSelectedIds(eligiblePersons.map((p) => p.id));
+      setSelectedIds(eligiblePersons.map((p) => p.id))
     }
-  };
+  }
 
   const handleConfirm = () => {
     if (selectedIds.length > 0) {
-      onAddParticipants(selectedIds);
-      onClose();
+      onAddParticipants(selectedIds)
+      onClose()
     }
-  };
+  }
 
-  const monthFormatted = formatMonthYear(currentMonth);
+  const monthFormatted = formatMonthYear(currentMonth)
 
   return createPortal(
     <div
@@ -143,8 +143,8 @@ export function AddMonthParticipantsModal({
                 <button
                   type="button"
                   onClick={() => {
-                    onClose();
-                    onGoToGlobalManagement();
+                    onClose()
+                    onGoToGlobalManagement()
                   }}
                   className="mt-4 px-4 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl transition"
                 >
@@ -203,7 +203,7 @@ export function AddMonthParticipantsModal({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
                   {filteredEligible.map((person) => {
-                    const isChecked = selectedIds.includes(person.id);
+                    const isChecked = selectedIds.includes(person.id)
                     return (
                       <div
                         key={person.id}
@@ -247,7 +247,7 @@ export function AddMonthParticipantsModal({
                           {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                         </div>
                       </div>
-                    );
+                    )
                   })}
                 </div>
               )}
@@ -265,8 +265,8 @@ export function AddMonthParticipantsModal({
               <button
                 type="button"
                 onClick={() => {
-                  onClose();
-                  onGoToGlobalManagement();
+                  onClose()
+                  onGoToGlobalManagement()
                 }}
                 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 transition cursor-pointer"
               >
@@ -301,6 +301,6 @@ export function AddMonthParticipantsModal({
       </div>
     </div>,
     document.body
-  );
+  )
 };
 

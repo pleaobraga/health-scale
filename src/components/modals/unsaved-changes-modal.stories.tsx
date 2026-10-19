@@ -1,7 +1,7 @@
-import { UnsavedChangesModal } from './unsaved-changes-modal';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { UnsavedChangesModal } from './unsaved-changes-modal'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta: Meta<typeof UnsavedChangesModal> = {
   title: 'Modals/UnsavedChangesModal',
@@ -10,9 +10,9 @@ const meta: Meta<typeof UnsavedChangesModal> = {
   parameters: {
     layout: 'fullscreen',
   },
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof UnsavedChangesModal>;
 
 export const DefaultOpen: Story = {
@@ -21,8 +21,8 @@ export const DefaultOpen: Story = {
       isUnsavedModalOpen: true,
       isEditMode: true,
       hasUnsavedChanges: true,
-    });
-    return <UnsavedChangesModal />;
+    })
+    return <UnsavedChangesModal />
   },
-};
+}
 

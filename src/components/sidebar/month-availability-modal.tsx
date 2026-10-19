@@ -1,11 +1,11 @@
-import { Calendar, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { Calendar, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { AvailabilityMiniCalendar } from './availability-mini-calendar';
-import { formatMonthYear } from '../../utils/date-utils';
+import { AvailabilityMiniCalendar } from './availability-mini-calendar'
+import { formatMonthYear } from '../../utils/date-utils'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface MonthAvailabilityModalProps {
   isOpen: boolean;
@@ -24,30 +24,30 @@ export function MonthAvailabilityModal({
   initialAvailableDays,
   onSave,
 }: MonthAvailabilityModalProps) {
-  const [availableDays, setAvailableDays] = useState<number[]>([]);
+  const [availableDays, setAvailableDays] = useState<number[]>([])
 
   useEffect(() => {
     if (person && isOpen) {
-      setAvailableDays(initialAvailableDays);
+      setAvailableDays(initialAvailableDays)
     }
-  }, [person, initialAvailableDays, isOpen]);
+  }, [person, initialAvailableDays, isOpen])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
-  if (!isOpen || !person) return null;
+  if (!isOpen || !person) return null
 
   const handleSave = () => {
-    onSave(person.id, availableDays);
-    onClose();
-  };
+    onSave(person.id, availableDays)
+    onClose()
+  }
 
   return createPortal(
     <div
@@ -133,5 +133,5 @@ export function MonthAvailabilityModal({
       </div>
     </div>,
     document.body
-  );
+  )
 };

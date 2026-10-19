@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'
 
-import { generateScheduleWorkbook } from './export-to-excel';
+import { generateScheduleWorkbook } from './export-to-excel'
 
 describe('exportScheduleToExcel - Geração de Planilha', () => {
   it('gera workbook com 3 abas e preenchimento correto', () => {
@@ -18,23 +18,23 @@ describe('exportScheduleToExcel - Geração de Planilha', () => {
       events: [
         { id: 'ev1', date: '2026-10-12', title: 'Feriado de Nossa Senhora' },
       ],
-    });
+    })
 
     expect(workbook.SheetNames).toEqual([
       'Escala Detalhada',
       'Resumo por Profissional',
       'Grade Panorâmica',
-    ]);
+    ])
 
     // Validates that the first sheet contains expected cells
-    const detailedSheet = workbook.Sheets['Escala Detalhada'];
-    expect(detailedSheet).toBeDefined();
+    const detailedSheet = workbook.Sheets['Escala Detalhada']
+    expect(detailedSheet).toBeDefined()
 
-    const summarySheet = workbook.Sheets['Resumo por Profissional'];
-    expect(summarySheet).toBeDefined();
+    const summarySheet = workbook.Sheets['Resumo por Profissional']
+    expect(summarySheet).toBeDefined()
 
-    const matrixSheet = workbook.Sheets['Grade Panorâmica'];
-    expect(matrixSheet).toBeDefined();
-  });
-});
+    const matrixSheet = workbook.Sheets['Grade Panorâmica']
+    expect(matrixSheet).toBeDefined()
+  })
+})
 

@@ -1,12 +1,12 @@
-import { initializeApp, deleteApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { X, UserPlus, Mail, Lock, User as UserIcon, ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import React, { useState } from 'react';
+import { initializeApp, deleteApp } from 'firebase/app'
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { X, UserPlus, Mail, Lock, User as UserIcon, ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import React, { useState } from 'react'
 
-import { firebaseConfig, db } from '../../services/firebase';
+import { firebaseConfig, db } from '../../services/firebase'
 
-import type { UserRole } from '../../context/auth-context';
+import type { UserRole } from '../../context/auth-context'
 
 export interface CreateUserModalProps {
   isOpen: boolean;
@@ -19,38 +19,38 @@ export function CreateUserModal({
   onClose,
   onUserCreated,
 }: CreateUserModalProps) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [tempPassword, setTempPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('user');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [tempPassword, setTempPassword] = useState('')
+  const [role, setRole] = useState<UserRole>('user')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
+    e.preventDefault()
+    setErrorMessage(null)
 
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
+    const trimmedName = name.trim()
+    const trimmedEmail = email.trim()
 
     if (!trimmedName || !trimmedEmail || !tempPassword) {
-      setErrorMessage('Todos os campos são obrigatórios.');
-      return;
+      setErrorMessage('Todos os campos são obrigatórios.')
+      return
     }
 
     if (tempPassword.length < 6) {
-      setErrorMessage('A senha provisória deve conter pelo menos 6 caracteres.');
-      return;
+      setErrorMessage('A senha provisória deve conter pelo menos 6 caracteres.')
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     // Create an isolated secondary Firebase app to avoid mutating the current admin session
-    const secondaryAppName = `SecondaryApp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
-    const secondaryAuth = getAuth(secondaryApp);
+    const secondaryAppName = `SecondaryApp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+    const secondaryApp = initializeApp(firebaseConfig, secondaryAppName)
+    const secondaryAuth = getAuth(secondaryApp)
 
     try {
       // 1. Create the user credential on the secondary auth instance
@@ -58,8 +58,8 @@ export function CreateUserModal({
         secondaryAuth,
         trimmedEmail,
         tempPassword,
-      );
-      const newUid = credential.user.uid;
+      )
+      const newUid = credential.user.uid
 
       // 2. Persist the user profile and role inside Firestore 'users' collection
       await setDoc(doc(db, 'users', newUid), {
@@ -68,32 +68,32 @@ export function CreateUserModal({
         email: trimmedEmail,
         role,
         createdAt: serverTimestamp(),
-      });
+      })
 
       // 3. Reset form and inform parent
-      setName('');
-      setEmail('');
-      setTempPassword('');
-      setRole('user');
-      onUserCreated();
-      onClose();
+      setName('')
+      setEmail('')
+      setTempPassword('')
+      setRole('user')
+      onUserCreated()
+      onClose()
     } catch (err: unknown) {
-      const code = (err as { code?: string })?.code;
+      const code = (err as { code?: string })?.code
       if (code === 'auth/email-already-in-use') {
-        setErrorMessage('Este e-mail já está em uso por outro usuário.');
+        setErrorMessage('Este e-mail já está em uso por outro usuário.')
       } else if (code === 'auth/weak-password') {
-        setErrorMessage('A senha informada é muito fraca.');
+        setErrorMessage('A senha informada é muito fraca.')
       } else if (code === 'auth/invalid-email') {
-        setErrorMessage('Formato de e-mail inválido.');
+        setErrorMessage('Formato de e-mail inválido.')
       } else {
-        setErrorMessage('Falha ao cadastrar usuário. Tente novamente.');
+        setErrorMessage('Falha ao cadastrar usuário. Tente novamente.')
       }
     } finally {
       // 4. Safely tear down and destroy secondary app instance
-      await deleteApp(secondaryApp);
-      setIsSubmitting(false);
+      await deleteApp(secondaryApp)
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div
@@ -315,6 +315,6 @@ export function CreateUserModal({
         </form>
       </div>
     </div>
-  );
+  )
 };
 

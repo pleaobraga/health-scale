@@ -1,14 +1,14 @@
-import { CandidatePicker } from './candidate-picker';
+import { CandidatePicker } from './candidate-picker'
 
-import type { Person } from '../../types';
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Person } from '../../types'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const mockPersons: Person[] = [
   { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6' },
   { id: 'p2', name: 'Dr. Lucas Oliveira', color: '#10b981' },
   { id: 'p3', name: 'Enf. Beatriz Lima', color: '#8b5cf6' },
   { id: 'p4', name: 'Dr. Rodrigo Souza', color: '#f97316' },
-];
+]
 
 const meta: Meta<typeof CandidatePicker> = {
   title: 'Calendar/CandidatePicker',
@@ -24,9 +24,9 @@ const meta: Meta<typeof CandidatePicker> = {
       </div>
     ),
   ],
-};
+}
 
-export default meta;
+export default meta
 type Story = StoryObj<typeof CandidatePicker>;
 
 export const Default: Story = {
@@ -39,5 +39,5 @@ export const Default: Story = {
     isPersonAvailable: (id) => id === 'p2' || id === 'p3',
     onSelectPerson: (id) => console.log('Selected person:', id),
   },
-};
+}
 

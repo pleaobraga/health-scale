@@ -1,13 +1,13 @@
-import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react'
+import { useState } from 'react'
 
-import { ConfirmDeleteModal } from './confirm-delete-modal';
-import { DeactivatePersonModal } from './deactivate-person-modal';
-import { GlobalPersonModal } from './global-person-modal';
-import { PersonManagementCard } from './person-management-card';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { ConfirmDeleteModal } from './confirm-delete-modal'
+import { DeactivatePersonModal } from './deactivate-person-modal'
+import { GlobalPersonModal } from './global-person-modal'
+import { PersonManagementCard } from './person-management-card'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export function PeopleManagementView() {
   const {
@@ -20,56 +20,56 @@ export function PeopleManagementView() {
     canDeletePerson,
     deactivatePerson,
     reactivatePerson,
-  } = useScheduleStore();
+  } = useScheduleStore()
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [personToEdit, setPersonToEdit] = useState<Person | null>(null);
-  const [personToDelete, setPersonToDelete] = useState<Person | null>(null);
-  const [personToDeactivate, setPersonToDeactivate] = useState<Person | null>(null);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [personToEdit, setPersonToEdit] = useState<Person | null>(null)
+  const [personToDelete, setPersonToDelete] = useState<Person | null>(null)
+  const [personToDeactivate, setPersonToDeactivate] = useState<Person | null>(null)
 
   const filteredPersons = persons.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
-  );
+  )
 
-  const activeCount = persons.filter((p) => p.active !== false).length;
-  const inactiveCount = persons.filter((p) => p.active === false).length;
+  const activeCount = persons.filter((p) => p.active !== false).length
+  const inactiveCount = persons.filter((p) => p.active === false).length
 
   const handleOpenAdd = () => {
-    setPersonToEdit(null);
-    setIsModalOpen(true);
-  };
+    setPersonToEdit(null)
+    setIsModalOpen(true)
+  }
 
   const handleOpenEdit = (person: Person) => {
-    setPersonToEdit(person);
-    setIsModalOpen(true);
-  };
+    setPersonToEdit(person)
+    setIsModalOpen(true)
+  }
 
   const handleDeleteRequest = (person: Person) => {
     if (canDeletePerson(person.id)) {
-      setPersonToDelete(person);
+      setPersonToDelete(person)
     } else {
-      setPersonToDeactivate(person);
+      setPersonToDeactivate(person)
     }
-  };
+  }
 
   const handleSavePerson = (name: string, color: string) => {
     if (personToEdit) {
-      updatePerson(personToEdit.id, name, color);
+      updatePerson(personToEdit.id, name, color)
     } else {
-      addPerson(name, color);
+      addPerson(name, color)
     }
-  };
+  }
 
   const getParticipatingMonthsCount = (personId: string): number => {
-    let count = 0;
+    let count = 0
     Object.values(monthParticipants).forEach((ids) => {
-      if (ids.includes(personId)) count++;
-    });
-    return count;
-  };
+      if (ids.includes(personId)) count++
+    })
+    return count
+  }
 
-  const currentMonthParticipants = monthParticipants[currentMonth] || [];
+  const currentMonthParticipants = monthParticipants[currentMonth] || []
 
   return (
     <div className="flex-1 h-full overflow-y-auto p-4 sm:p-6 md:p-8 flex flex-col gap-6 max-w-[1500px] w-full mx-auto custom-scrollbar">
@@ -177,9 +177,9 @@ export function PeopleManagementView() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
           {filteredPersons.map((person) => {
-            const monthsCount = getParticipatingMonthsCount(person.id);
-            const isInCurrentMonth = currentMonthParticipants.includes(person.id);
-            const canDelete = canDeletePerson(person.id);
+            const monthsCount = getParticipatingMonthsCount(person.id)
+            const isInCurrentMonth = currentMonthParticipants.includes(person.id)
+            const canDelete = canDeletePerson(person.id)
 
             return (
               <PersonManagementCard
@@ -193,7 +193,7 @@ export function PeopleManagementView() {
                 onDeleteRequest={handleDeleteRequest}
                 onReactivate={reactivatePerson}
               />
-            );
+            )
           })}
         </div>
       )}
@@ -213,8 +213,8 @@ export function PeopleManagementView() {
         onClose={() => setPersonToDelete(null)}
         onConfirm={() => {
           if (personToDelete) {
-            deletePerson(personToDelete.id);
-            setPersonToDelete(null);
+            deletePerson(personToDelete.id)
+            setPersonToDelete(null)
           }
         }}
       />
@@ -226,11 +226,11 @@ export function PeopleManagementView() {
         onClose={() => setPersonToDeactivate(null)}
         onConfirm={() => {
           if (personToDeactivate) {
-            deactivatePerson(personToDeactivate.id);
-            setPersonToDeactivate(null);
+            deactivatePerson(personToDeactivate.id)
+            setPersonToDeactivate(null)
           }
         }}
       />
     </div>
-  );
+  )
 };

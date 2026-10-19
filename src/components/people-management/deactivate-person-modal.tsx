@@ -1,8 +1,8 @@
-import { AlertTriangle, UserX, X, ShieldAlert } from 'lucide-react';
-import { useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { AlertTriangle, UserX, X, ShieldAlert } from 'lucide-react'
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface DeactivatePersonModalProps {
   isOpen: boolean;
@@ -20,14 +20,14 @@ export function DeactivatePersonModal({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
-  if (!isOpen || !person) return null;
+  if (!isOpen || !person) return null
 
   return createPortal(
     <div
@@ -106,8 +106,8 @@ export function DeactivatePersonModal({
           <button
             type="button"
             onClick={() => {
-              onConfirm();
-              onClose();
+              onConfirm()
+              onClose()
             }}
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-amber-600 hover:bg-amber-700 active:bg-amber-800 transition shadow-xs"
           >
@@ -118,6 +118,6 @@ export function DeactivatePersonModal({
       </div>
     </div>,
     document.body
-  );
+  )
 };
 

@@ -1,16 +1,16 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
 import {
   initializeFirestore,
   getFirestore,
   persistentLocalCache,
   persistentMultipleTabManager
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
+import type { FirebaseApp } from 'firebase/app'
+import type { Auth } from 'firebase/auth'
 import type {
-  Firestore} from 'firebase/firestore';
+  Firestore} from 'firebase/firestore'
 
 
 /**
@@ -23,18 +23,18 @@ export const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-};
+}
 
 /**
  * Singleton Firebase app instance.
  */
 export const app: FirebaseApp =
-  getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  getApps().length > 0 ? getApp() : initializeApp(firebaseConfig)
 
 /**
  * Firebase Authentication instance.
  */
-export const auth: Auth = getAuth(app);
+export const auth: Auth = getAuth(app)
 
 /**
  * Firestore database instance with multi-tab offline persistence enabled.
@@ -46,9 +46,9 @@ export const db: Firestore = (() => {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
       }),
-    });
+    })
   } catch {
-    return getFirestore(app);
+    return getFirestore(app)
   }
-})();
+})()
 

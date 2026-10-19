@@ -1,35 +1,35 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
 
-import { ValidationPanel } from './validation-panel';
-import { useScheduleStore } from '../../store/use-schedule-store';
+import { ValidationPanel } from './validation-panel'
+import { useScheduleStore } from '../../store/use-schedule-store'
 
 describe('ValidationPanel Component', () => {
   beforeEach(() => {
-    localStorage.clear();
-    const store = useScheduleStore.getState();
-    store.dismissValidation();
-  });
+    localStorage.clear()
+    const store = useScheduleStore.getState()
+    store.dismissValidation()
+  })
 
   it('deve renderizar os botões principais de Validar Escala e Salvar', () => {
-    render(<ValidationPanel />);
+    render(<ValidationPanel />)
 
-    expect(screen.getByRole('button', { name: /Validar Escala/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Salvar/i })).toBeInTheDocument();
-  });
+    expect(screen.getByRole('button', { name: /Validar Escala/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Salvar/i })).toBeInTheDocument()
+  })
 
   it('deve exibir painel de auditoria com estado 100% conforme quando não há erros', () => {
     // Simulates error-free state in store
     useScheduleStore.setState({
       hasValidated: true,
       validationErrors: [],
-    });
+    })
 
-    render(<ValidationPanel />);
+    render(<ValidationPanel />)
 
-    expect(screen.getByText('Escala 100% Conforme!')).toBeInTheDocument();
-    expect(screen.getByText(/Nenhuma infração de descanso consecutivo/i)).toBeInTheDocument();
-  });
+    expect(screen.getByText('Escala 100% Conforme!')).toBeInTheDocument()
+    expect(screen.getByText(/Nenhuma infração de descanso consecutivo/i)).toBeInTheDocument()
+  })
 
   it('deve listar erros e avisos detalhados após a validação', () => {
     useScheduleStore.setState({
@@ -50,25 +50,25 @@ describe('ValidationPanel Component', () => {
           message: 'Dia sem responsável: o dia 20/10/2026 está sem ninguém escalado.',
         },
       ],
-    });
+    })
 
-    render(<ValidationPanel />);
+    render(<ValidationPanel />)
 
-    expect(screen.getByText(/Descanso Consecutivo/i)).toBeInTheDocument();
-    expect(screen.getByText('BLOQUEANTE')).toBeInTheDocument();
-    expect(screen.getByText(/Descanso violado: Dra. Camila/i)).toBeInTheDocument();
+    expect(screen.getByText(/Descanso Consecutivo/i)).toBeInTheDocument()
+    expect(screen.getByText('BLOQUEANTE')).toBeInTheDocument()
+    expect(screen.getByText(/Descanso violado: Dra. Camila/i)).toBeInTheDocument()
 
-    expect(screen.getByText(/Dia Vazio/i)).toBeInTheDocument();
-    expect(screen.getByText('AVISO')).toBeInTheDocument();
-  });
+    expect(screen.getByText(/Dia Vazio/i)).toBeInTheDocument()
+    expect(screen.getByText('AVISO')).toBeInTheDocument()
+  })
 
   it('deve acionar saveSchedule ao clicar no botão Salvar', () => {
-    render(<ValidationPanel />);
+    render(<ValidationPanel />)
 
-    const saveBtn = screen.getByRole('button', { name: /Salvar/i });
-    fireEvent.click(saveBtn);
+    const saveBtn = screen.getByRole('button', { name: /Salvar/i })
+    fireEvent.click(saveBtn)
 
     // Should display save feedback
-    expect(useScheduleStore.getState().hasValidated).toBe(true);
-  });
-});
+    expect(useScheduleStore.getState().hasValidated).toBe(true)
+  })
+})

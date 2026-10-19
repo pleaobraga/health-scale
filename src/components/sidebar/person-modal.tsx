@@ -1,11 +1,11 @@
-import { X, Check, Trash2, User, Palette } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { X, Check, Trash2, User, Palette } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-import { AvailabilityMiniCalendar } from './availability-mini-calendar';
-import { TAILWIND_PALETTE } from '../../constants/tailwind-colors';
+import { AvailabilityMiniCalendar } from './availability-mini-calendar'
+import { TAILWIND_PALETTE } from '../../constants/tailwind-colors'
 
-import type { Person } from '../../types';
+import type { Person } from '../../types'
 
 export interface PersonModalProps {
   isOpen: boolean;
@@ -26,44 +26,44 @@ export function PersonModal({
   onSave,
   onDelete,
 }: PersonModalProps) {
-  const [name, setName] = useState('');
-  const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex);
-  const [availableDays, setAvailableDays] = useState<number[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState('')
+  const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex)
+  const [availableDays, setAvailableDays] = useState<number[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (personToEdit) {
-      setName(personToEdit.name);
-      setSelectedColor(personToEdit.color);
-      setAvailableDays(initialAvailableDays);
+      setName(personToEdit.name)
+      setSelectedColor(personToEdit.color)
+      setAvailableDays(initialAvailableDays)
     } else {
-      setName('');
-      setSelectedColor(TAILWIND_PALETTE[0].hex);
-      setAvailableDays([]);
+      setName('')
+      setSelectedColor(TAILWIND_PALETTE[0].hex)
+      setAvailableDays([])
     }
-    setError(null);
-  }, [personToEdit, initialAvailableDays, isOpen]);
+    setError(null)
+  }, [personToEdit, initialAvailableDays, isOpen])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!name.trim()) {
-      setError('Por favor, informe o nome da pessoa.');
-      return;
+      setError('Por favor, informe o nome da pessoa.')
+      return
     }
-    onSave(name.trim(), selectedColor, availableDays);
-    onClose();
-  };
+    onSave(name.trim(), selectedColor, availableDays)
+    onClose()
+  }
 
   const handleDelete = () => {
     if (personToEdit && onDelete) {
       if (confirm(`Tem certeza que deseja remover ${personToEdit.name}? Esta ação removerá também as escalas associadas.`)) {
-        onDelete(personToEdit.id);
-        onClose();
+        onDelete(personToEdit.id)
+        onClose()
       }
     }
-  };
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
@@ -105,8 +105,8 @@ export function PersonModal({
               type="text"
               value={name}
               onChange={(e) => {
-                setName(e.target.value);
-                if (error) setError(null);
+                setName(e.target.value)
+                if (error) setError(null)
               }}
               placeholder="Ex: Dra. Camila Santos"
               autoFocus
@@ -132,7 +132,7 @@ export function PersonModal({
             </div>
             <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl max-h-52 overflow-y-auto">
               {TAILWIND_PALETTE.map((color) => {
-                const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase();
+                const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase()
                 return (
                   <button
                     key={color.hex}
@@ -147,7 +147,7 @@ export function PersonModal({
                   >
                     {isSelected && <Check className="w-4 h-4 text-white stroke-[3]" />}
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -197,5 +197,5 @@ export function PersonModal({
       </div>
     </div>,
     document.body
-  );
+  )
 };
