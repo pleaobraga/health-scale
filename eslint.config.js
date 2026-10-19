@@ -43,6 +43,7 @@ export default tseslint.config(
         'react/jsx-no-useless-fragment': 'warn',
         'import/first': 'error',
         'import/no-duplicates': 'error',
+        'import/no-default-export': 'error',
         'import/order': [
           'error',
           {
@@ -60,8 +61,13 @@ export default tseslint.config(
       }
     },
     {
-      files: ['**/*.stories.{ts,tsx}'],
+      files: [
+        '**/*.stories.{ts,tsx}',
+        '*.config.{ts,js,mjs}',
+        '.storybook/**/*.{ts,tsx}'
+      ],
       rules: {
+        'import/no-default-export': 'off',
         'no-console': 'off'
       }
     }

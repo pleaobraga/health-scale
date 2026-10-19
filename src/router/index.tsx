@@ -102,5 +102,3 @@ export function TestAppRouter({
     </ErrorBoundary>
   );
 }
-
-export default AppRouter;

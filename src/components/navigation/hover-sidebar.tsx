@@ -554,6 +554,4 @@ export function HoverSidebar() {
       </aside>
     </>
   );
-};
-
-export default HoverSidebar;
+}

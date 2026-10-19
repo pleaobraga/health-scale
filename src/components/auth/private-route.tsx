@@ -37,7 +37,5 @@ export function PrivateRoute({ children }: PrivateRouteProps) {
   }
 
   return children ? children : <Outlet />;
-};
-
-export default PrivateRoute;
+}
 

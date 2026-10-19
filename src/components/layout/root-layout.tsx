@@ -73,7 +73,5 @@ export function RootLayout() {
       <UnsavedChangesModal />
     </div>
   );
-};
-
-export default RootLayout;
+}
 

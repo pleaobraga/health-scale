@@ -51,5 +51,3 @@ export function AdminRoute({ children }: AdminRouteProps) {
 
   return children ? children : <Outlet />
 }
-
-export default AdminRoute

@@ -20,7 +20,5 @@ export function CalendarView() {
       </div>
     </main>
   );
-};
-
-export default CalendarView;
+}
 

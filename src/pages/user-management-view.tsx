@@ -227,6 +227,4 @@ export function UserManagementView() {
       </div>
     </div>
   );
-};
-
-export default UserManagementView;
+}
