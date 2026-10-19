@@ -268,35 +268,35 @@ export const FullScreenCalendarModal: React.FC = () => {
         {monthEvents.length > 0 && (
           <div
             data-testid="print-events-section"
-            className="hidden print:block print:break-before-page print-page-break-before w-full print:pt-6 print:px-2"
+            className="hidden print:block print:break-before-page print-page-break-before w-full print:pt-6 print:px-2 print:bg-white print:text-slate-900 dark:print:bg-white dark:print:text-slate-900"
           >
-            <div className="mb-4 pb-2 border-b-2 border-slate-800 flex items-center justify-between">
+            <div className="mb-4 pb-2 border-b-2 border-slate-800 dark:border-slate-800 print:border-slate-800 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-extrabold text-slate-950 tracking-tight">
+                <h3 className="text-xl font-extrabold text-slate-950 dark:text-slate-950 print:text-slate-950 tracking-tight">
                   Eventos do Mês – {formatMonthYear(currentMonth)}
                 </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-600 print:text-slate-600 mt-0.5">
                   Listagem cronológica dos eventos e programações especiais cadastradas para o período
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-xs font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-full border border-slate-300">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-800 print:text-slate-800 bg-slate-100 dark:bg-slate-100 print:bg-slate-100 px-3 py-1 rounded-full border border-slate-300 dark:border-slate-300 print:border-slate-300">
                   Total: {monthEvents.length} {monthEvents.length === 1 ? 'evento' : 'eventos'}
                 </span>
               </div>
             </div>
 
-            <table className="w-full border-collapse border border-slate-300 text-left text-xs">
+            <table className="w-full border-collapse border border-slate-300 dark:border-slate-300 print:border-slate-300 text-left text-xs bg-white dark:bg-white print:bg-white text-slate-900 dark:text-slate-900 print:text-slate-900">
               <thead>
-                <tr className="bg-slate-100 border-b-2 border-slate-400 text-slate-900 font-bold">
-                  <th className="py-2.5 px-3 border-r border-slate-300 w-36">Data</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300 w-24">Horário</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300 w-1/4">Evento</th>
-                  <th className="py-2.5 px-3 border-r border-slate-300">Descrição / Observações</th>
-                  <th className="py-2.5 px-3 w-48">Escala do Dia</th>
+                <tr className="bg-slate-100 dark:bg-slate-100 print:bg-slate-100 border-b-2 border-slate-400 dark:border-slate-400 print:border-slate-400 text-slate-900 dark:text-slate-900 print:text-slate-900 font-bold">
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-36 text-slate-900 dark:text-slate-900 print:text-slate-900">Data</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-24 text-slate-900 dark:text-slate-900 print:text-slate-900">Horário</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 w-1/4 text-slate-900 dark:text-slate-900 print:text-slate-900">Evento</th>
+                  <th className="py-2.5 px-3 border-r border-slate-300 dark:border-slate-300 print:border-slate-300 text-slate-900 dark:text-slate-900 print:text-slate-900">Descrição / Observações</th>
+                  <th className="py-2.5 px-3 w-48 text-slate-900 dark:text-slate-900 print:text-slate-900">Escala do Dia</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-200 print:divide-slate-200">
                 {monthEvents.map((event) => {
                   const { formattedDate, weekday } = formatDateWithWeekday(event.date);
                   const assignedIds = assignments[event.date] || [];
@@ -307,39 +307,39 @@ export const FullScreenCalendarModal: React.FC = () => {
                   return (
                     <tr
                       key={event.id}
-                      className="print:break-inside-avoid print-break-inside-avoid odd:bg-white even:bg-slate-50/60"
+                      className="print:break-inside-avoid print-break-inside-avoid odd:bg-white even:bg-slate-50/60 dark:odd:bg-white dark:even:bg-slate-50/60 print:odd:bg-white print:even:bg-slate-50/60"
                     >
-                      <td className="py-2 px-3 border-r border-slate-200 font-bold text-slate-950 whitespace-nowrap">
+                      <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 font-bold text-slate-950 dark:text-slate-950 print:text-slate-950 whitespace-nowrap">
                         <div>{formattedDate}</div>
-                        <div className="text-[10px] text-slate-500 font-medium">{weekday}</div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-500 print:text-slate-500 font-medium">{weekday}</div>
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-200 whitespace-nowrap">
+                      <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 whitespace-nowrap">
                         {event.time ? (
-                          <span className="font-semibold text-slate-800">{event.time}</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-800 print:text-slate-800">{event.time}</span>
                         ) : (
-                          <span className="text-slate-400 italic">Dia todo</span>
+                          <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">Dia todo</span>
                         )}
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-200 font-bold text-slate-900">
+                      <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 font-bold text-slate-900 dark:text-slate-900 print:text-slate-900">
                         {event.title}
                       </td>
-                      <td className="py-2 px-3 border-r border-slate-200 text-slate-600">
-                        {event.description || <span className="text-slate-400 italic">-</span>}
+                      <td className="py-2 px-3 border-r border-slate-200 dark:border-slate-200 print:border-slate-200 text-slate-600 dark:text-slate-600 print:text-slate-600">
+                        {event.description || <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">-</span>}
                       </td>
-                      <td className="py-2 px-3 text-slate-700">
+                      <td className="py-2 px-3 text-slate-700 dark:text-slate-700 print:text-slate-700">
                         {assignedNames.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {assignedNames.map((name) => (
                               <span
                                 key={name}
-                                className="inline-block px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-[11px] font-medium text-slate-800"
+                                className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-100 print:bg-slate-100 border border-slate-300 dark:border-slate-300 print:border-slate-300 rounded text-[11px] font-medium text-slate-800 dark:text-slate-800 print:text-slate-800"
                               >
                                 {name}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">Vago</span>
+                          <span className="text-slate-400 dark:text-slate-400 print:text-slate-400 italic">Vago</span>
                         )}
                       </td>
                     </tr>
@@ -349,6 +349,7 @@ export const FullScreenCalendarModal: React.FC = () => {
             </table>
           </div>
         )}
+
       </div>
     </div>,
 

@@ -68,6 +68,77 @@
     print-color-adjust: exact !important;
   }
 
+  /* Reset and guarantee light styling during print even when dark theme is active */
+  html.dark,
+  html.dark body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  html.dark #fullscreen-calendar-modal-container {
+    background: transparent !important;
+  }
+
+  html.dark #fullscreen-calendar-modal-container > div {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  /* Print Events Section (table, title, borders, backgrounds) in Dark Theme */
+  html.dark [data-testid="print-events-section"],
+  [data-testid="print-events-section"] {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  html.dark [data-testid="print-events-section"] h3,
+  [data-testid="print-events-section"] h3 {
+    color: #020617 !important;
+  }
+
+  html.dark [data-testid="print-events-section"] p,
+  [data-testid="print-events-section"] p {
+    color: #475569 !important;
+  }
+
+  html.dark [data-testid="print-events-section"] table,
+  [data-testid="print-events-section"] table {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+
+  html.dark [data-testid="print-events-section"] thead tr,
+  [data-testid="print-events-section"] thead tr {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+  }
+
+  html.dark [data-testid="print-events-section"] th,
+  [data-testid="print-events-section"] th {
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    background-color: #f1f5f9 !important;
+  }
+
+  html.dark [data-testid="print-events-section"] td,
+  [data-testid="print-events-section"] td {
+    color: #0f172a !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  html.dark [data-testid="print-events-section"] tbody tr:nth-child(odd),
+  [data-testid="print-events-section"] tbody tr:nth-child(odd) {
+    background-color: #ffffff !important;
+  }
+
+  html.dark [data-testid="print-events-section"] tbody tr:nth-child(even),
+  [data-testid="print-events-section"] tbody tr:nth-child(even) {
+    background-color: #f8fafc !important;
+  }
+
   /* Hide main app elements when fullscreen modal is open for print */
   body:has(#fullscreen-calendar-modal-container) > #root {
     display: none !important;
@@ -83,4 +154,5 @@
     page-break-inside: avoid !important;
   }
 }
+
 

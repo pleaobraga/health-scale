@@ -192,4 +192,25 @@ describe('DayEventsModal', () => {
 
     expect(useScheduleStore.getState().events).toHaveLength(0);
   });
+
+  it('deve renderizar o ícone de relógio com classe para dark theme quando houver horário', () => {
+    useScheduleStore.setState({
+      selectedDateForEvents: '2026-10-15',
+      events: [
+        {
+          id: 'ev-1',
+          date: '2026-10-15',
+          title: 'Plantão Noturno',
+          time: '19:00',
+        },
+      ],
+    });
+
+    render(<DayEventsModal />);
+    const clockIcon = document.body.querySelector('.lucide-clock');
+    expect(clockIcon).toBeInTheDocument();
+    expect(clockIcon).toHaveClass('dark:text-indigo-400');
+  });
+
 });
+

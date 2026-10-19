@@ -145,6 +145,28 @@ describe('FullScreenCalendarModal', () => {
     render(<FullScreenCalendarModal />);
     expect(screen.queryByTestId('print-events-section')).not.toBeInTheDocument();
   });
+
+  it('possui classes adequadas para garantir visualização correta no dark theme durante impressão', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      events: [
+        { id: 'e1', date: '2026-10-15', title: 'Reunião Clínica' },
+      ],
+    });
+
+    render(<FullScreenCalendarModal />);
+
+    const printSection = screen.getByTestId('print-events-section');
+    expect(printSection).toHaveClass('dark:print:bg-white', 'dark:print:text-slate-900');
+
+    const table = printSection.querySelector('table');
+    expect(table).toHaveClass('dark:bg-white', 'dark:text-slate-900');
+
+    const title = screen.getByRole('heading', { level: 3, name: /eventos do mês/i });
+    expect(title).toHaveClass('dark:text-slate-950', 'print:text-slate-950');
+  });
 });
+
 
 
