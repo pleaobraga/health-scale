@@ -1,5 +1,7 @@
-import { AppRouter } from './router';
+import { AppRouter } from './router'
 
 export function App() {
-  return <AppRouter />;
+  console.log('App component rendered')
+
+  return <AppRouter />
 }
