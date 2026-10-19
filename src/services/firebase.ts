@@ -46,6 +46,7 @@ export const db: Firestore = (() => {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
       }),
+      ignoreUndefinedProperties: true,
     })
   } catch {
     return getFirestore(app)

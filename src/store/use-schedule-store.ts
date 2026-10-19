@@ -755,12 +755,17 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     let cloudSaved = false
     if (CloudSyncService.isSyncEnabled()) {
       try {
-        cloudSaved = await CloudSyncService.saveMonthToCloud(get().currentMonth, {
-          assignments: get().assignments,
-          monthParticipants: get().monthParticipants,
-          availabilities: get().availabilities,
-          events: get().events,
-        })
+        const [monthSaved, peopleSaved, addressesSaved] = await Promise.all([
+          CloudSyncService.saveMonthToCloud(get().currentMonth, {
+            assignments: get().assignments,
+            monthParticipants: get().monthParticipants,
+            availabilities: get().availabilities,
+            events: get().events,
+          }),
+          CloudSyncService.savePeopleToCloud(get().persons),
+          CloudSyncService.saveAddressesToCloud(get().addresses),
+        ])
+        cloudSaved = monthSaved && peopleSaved && addressesSaved
       } catch (err) {
         console.error('Failed to sync schedule to cloud:', err)
       }
@@ -810,12 +815,12 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         }
       }
 
-      if (persons && persons.length > 0) {
+      if (Array.isArray(persons)) {
         StorageService.savePersons(persons)
         set({ persons })
       }
 
-      if (addresses && addresses.length > 0) {
+      if (Array.isArray(addresses)) {
         StorageService.saveAddresses(addresses)
         set({ addresses })
       }

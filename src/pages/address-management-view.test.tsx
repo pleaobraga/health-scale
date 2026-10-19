@@ -192,4 +192,23 @@ describe('AddressManagementView', () => {
     expect(writeTextMock).toHaveBeenCalledWith('Residência Flores - Rua das Flores, 123 - Apto 45 - Jardins - São Paulo')
     expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
+
+  it('deve exibir botão Puxar da Nuvem quando sync ativado e disparar pullCloudData', async () => {
+    localStorage.setItem('scale_manager_cloud_sync_enabled', 'true')
+    const pullCloudDataMock = vi.fn().mockResolvedValue({
+      success: true,
+      message: 'Dados locais atualizados a partir da nuvem com sucesso!',
+    })
+    useScheduleStore.setState({ pullCloudData: pullCloudDataMock })
+
+    render(<AddressManagementView />)
+
+    const pullBtn = screen.getByRole('button', { name: /Puxar dados da nuvem/i })
+    expect(pullBtn).toBeInTheDocument()
+
+    fireEvent.click(pullBtn)
+
+    expect(pullCloudDataMock).toHaveBeenCalledTimes(1)
+    expect(await screen.findByText('Dados locais atualizados a partir da nuvem com sucesso!')).toBeInTheDocument()
+  })
 })

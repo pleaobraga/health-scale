@@ -27,6 +27,8 @@ export function RootLayout() {
       setCurrentView('people')
     } else if (path.startsWith('/importar')) {
       setCurrentView('import')
+    } else if (path.startsWith('/enderecos')) {
+      setCurrentView('addresses')
     } else if (path.startsWith('/configuracoes')) {
       setCurrentView('settings')
     } else if (path.startsWith('/usuarios')) {

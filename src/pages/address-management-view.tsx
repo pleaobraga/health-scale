@@ -9,10 +9,12 @@ import {
   Building2,
   Copy,
   Check,
+  RefreshCw,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
+import { CloudSyncService } from '../services/cloud-sync-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 import { formatAddressOneLine } from '../utils/address-utils'
 import { copyToClipboard } from '../utils/clipboard-utils'
@@ -374,13 +376,15 @@ function ConfirmDeleteAddressModal({
 }
 
 export function AddressManagementView() {
-  const { addresses, addAddress, updateAddress, deleteAddress } = useScheduleStore()
+  const { addresses, addAddress, updateAddress, deleteAddress, pullCloudData } = useScheduleStore()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [addressToEdit, setAddressToEdit] = useState<Address | null>(null)
   const [addressToDelete, setAddressToDelete] = useState<Address | null>(null)
   const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null)
+  const [isPulling, setIsPulling] = useState(false)
+  const [pullFeedback, setPullFeedback] = useState<string | null>(null)
 
   const filteredAddresses = addresses.filter((a) => {
     const q = searchQuery.toLowerCase().trim()
@@ -394,6 +398,21 @@ export function AddressManagementView() {
       (a.city && a.city.toLowerCase().includes(q))
     )
   })
+
+  const handlePullCloud = async () => {
+    try {
+      setIsPulling(true)
+      setPullFeedback(null)
+      const result = await pullCloudData()
+      setPullFeedback(result.message)
+      setTimeout(() => setPullFeedback(null), 4000)
+    } catch {
+      setPullFeedback('Erro ao buscar dados na nuvem.')
+      setTimeout(() => setPullFeedback(null), 4000)
+    } finally {
+      setIsPulling(false)
+    }
+  }
 
   const handleCopy = async (addr: Address) => {
     const textToCopy = formatAddressOneLine(addr)
@@ -442,15 +461,40 @@ export function AddressManagementView() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition-all shrink-0"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Novo Endereço</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {CloudSyncService.isSyncEnabled() && (
+            <button
+              type="button"
+              onClick={handlePullCloud}
+              disabled={isPulling}
+              title="Buscar dados atualizados da nuvem (Firestore)"
+              aria-label="Puxar dados da nuvem"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 shadow-xs transition disabled:opacity-50 shrink-0"
+            >
+              <RefreshCw className={`w-4 h-4 ${isPulling ? 'animate-spin' : ''}`} />
+              <span>{isPulling ? 'Buscando...' : 'Puxar da Nuvem'}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleOpenAdd}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Novo Endereço</span>
+          </button>
+        </div>
       </div>
+
+      {pullFeedback && (
+        <div
+          data-testid="pull-feedback-banner"
+          className="p-3 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs font-semibold text-indigo-800 dark:text-indigo-200 animate-fadeIn"
+        >
+          {pullFeedback}
+        </div>
+      )}
 
       {/* Search and Stats */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">

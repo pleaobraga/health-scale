@@ -150,4 +150,41 @@ describe('CloudSyncService - On-Demand Refresh and Explicit Save', () => {
     )
     expect(success).toBe(true)
   })
+
+  it('deve sincronizar endereços no Firestore via saveAddressesToCloud limpando propriedades undefined', async () => {
+    CloudSyncService.setSyncEnabled(true)
+
+    const success = await CloudSyncService.saveAddressesToCloud(
+      [
+        {
+          id: 'addr-1',
+          name: 'Consultório Central',
+          street: 'Av. Paulista',
+          number: '1000',
+          complement: undefined,
+          neighborhood: undefined,
+          city: 'São Paulo',
+        },
+      ],
+      true,
+    )
+
+    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+      { path: 'schedules/_master_addresses' },
+      expect.objectContaining({
+        addresses: [
+          {
+            id: 'addr-1',
+            name: 'Consultório Central',
+            street: 'Av. Paulista',
+            number: '1000',
+            city: 'São Paulo',
+          },
+        ],
+        updatedAt: 'mock-server-timestamp',
+      }),
+      { merge: true },
+    )
+    expect(success).toBe(true)
+  })
 })

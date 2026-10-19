@@ -189,10 +189,11 @@ export class CloudSyncService {
 
     try {
       const docRef = doc(db, 'schedules', month)
+      const sanitizedData = JSON.parse(JSON.stringify(data))
       await setDoc(
         docRef,
         {
-          ...data,
+          ...sanitizedData,
           month,
           updatedAt: serverTimestamp(),
         },
@@ -216,10 +217,11 @@ export class CloudSyncService {
 
     try {
       const docRef = doc(db, 'schedules', '_master_people')
+      const sanitizedPersons = JSON.parse(JSON.stringify(persons))
       await setDoc(
         docRef,
         {
-          persons,
+          persons: sanitizedPersons,
           updatedAt: serverTimestamp(),
         },
         { merge: true },
@@ -242,10 +244,11 @@ export class CloudSyncService {
 
     try {
       const docRef = doc(db, 'schedules', '_master_addresses')
+      const sanitizedAddresses = JSON.parse(JSON.stringify(addresses))
       await setDoc(
         docRef,
         {
-          addresses,
+          addresses: sanitizedAddresses,
           updatedAt: serverTimestamp(),
         },
         { merge: true },
