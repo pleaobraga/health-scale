@@ -544,6 +544,16 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = [...get().events, newEvent]
     StorageService.saveEvents(updated)
     set({ events: updated })
+
+    if (CloudSyncService.isSyncEnabled()) {
+      const month = eventData.date.substring(0, 7)
+      CloudSyncService.saveMonthToCloud(month, {
+        assignments: get().assignments,
+        monthParticipants: get().monthParticipants,
+        availabilities: get().availabilities,
+        events: updated,
+      })
+    }
   },
 
   updateEvent: (eventId, updatedData) => {
@@ -552,12 +562,34 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     )
     StorageService.saveEvents(updated)
     set({ events: updated })
+
+    if (CloudSyncService.isSyncEnabled()) {
+      const targetEvent = updated.find((e) => e.id === eventId)
+      const month = targetEvent ? targetEvent.date.substring(0, 7) : get().currentMonth
+      CloudSyncService.saveMonthToCloud(month, {
+        assignments: get().assignments,
+        monthParticipants: get().monthParticipants,
+        availabilities: get().availabilities,
+        events: updated,
+      })
+    }
   },
 
   deleteEvent: (eventId) => {
+    const targetEvent = get().events.find((e) => e.id === eventId)
+    const month = targetEvent ? targetEvent.date.substring(0, 7) : get().currentMonth
     const updated = get().events.filter((e) => e.id !== eventId)
     StorageService.saveEvents(updated)
     set({ events: updated })
+
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveMonthToCloud(month, {
+        assignments: get().assignments,
+        monthParticipants: get().monthParticipants,
+        availabilities: get().availabilities,
+        events: updated,
+      })
+    }
   },
 
 
