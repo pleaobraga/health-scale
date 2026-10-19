@@ -30,7 +30,7 @@ import { useScheduleStore } from '../../store/use-schedule-store'
 import type { AppDataSnapshot } from '../../types'
 
 export function ImportView() {
-  const { t, i18n } = useTranslation(['import', 'common'])
+  const { t, i18n } = useTranslation(['import', 'settings', 'common'])
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -62,7 +62,9 @@ export function ImportView() {
       if (result.success) {
         setCloudFeedback({
           type: 'success',
-          message: t('import:cloudPull.successRedirect', { message: result.message }),
+          message: t('import:cloudPull.successRedirect', {
+            message: t('settings:cloudSyncSection.pullSuccess'),
+          }),
         })
         setTimeout(() => {
           navigate('/calendario')
@@ -70,14 +72,17 @@ export function ImportView() {
       } else {
         setCloudFeedback({
           type: 'error',
-          message: result.message,
+          message:
+            result.code === 'no_data'
+              ? t('settings:cloudSyncSection.noCloudData')
+              : t('settings:cloudSyncSection.pullError'),
         })
         setTimeout(() => setCloudFeedback(null), 5000)
       }
     } catch {
       setCloudFeedback({
         type: 'error',
-        message: t('import:cloudPull.error'),
+        message: t('settings:cloudSyncSection.pullError'),
       })
       setTimeout(() => setCloudFeedback(null), 5000)
     } finally {

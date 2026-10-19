@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { useScheduleStore } from '../../store/use-schedule-store'
+import { useScheduleStore, type SaveFeedbackData } from '../../store/use-schedule-store'
 
 export function ValidationPanel() {
   const { t } = useTranslation(['calendar', 'common'])
@@ -21,6 +21,27 @@ export function ValidationPanel() {
     saveFeedback,
     dismissValidation,
   } = useScheduleStore()
+
+  const getSaveFeedbackText = (feedback: SaveFeedbackData | string) => {
+    if (typeof feedback === 'string') {
+      return feedback
+    }
+    switch (feedback.type) {
+      case 'cloud':
+        return t('calendar:validation.saveSuccessCloud')
+      case 'local':
+        return t('calendar:validation.saveSuccessLocal')
+      case 'errors':
+        return t('calendar:validation.saveWithErrors', {
+          errors: feedback.errorsCount,
+          warnings: feedback.warningsCount,
+        })
+      case 'warnings':
+        return t('calendar:validation.saveWithWarnings', {
+          warnings: feedback.warningsCount,
+        })
+    }
+  }
 
   const errorsCount = validationErrors.filter((e) => e.severity === 'error').length
   const warningsCount = validationErrors.filter((e) => e.severity === 'warning').length
@@ -92,7 +113,7 @@ export function ValidationPanel() {
         <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between animate-fadeIn">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>{saveFeedback}</span>
+            <span>{getSaveFeedbackText(saveFeedback)}</span>
           </div>
         </div>
       )}

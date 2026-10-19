@@ -209,6 +209,6 @@ describe('AddressManagementView', () => {
     fireEvent.click(pullBtn)
 
     expect(pullCloudDataMock).toHaveBeenCalledTimes(1)
-    expect(await screen.findByText('Dados locais atualizados a partir da nuvem com sucesso!')).toBeInTheDocument()
+    expect(await screen.findByText('Dados da nuvem sincronizados com sucesso!')).toBeInTheDocument()
   })
 })

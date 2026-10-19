@@ -16,7 +16,8 @@
     "pullButtonDesc": "Downloads the latest Firestore state to this device",
     "pulling": "Syncing...",
     "pullSuccess": "Data successfully synchronized from cloud!",
-    "pullError": "Failed to fetch cloud data."
+    "pullError": "Failed to fetch cloud data.",
+    "noCloudData": "No data found in cloud to synchronize."
   },
   "appearanceSection": {
     "title": "Appearance & Theme",

@@ -404,7 +404,13 @@ export function AddressManagementView() {
       setIsPulling(true)
       setPullFeedback(null)
       const result = await pullCloudData()
-      setPullFeedback(result.message)
+      if (result.success) {
+        setPullFeedback(t('settings:cloudSyncSection.pullSuccess'))
+      } else if (result.code === 'no_data') {
+        setPullFeedback(t('settings:cloudSyncSection.noCloudData'))
+      } else {
+        setPullFeedback(t('settings:cloudSyncSection.pullError'))
+      }
       setTimeout(() => setPullFeedback(null), 4000)
     } catch {
       setPullFeedback(t('settings:cloudSyncSection.pullError'))

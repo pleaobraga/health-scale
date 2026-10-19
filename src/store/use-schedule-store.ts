@@ -9,6 +9,24 @@ import { validateSchedule } from '../utils/validate-schedule'
 
 import type { Person, MonthlyAvailability, CalendarEvent, ValidationError, NavigationTab, Address } from '../types'
 
+export type SaveFeedbackData =
+  | { type: 'cloud' }
+  | { type: 'local' }
+  | { type: 'errors'; errorsCount: number; warningsCount: number }
+  | { type: 'warnings'; warningsCount: number };
+
+export interface CloudPullResult {
+  success: boolean;
+  code?: 'success' | 'no_data' | 'error';
+  message: string;
+}
+
+export interface CloudPushResult {
+  success: boolean;
+  code?: 'success' | 'error';
+  message: string;
+}
+
 interface ScheduleStore {
   // Navigation & UI state
   currentView: NavigationTab; // 'calendar' | 'people' | 'addresses'
@@ -32,7 +50,7 @@ interface ScheduleStore {
   validationErrors: ValidationError[];
   hasValidated: boolean;
   isSaving: boolean;
-  saveFeedback: string | null;
+  saveFeedback: SaveFeedbackData | string | null;
   hasUnsavedChanges: boolean;
 
   // Actions
@@ -90,8 +108,8 @@ interface ScheduleStore {
   // Audit and Persistence
   validateCurrentSchedule: () => ValidationError[];
   saveSchedule: () => Promise<void>;
-  pullCloudData: (month?: string, isAdmin?: boolean) => Promise<{ success: boolean; message: string }>;
-  forcePushCloudData: (isAdmin?: boolean) => Promise<{ success: boolean; message: string }>;
+  pullCloudData: (month?: string, isAdmin?: boolean) => Promise<CloudPullResult>;
+  forcePushCloudData: (isAdmin?: boolean) => Promise<CloudPushResult>;
   dismissValidation: () => void;
   reloadFromStorage: () => void;
   clearAllLocalData: () => void;
@@ -779,18 +797,16 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const errorCount = errors.filter((e) => e.severity === 'error').length
     const warningCount = errors.filter((e) => e.severity === 'warning').length
 
-    let msg = cloudSaved
-      ? 'Escala salva e sincronizada na nuvem com sucesso!'
-      : 'Escala salva com sucesso no armazenamento local!'
+    let feedback: SaveFeedbackData = cloudSaved ? { type: 'cloud' } : { type: 'local' }
     if (errorCount > 0) {
-      msg = `Escala salva, porém existem ${errorCount} erro(s) e ${warningCount} aviso(s) que precisam de atenção.`
+      feedback = { type: 'errors', errorsCount: errorCount, warningsCount: warningCount }
     } else if (warningCount > 0) {
-      msg = `Escala salva com sucesso! (com ${warningCount} aviso(s) informativo(s)).`
+      feedback = { type: 'warnings', warningsCount: warningCount }
     }
 
     set({
       isSaving: false,
-      saveFeedback: msg,
+      saveFeedback: feedback,
     })
 
     setTimeout(() => {
@@ -811,6 +827,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (!monthData && !persons && !addresses) {
         return {
           success: false,
+          code: 'no_data',
           message: 'Nenhum dado encontrado na nuvem para sincronizar.',
         }
       }
@@ -849,12 +866,14 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
       return {
         success: true,
+        code: 'success',
         message: 'Dados locais atualizados a partir da nuvem com sucesso!',
       }
     } catch (err) {
       console.error('Failed to pull data from cloud:', err)
       return {
         success: false,
+        code: 'error',
         message: 'Erro ao tentar buscar dados na nuvem.',
       }
     }
@@ -882,6 +901,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       set({ isSaving: false })
       return {
         success,
+        code: success ? 'success' : 'error',
         message: success
           ? 'Dados locais forçados para a nuvem com sucesso!'
           : 'Falha ao forçar envio de dados para a nuvem. Verifique permissões.',
@@ -891,6 +911,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       set({ isSaving: false })
       return {
         success: false,
+        code: 'error',
         message: 'Erro inesperado ao forçar envio de dados para a nuvem.',
       }
     }

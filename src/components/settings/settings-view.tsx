@@ -74,15 +74,24 @@ export function SettingsView() {
       setPullFeedback(null)
 
       const result = await pullCloudData()
+      let feedbackMessage = result.message
+      if (result.success) {
+        feedbackMessage = t('cloudSyncSection.pullSuccess')
+      } else if (result.code === 'no_data') {
+        feedbackMessage = t('cloudSyncSection.noCloudData')
+      } else {
+        feedbackMessage = t('cloudSyncSection.pullError')
+      }
+
       setPullFeedback({
         type: result.success ? 'success' : 'error',
-        message: result.message,
+        message: feedbackMessage,
       })
       setTimeout(() => setPullFeedback(null), 5000)
     } catch {
       setPullFeedback({
         type: 'error',
-        message: 'Falha ao sincronizar dados com a nuvem.',
+        message: t('cloudSyncSection.pullError'),
       })
       setTimeout(() => setPullFeedback(null), 5000)
     } finally {
@@ -108,7 +117,7 @@ export function SettingsView() {
       setIsClearingLocalData(true)
       clearAllLocalData()
       setIsClearModalOpen(false)
-      setClearFeedback('Todos os dados locais foram apagados com sucesso!')
+      setClearFeedback(t('dangerSection.clearedFeedback'))
       setTimeout(() => setClearFeedback(null), 5000)
     } catch (err) {
       console.error('Erro ao limpar dados locais:', err)

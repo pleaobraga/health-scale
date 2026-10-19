@@ -15,8 +15,9 @@
     "pullButton": "Puxar Dados da Nuvem",
     "pullButtonDesc": "Baixa o estado mais recente do Firestore para este dispositivo",
     "pulling": "Sincronizando...",
-    "pullSuccess": "Dados sincronizados com sucesso a partir da nuvem!",
-    "pullError": "Falha ao buscar dados na nuvem."
+    "pullSuccess": "Dados da nuvem sincronizados com sucesso!",
+    "pullError": "Falha ao buscar dados na nuvem.",
+    "noCloudData": "Nenhum dado encontrado na nuvem para sincronizar."
   },
   "appearanceSection": {
     "title": "Aparência e Tema",

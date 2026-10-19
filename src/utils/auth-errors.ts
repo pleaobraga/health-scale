@@ -1,22 +1,29 @@
+import { i18n } from '../i18n'
+
 /**
- * Translates Firebase Auth error codes into friendly user messages in Portuguese.
+ * Translates Firebase Auth error codes into localized friendly user messages.
  */
-export const getFriendlyAuthErrorMessage = (errorCode: string): string => {
+export const getFriendlyAuthErrorMessage = (
+  errorCode: string,
+  translate?: (key: string) => string,
+): string => {
+  const t = translate || ((key: string) => (i18n.t as (k: string) => string)(key))
+
   switch (errorCode) {
     case 'auth/invalid-credential':
     case 'auth/wrong-password':
+      return t('auth:errors.invalidCredentials')
     case 'auth/user-not-found':
-      return 'E-mail ou senha incorretos. Verifique suas credenciais.'
+      return t('auth:errors.userNotFound')
     case 'auth/invalid-email':
-      return 'O formato do e-mail digitado é inválido.'
+      return t('auth:errors.invalidEmail')
     case 'auth/user-disabled':
-      return 'Esta conta de usuário foi desativada pelo administrador.'
+      return t('auth:errors.userDisabled')
     case 'auth/too-many-requests':
-      return 'Acesso temporariamente bloqueado devido a muitas tentativas. Tente mais tarde.'
+      return t('auth:errors.tooManyRequests')
     case 'auth/network-request-failed':
-      return 'Falha de conexão com a rede. Verifique seu acesso à internet.'
+      return t('auth:errors.networkError')
     default:
-      return 'Erro ao tentar autenticar. Verifique seus dados e tente novamente.'
+      return t('auth:errors.genericError')
   }
 }
-
