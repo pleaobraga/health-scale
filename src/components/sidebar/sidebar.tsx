@@ -116,9 +116,10 @@ export function Sidebar() {
   const handleSaveAvailability = (
     personId: string,
     days: number[],
-    shiftAvailability?: Record<string, number[]>
+    shiftAvailability?: Record<string, number[]>,
+    shiftRates?: Record<string, Record<number, number>>
   ) => {
-    setPersonAvailability(personId, currentMonth, days, shiftAvailability)
+    setPersonAvailability(personId, currentMonth, days, shiftAvailability, shiftRates)
   }
 
   const handleGoToGlobalManagement = () => {
@@ -717,6 +718,13 @@ export function Sidebar() {
             ? availabilities.find(
                 (a) => a.personId === personForAvailability.id && a.month === currentMonth
               )?.shiftAvailability
+            : undefined
+        }
+        initialShiftRates={
+          personForAvailability
+            ? availabilities.find(
+                (a) => a.personId === personForAvailability.id && a.month === currentMonth
+              )?.shiftRates
             : undefined
         }
         onSave={handleSaveAvailability}

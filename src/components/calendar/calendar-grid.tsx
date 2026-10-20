@@ -11,6 +11,7 @@ import {
   Maximize2,
   MoreHorizontal,
   Printer,
+  DollarSign,
   RotateCcw,
   ShieldAlert,
   ShieldCheck,
@@ -26,6 +27,7 @@ import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear, getMonthCalendarGrid } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
+import { MonthPaymentsModal } from '../modals/month-payments-modal'
 import { ScheduleAuditModal } from '../modals/schedule-audit-modal'
 
 export function CalendarGrid() {
@@ -37,6 +39,7 @@ export function CalendarGrid() {
   const [pullSuccess, setPullSuccess] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
+  const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false)
   const actionsMenuRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -406,6 +409,20 @@ export function CalendarGrid() {
                   <Maximize2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   <span className="truncate">{t('calendar:fullscreen')}</span>
                 </button>
+
+                {/* Option 5: Valores a Pagar / Fechamento Financeiro */}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsActionsOpen(false)
+                    setIsPaymentsModalOpen(true)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
+                >
+                  <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="truncate">{t('calendar:monthlyPayments')}</span>
+                </button>
               </div>
             )}
           </div>
@@ -513,6 +530,13 @@ export function CalendarGrid() {
         activeRuleIds={getActiveRuleIds(currentMonth)}
         currentMonth={currentMonth}
         onToggleMonthRule={(ruleId) => toggleMonthRule(ruleId, currentMonth)}
+      />
+
+      {/* Monthly Payments & Financial Summary Modal */}
+      <MonthPaymentsModal
+        isOpen={isPaymentsModalOpen}
+        onClose={() => setIsPaymentsModalOpen(false)}
+        currentMonth={currentMonth}
       />
     </div>
   )

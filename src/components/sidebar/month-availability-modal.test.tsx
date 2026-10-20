@@ -119,7 +119,50 @@ describe('MonthAvailabilityModal Component', () => {
     const saveBtn = screen.getByRole('button', { name: /salvar/i })
     fireEvent.click(saveBtn)
 
-    expect(handleSave).toHaveBeenCalledWith('p1', [10, 15])
+    expect(handleSave).toHaveBeenCalledWith('p1', [10, 15], undefined, {})
+  })
+
+  it('permite definir valores cobrados por plantão e dias específicos dentro da mesma escala', () => {
+    const handleSave = vi.fn()
+
+    render(
+      <MonthAvailabilityModal
+        isOpen={true}
+        onClose={vi.fn()}
+        person={mockPerson}
+        currentMonth="2026-10"
+        initialAvailableDays={[]}
+        initialShiftAvailability={{}}
+        activeShifts={mockActiveShifts}
+        onSave={handleSave}
+      />
+    )
+
+    // Select days 2, 4 in P24
+    const day2Btn = screen.getByRole('button', { name: /^2$/ })
+    const day4Btn = screen.getByRole('button', { name: /^4$/ })
+    fireEvent.click(day2Btn)
+    fireEvent.click(day4Btn)
+
+    // Set rate of 350
+    const rateInput = screen.getByPlaceholderText('Ex: 350')
+    fireEvent.change(rateInput, { target: { value: '350' } })
+
+    // Apply rate to all days of this shift
+    const applyBtn = screen.getByRole('button', { name: /Aplicar Valor/i })
+    fireEvent.click(applyBtn)
+
+    // Verify rate group is displayed
+    expect(screen.getAllByText(/350/).length).toBeGreaterThanOrEqual(1)
+
+    // Save
+    const saveBtn = screen.getByRole('button', { name: /salvar/i })
+    fireEvent.click(saveBtn)
+
+    expect(handleSave).toHaveBeenCalledTimes(1)
+    const [, , , shiftRates] = handleSave.mock.calls[0]
+    expect(shiftRates.shift_p24[2]).toBe(350)
+    expect(shiftRates.shift_p24[4]).toBe(350)
   })
 })
 

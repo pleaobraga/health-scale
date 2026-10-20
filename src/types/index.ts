@@ -13,6 +13,7 @@ export interface MonthlyAvailability {
   month: string; // 'YYYY-MM'
   availableDays: number[]; // 1 to 31
   shiftAvailability?: Record<string, number[]>; // shiftId -> available days for this specific shift
+  shiftRates?: Record<string, Record<number, number>>; // shiftId -> dayNumber -> rate in R$
 }
 
 export interface DayAssignment {

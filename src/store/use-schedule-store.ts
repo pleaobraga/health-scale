@@ -123,7 +123,8 @@ interface ScheduleStore {
     personId: string,
     month: string,
     availableDays: number[],
-    shiftAvailability?: Record<string, number[]>
+    shiftAvailability?: Record<string, number[]>,
+    shiftRates?: Record<string, Record<number, number>>
   ) => void;
   isPersonAvailable: (
     personId: string,
@@ -470,7 +471,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     return true
   },
 
-  setPersonAvailability: (personId, month, availableDays, shiftAvailability) => {
+  setPersonAvailability: (personId, month, availableDays, shiftAvailability, shiftRates) => {
     const existingIndex = get().availabilities.findIndex(
       (a) => a.personId === personId && a.month === month
     )
@@ -479,12 +480,17 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       shiftAvailability !== undefined
         ? shiftAvailability
         : existing?.shiftAvailability
+    const finalShiftRates =
+      shiftRates !== undefined
+        ? shiftRates
+        : existing?.shiftRates
 
     const newRecord: MonthlyAvailability = {
       personId,
       month,
       availableDays,
       ...(finalShiftAvailability ? { shiftAvailability: finalShiftAvailability } : {}),
+      ...(finalShiftRates ? { shiftRates: finalShiftRates } : {}),
     }
 
     let updated: MonthlyAvailability[]
