@@ -20,6 +20,7 @@ export function ValidationPanel() {
     isSaving,
     saveFeedback,
     dismissValidation,
+    shiftRules,
   } = useScheduleStore()
 
   const getSaveFeedbackText = (feedback: SaveFeedbackData | string) => {
@@ -62,8 +63,13 @@ export function ValidationPanel() {
         return { label: t('calendar:validation.rules.empty_day'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
       case 'not_available':
         return { label: t('calendar:validation.rules.not_available'), color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' }
-      default:
-        return { label: t('calendar:validation.rules.default'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
+      default: {
+        const dynamicRule = shiftRules.find((r) => r.id === rule)
+        return {
+          label: dynamicRule?.name || t('calendar:validation.rules.default'),
+          color: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800',
+        }
+      }
     }
   }
 

@@ -111,5 +111,80 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     fireEvent.click(toggleBtn)
     expect(toggleBtn).toHaveTextContent(/recolher/i)
   })
+
+  it('deve expandir a seção de Regras de Validação e alternar uma regra ativa', () => {
+    renderSidebar()
+
+    // Regras header is present
+    const rulesHeader = screen.getByText('Regras de Validação')
+    expect(rulesHeader).toBeInTheDocument()
+
+    // Click to expand rules accordion section
+    fireEvent.click(rulesHeader)
+
+    // Should now show rule names
+    expect(screen.getByText('Máximo 1 turno por dia')).toBeInTheDocument()
+
+    // Find switches
+    const switches = screen.getAllByRole('switch')
+    expect(switches.length).toBeGreaterThanOrEqual(1)
+
+    // Toggle the first rule switch
+    const initialRuleState = useScheduleStore.getState().getActiveRuleIds('2026-10')
+    const ruleToToggle = 'rule_max_shifts_day'
+    expect(initialRuleState).toContain(ruleToToggle)
+
+    fireEvent.click(switches[0])
+
+    // Should now be removed from activeRuleIds for this month
+    const updatedRuleState = useScheduleStore.getState().getActiveRuleIds('2026-10')
+    expect(updatedRuleState).not.toContain(ruleToToggle)
+  })
+
+  it('deve expandir a seção de Turnos Vigentes e alternar um turno ativo', () => {
+    renderSidebar()
+
+    // Turnos header is present
+    const shiftsHeader = screen.getByText('Turnos Vigentes')
+    expect(shiftsHeader).toBeInTheDocument()
+
+    // Click to expand shifts accordion section
+    fireEvent.click(shiftsHeader)
+
+    // Should show shift codes and names
+    expect(screen.getByText('Plantão Diurno 12h')).toBeInTheDocument()
+    expect(screen.getByText('D12')).toBeInTheDocument()
+
+    // Find switch for D12
+    const initialShiftState = useScheduleStore.getState().getActiveShiftIds('2026-10')
+    expect(initialShiftState).toContain('shift_d12')
+
+    const switches = screen.getAllByRole('switch')
+    // Click switch
+    fireEvent.click(switches[0])
+
+    const updatedShiftState = useScheduleStore.getState().getActiveShiftIds('2026-10')
+    expect(updatedShiftState).not.toContain('shift_d12')
+  })
+
+  it('deve restaurar os padrões do mês ao clicar no botão "Restaurar Padrões do Mês"', () => {
+    // Set custom non-default state for month
+    useScheduleStore.setState({
+      monthActiveRules: { '2026-10': [] },
+      monthActiveShifts: { '2026-10': [] },
+    })
+
+    expect(useScheduleStore.getState().getActiveRuleIds('2026-10')).toHaveLength(0)
+    expect(useScheduleStore.getState().getActiveShiftIds('2026-10')).toHaveLength(0)
+
+    renderSidebar()
+
+    const restoreBtn = screen.getByRole('button', { name: /restaurar padrões do mês/i })
+    fireEvent.click(restoreBtn)
+
+    // Defaults restored
+    expect(useScheduleStore.getState().getActiveRuleIds('2026-10').length).toBeGreaterThan(0)
+    expect(useScheduleStore.getState().getActiveShiftIds('2026-10').length).toBeGreaterThan(0)
+  })
 })
 

@@ -2,6 +2,8 @@ import { Plus, Check } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useScheduleStore } from '../../store/use-schedule-store'
+
 import type { Person } from '../../types'
 
 export interface CandidatePickerProps {
@@ -11,19 +13,36 @@ export interface CandidatePickerProps {
   assignedPersonIds: string[]
   allPersons: Person[]
   isPersonAvailable: (personId: string, dayNumber: number) => boolean
-  onSelectPerson: (personId: string) => void
+  onSelectPerson: (personId: string, shiftId?: string) => void
+  shiftId?: string
+  shiftCode?: string
+  shiftName?: string
+  buttonLabel?: string
+  compact?: boolean
 }
 
 export function CandidatePicker({
   dayNumber,
+  month,
   assignedPersonIds,
   allPersons,
   isPersonAvailable,
   onSelectPerson,
+  shiftId,
+  shiftCode,
+  shiftName,
+  buttonLabel,
+  compact = false,
 }: CandidatePickerProps) {
   const { t } = useTranslation(['calendar', 'common'])
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const monthActiveShifts = useScheduleStore((state) => state.monthActiveShifts[month])
+  const shiftDefinitions = useScheduleStore((state) => state.shiftDefinitions)
+  const hasActiveShifts =
+    Boolean(shiftId) ||
+    (monthActiveShifts ?? shiftDefinitions.filter((s) => s.enabledByDefault)).length > 0
 
   const unassignedPersons = allPersons.filter(
     (p) => !assignedPersonIds.includes(p.id)
@@ -57,19 +76,37 @@ export function CandidatePicker({
     <div className="relative inline-block" ref={containerRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        title={t('calendar:dayCell.addPersonTooltip')}
+        onClick={() => hasActiveShifts && setIsOpen(!isOpen)}
+        disabled={!hasActiveShifts}
+        title={
+          !hasActiveShifts
+            ? t('calendar:candidatePicker.noActiveShifts')
+            : shiftName
+            ? `${t('calendar:dayCell.addPerson')} - ${shiftName}`
+            : t('calendar:dayCell.addPersonTooltip')
+        }
         aria-label={t('calendar:dayCell.addPerson')}
-        className="flex items-center gap-1 text-[11px] font-medium p-1 sm:px-2 sm:py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition"
+        className={`flex items-center gap-1 font-medium rounded-md border transition ${
+          compact ? 'px-1.5 py-0.5 text-[10px]' : 'p-1 sm:px-2 sm:py-0.5 text-[11px]'
+        } ${
+          !hasActiveShifts
+            ? 'opacity-40 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-200 dark:border-slate-700'
+            : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+        }`}
       >
-        <Plus className="w-3.5 h-3.5 sm:w-3 sm:h-3 text-slate-600 dark:text-slate-400" />
-        <span className="hidden sm:inline">{t('calendar:dayCell.addPerson')}</span>
+        <Plus className={compact ? 'w-3 h-3 text-slate-600 dark:text-slate-400' : 'w-3.5 h-3.5 sm:w-3 sm:h-3 text-slate-600 dark:text-slate-400'} />
+        <span className={compact ? 'inline font-semibold' : 'hidden sm:inline'}>
+          {buttonLabel || (compact && shiftCode ? shiftCode : t('calendar:dayCell.addPerson'))}
+        </span>
       </button>
 
       {isOpen && (
         <div className="absolute left-0 bottom-full mb-1 z-30 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 animate-fadeIn">
-          <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700">
-            {t('calendar:candidatePicker.assignPerson')}
+          <div className="px-2.5 py-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <span>{t('calendar:candidatePicker.assignPerson')}</span>
+            {shiftCode && (
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold">{shiftCode}</span>
+            )}
           </div>
 
           <div className="max-h-52 overflow-y-auto py-1">
@@ -84,7 +121,11 @@ export function CandidatePicker({
                 key={person.id}
                 type="button"
                 onClick={() => {
-                  onSelectPerson(person.id)
+                  if (shiftId) {
+                    onSelectPerson(person.id, shiftId)
+                  } else {
+                    onSelectPerson(person.id)
+                  }
                   setIsOpen(false)
                 }}
                 className="w-full text-left px-2.5 py-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between text-xs transition cursor-pointer"

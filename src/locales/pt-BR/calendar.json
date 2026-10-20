@@ -75,6 +75,7 @@
   },
   "candidatePicker": {
     "assignPerson": "Escalar pessoa",
+    "noActiveShifts": "Nenhum turno ativo neste mês. Ative ao menos um turno na barra lateral.",
     "noAvailable": "Nenhum profissional com disponibilidade para o dia {{day}}",
     "available": "Disponíveis ({{count}})",
     "others": "Demais profissionais ({{count}})",
@@ -144,6 +145,41 @@
     "title": "Operação & Auditoria da Escala",
     "subtitle": "Valide as regras de descanso e limites semanais antes de publicar.",
     "validate": "Validar Escala",
+    "auditButton": "{{count}} Violações na Escala",
+    "auditButtonTooltip": "Abrir diagnóstico detalhado para entender os erros",
+    "allCompliant": "Escala Conforme",
+    "dayViolationsModal": {
+      "title": "Violações do Dia {{date}}",
+      "subtitle": "Regras trabalhistas e de descanso infringidas nesta data",
+      "close": "Fechar",
+      "noViolations": "Nenhuma violação encontrada para este dia.",
+      "severityError": "Erro Crítico",
+      "severityWarning": "Aviso",
+      "howToFix": "Como resolver:",
+      "howToFixText": "Ajuste as pessoas escaladas ou verifique a regra correspondente nas configurações."
+    },
+    "auditModal": {
+      "title": "Diagnóstico de Regras da Escala",
+      "subtitle": "Entenda detalhadamente cada erro apontado pelas regras cadastradas",
+      "tabByRule": "Por Regra ({{count}})",
+      "tabByPerson": "Por Profissional ({{count}})",
+      "tabAll": "Todas as Violações ({{count}})",
+      "noViolationsTitle": "Nenhuma violação de regra encontrada!",
+      "noViolationsDesc": "A escala do mês está 100% em conformidade com as regras ativas de descanso e limites de plantão.",
+      "criticalErrors": "{{count}} Erros Críticos",
+      "warnings": "{{count}} Avisos",
+      "affectedPerson": "Profissional Afetado:",
+      "dateAffected": "Data Afetada:",
+      "close": "Fechar Diagnóstico",
+      "disableRuleForMonth": "Desativar regra para este mês",
+      "ruleDisabled": "Regra desativada para este mês!",
+      "ruleExplanationTitle": "O que esta regra avalia:",
+      "filterPlaceholder": "Filtrar por nome ou data...",
+      "occurrencesCount": "{{count}} ocorrência",
+      "occurrencesCountPlural": "{{count}} ocorrências",
+      "violationsCount": "{{count}} violação",
+      "violationsCountPlural": "{{count}} violações"
+    },
     "save": "Salvar",
     "saving": "Salvando...",
     "saveSuccessCloud": "Escala salva e sincronizada na nuvem com sucesso!",
@@ -169,5 +205,21 @@
       "not_available": "Indisponibilidade",
       "default": "Auditoria"
     }
+  },
+  "addShiftModal": {
+    "title": "Adicionar Plantão ao Dia",
+    "step1Shift": "1. Selecione o Plantão / Escala",
+    "step2Person": "2. Selecione o(a) Profissional",
+    "alreadyOccupied": "Ocupado por {{name}}",
+    "vacant": "Vago",
+    "durationHours": "{{hours}}h",
+    "startTime": "Início: {{time}}",
+    "availableCandidates": "Disponíveis para este plantão ({{count}})",
+    "noAvailableCandidates": "Nenhum profissional informou disponibilidade para este plantão neste dia",
+    "unavailableCandidates": "Sem disponibilidade para este plantão ({{count}})",
+    "confirm": "Confirmar Alocação",
+    "cancel": "Cancelar",
+    "selectShiftFirst": "Selecione um plantão acima",
+    "selectPersonFirst": "Selecione um profissional para o plantão"
   }
 }

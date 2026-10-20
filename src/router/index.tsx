@@ -7,7 +7,9 @@ import { ErrorBoundary } from '../components/common/error-boundary'
 import { ImportView } from '../components/import/import-view'
 import { RootLayout } from '../components/layout/root-layout'
 import { PeopleManagementView } from '../components/people-management/people-management-view'
+import { RulesManagementView } from '../components/settings/rules-management-view'
 import { SettingsView } from '../components/settings/settings-view'
+import { ShiftsManagementView } from '../components/settings/shifts-management-view'
 import { AuthProvider } from '../context/auth-context'
 import { AddressManagementView } from '../pages/address-management-view'
 import { LoginPage } from '../pages/login-page'
@@ -40,6 +42,8 @@ export function AppRoutes() {
           <Route path="importar" element={<ImportView />} />
           {/* Extensible Route: General Settings */}
           <Route path="configuracoes" element={<SettingsView />} />
+          <Route path="configuracoes/turnos" element={<ShiftsManagementView />} />
+          <Route path="configuracoes/regras" element={<RulesManagementView />} />
 
           {/* Admin-Exclusive Route: User Management */}
           <Route element={<AdminRoute />}>

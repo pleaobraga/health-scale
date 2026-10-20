@@ -61,6 +61,114 @@
   "systemSection": {
     "title": "Monthly Schedule Manager • v1.0.0",
     "description": "100% client-side Single Page Application (SPA) with local persistence in IndexedDB/LocalStorage, required Firebase Auth and on-demand synchronization on Firestore Spark plan."
+  },
+  "nav": {
+    "general": "General",
+    "shifts": "Work Shifts",
+    "rules": "Validation Rules"
+  },
+  "shifts": {
+    "title": "Global Shift Management",
+    "subtitle": "Master registry of shifts, hourly durations, and start times linked to schedules",
+    "newShift": "New Shift",
+    "editShift": "Edit Shift",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "edit": "Edit",
+    "name": "Shift Name",
+    "namePlaceholder": "E.g.: Day Shift 12h, On-Call...",
+    "code": "Code / Acronym",
+    "codePlaceholder": "E.g.: D12, P24, N12...",
+    "startTime": "Start Time",
+    "durationHours": "Duration (Hours)",
+    "color": "Identification Color",
+    "enabledByDefault": "Active by default for new months",
+    "enabledByDefaultDesc": "When active, this shift is linked automatically to any new month created.",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "create": "Create Shift",
+    "emptyTitle": "No shifts registered",
+    "emptyDesc": "Register shift types practiced in your organization to assign them to monthly rosters.",
+    "deleteConfirm": "Do you really want to delete this shift? This action is irreversible.",
+    "codeBadge": "Code:",
+    "hoursBadge": "{{hours}}h",
+    "totalRegistered": "Total Registered: {{count}}"
+  },
+  "rules": {
+    "title": "Global Rules Management",
+    "subtitle": "Hyper-flexible engine for compliance rules, minimum rest times, and shift limits",
+    "newRule": "New Rule",
+    "editRule": "Edit Rule",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "edit": "Edit",
+    "name": "Rule Name",
+    "namePlaceholder": "E.g.: Weekly Shift Limit...",
+    "description": "Explanatory Description",
+    "descriptionPlaceholder": "Explain the compliance purpose or labor convention for this rule...",
+    "type": "Validation Type",
+    "types": {
+      "MAX_SHIFTS_PER_PERIOD": "Shift Limit per Period",
+      "MAX_HOURS_PER_PERIOD": "Hours Limit per Period",
+      "MIN_REST_HOURS": "Minimum Rest between Shifts",
+      "CONSECUTIVE_DAYS_LIMIT": "Consecutive Days Limit"
+    },
+    "severity": "Violation Severity",
+    "severities": {
+      "ERROR": "Severity: Blocking Error",
+      "WARNING": "Severity: Informative Warning"
+    },
+    "severityDescriptions": {
+      "ERROR": "Generates a critical error on the schedule preventing approval or saving.",
+      "WARNING": "Generates an informative warning on the schedule without blocking saving."
+    },
+    "severitySelect": {
+      "ERROR": "Blocking Error (Prevents schedule publication)",
+      "WARNING": "Warning / Notice (Allows publication with alert)"
+    },
+    "banner": {
+      "title": "How validation criteria and severity work",
+      "description": "The rules below define the automated criteria auditing calendar shift assignments. The 'Severity' tag defines how a breach is handled when limits are exceeded: Blocking Error (prevents publication) or Informative Warning (attention alert). It does not indicate a defect in the rule definition."
+    },
+    "logicExplanation": {
+      "title": "Trigger Criteria (When it generates an error):",
+      "maxShiftsDay": "Triggers when the same staff member is assigned to more than {{count}} shift(s) on the same calendar day (00:00 to 23:59).",
+      "maxShiftsWeek": "Triggers when staff accumulates more than {{count}} shift(s) in the same calendar week from Sunday to Saturday.",
+      "maxShiftsMonth": "Triggers when staff accumulates more than {{count}} shift(s) in the same month.",
+      "maxHoursDay": "Triggers when total working hours on the same day exceed {{hours}}h.",
+      "maxHoursWeek": "Triggers when total working hours in the week exceed {{hours}}h.",
+      "maxHoursMonth": "Triggers when total working hours in the month exceed {{hours}}h.",
+      "minRest": "Triggers when rest time between the end of a shift and the start of the next is under {{hours}}h (e.g., leaving at 19:00 and entering at 07:00 next day yields only 12h of rest).",
+      "consecutiveDays": "Triggers when staff works more than {{days}} consecutive day(s) without intermediate rest."
+    },
+    "activeMonthStatus": {
+      "title": "Impact on Current Schedule ({{month}}):",
+      "hasViolations": "{{count}} breach",
+      "hasViolationsPlural": "{{count}} breaches",
+      "noViolations": "Compliant (0 breaches)",
+      "viewViolations": "View on schedule"
+    },
+    "scope": "Evaluation Window / Scope",
+    "scopes": {
+      "DAY": "Calendar Day",
+      "WEEK": "Week (Sun to Sat)",
+      "MONTH": "Calendar Month"
+    },
+    "maxOccurrences": "Maximum Allowed Occurrences",
+    "maxHours": "Maximum Allowed Working Hours",
+    "minRestHours": "Minimum Rest Interval (Hours)",
+    "consecutiveDaysLimit": "Continuous Days Limit",
+    "targetShifts": "Target Shifts (Filter)",
+    "allShiftsOption": "Apply to all registered shifts",
+    "enabledByDefault": "Active by default for new months",
+    "enabledByDefaultDesc": "The rule will be automatically enabled for new months.",
+    "cancel": "Cancel",
+    "save": "Save Rule",
+    "create": "Create Rule",
+    "emptyTitle": "No rules registered",
+    "emptyDesc": "Configure rules for the audit engine to automatically validate schedule rosters.",
+    "deleteConfirm": "Do you really want to delete this rule? This action is irreversible.",
+    "totalRegistered": "Total Registered: {{count}}"
   }
 }
 

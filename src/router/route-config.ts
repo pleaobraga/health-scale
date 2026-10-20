@@ -15,5 +15,7 @@ export const routeConfig: RouteItemConfig[] = [
   { path: '/enderecos', label: 'Gerenciar Endereços' },
   { path: '/importar', label: 'Importar Dados' },
   { path: '/configuracoes', label: 'Configurações Gerais' },
+  { path: '/configuracoes/turnos', label: 'Gestão de Turnos' },
+  { path: '/configuracoes/regras', label: 'Gestão de Regras' },
   { path: '/usuarios', label: 'Gestão de Usuários', adminOnly: true },
 ]

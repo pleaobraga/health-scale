@@ -1,3 +1,5 @@
+import type { ShiftDefinition, ShiftRule } from './scheduleConfig'
+
 export interface Person {
   id: string;
   name: string;
@@ -10,6 +12,7 @@ export interface MonthlyAvailability {
   personId: string;
   month: string; // 'YYYY-MM'
   availableDays: number[]; // 1 to 31
+  shiftAvailability?: Record<string, number[]>; // shiftId -> available days for this specific shift
 }
 
 export interface DayAssignment {
@@ -43,7 +46,7 @@ export type ValidationSeverity = 'error' | 'warning' | 'info';
 
 export interface ValidationError {
   id: string;
-  rule: 'consecutive_days' | 'weekly_limit' | 'multi_assigned' | 'empty_day' | 'not_available';
+  rule: 'consecutive_days' | 'weekly_limit' | 'multi_assigned' | 'empty_day' | 'not_available' | (string & {});
   severity: ValidationSeverity;
   date: string; // 'YYYY-MM-DD'
   personId?: string;
@@ -79,5 +82,12 @@ export interface GuestDataset {
   events: CalendarEvent[];
   monthParticipants: Record<string, string[]>;
   addresses?: Address[];
+  shiftDefinitions?: ShiftDefinition[];
+  shiftRules?: ShiftRule[];
+  monthActiveShifts?: Record<string, string[]>;
+  monthActiveRules?: Record<string, string[]>;
+  dayShiftAssignments?: Record<string, Record<string, string>>;
 }
+
+export * from './scheduleConfig'
 

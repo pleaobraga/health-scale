@@ -12,10 +12,12 @@ import {
   MoreHorizontal,
   Printer,
   RotateCcw,
+  ShieldAlert,
+  ShieldCheck,
   Trash2,
   Wand2,
 } from 'lucide-react'
-import { use, useEffect, useRef, useState } from 'react'
+import { use, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CalendarHeader } from './calendar-header'
@@ -24,6 +26,9 @@ import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear, getMonthCalendarGrid } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
+import { ScheduleAuditModal } from '../modals/schedule-audit-modal'
+
+import type { ShiftDefinition } from '../../types'
 
 export function CalendarGrid() {
   const { t, i18n } = useTranslation(['calendar', 'common'])
@@ -33,6 +38,7 @@ export function CalendarGrid() {
   const [isPullingCloud, setIsPullingCloud] = useState(false)
   const [pullSuccess, setPullSuccess] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
   const actionsMenuRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -46,10 +52,15 @@ export function CalendarGrid() {
     monthParticipants,
     availabilities,
     assignments,
+    dayShiftAssignments,
+    shiftDefinitions,
+    monthActiveShifts,
     events,
     setSelectedDateForEvents,
     removePersonFromDay,
     addPersonToDay,
+    assignPersonToShift,
+    removePersonFromShift,
     populateMonthWithAvailableCandidates,
     clearMonthAssignments,
     setFullScreenModalOpen,
@@ -57,7 +68,30 @@ export function CalendarGrid() {
     discardChanges,
     hasUnsavedChanges,
     pullCloudData,
+    validationErrors,
+    shiftRules,
+    getActiveRuleIds,
+    toggleMonthRule,
+    validateCurrentSchedule,
   } = useScheduleStore()
+
+  const activeShiftIds = useMemo(() => {
+    return (
+      monthActiveShifts[currentMonth] ??
+      shiftDefinitions.filter((s) => s.enabledByDefault).map((s) => s.id)
+    )
+  }, [monthActiveShifts, currentMonth, shiftDefinitions])
+
+  const activeShifts = useMemo(() => {
+    const map = new Map(shiftDefinitions.map((s) => [s.id, s]))
+    return activeShiftIds
+      .map((id) => map.get(id))
+      .filter((s): s is ShiftDefinition => Boolean(s))
+  }, [shiftDefinitions, activeShiftIds])
+
+  useEffect(() => {
+    validateCurrentSchedule()
+  }, [currentMonth, assignments, dayShiftAssignments, validateCurrentSchedule])
 
   const handlePullCloud = async () => {
     try {
@@ -119,11 +153,27 @@ export function CalendarGrid() {
     ? persons.find((p) => p.id === highlightedPersonId) || null
     : null
 
-  const isPersonAvailable = (personId: string, dayNumber: number): boolean => {
+  const isPersonAvailable = (
+    personId: string,
+    dayNumber: number,
+    shiftId?: string
+  ): boolean => {
     const avail = availabilities.find(
       (a) => a.personId === personId && a.month === currentMonth,
     )
-    return avail ? avail.availableDays.includes(dayNumber) : false
+    if (!avail) return false
+    if (
+      shiftId &&
+      avail.shiftAvailability &&
+      Object.keys(avail.shiftAvailability).length > 0
+    ) {
+      const shiftDays = avail.shiftAvailability[shiftId]
+      if (shiftDays) {
+        return shiftDays.includes(dayNumber)
+      }
+      return false
+    }
+    return avail.availableDays.includes(dayNumber)
   }
 
   return (
@@ -239,6 +289,31 @@ export function CalendarGrid() {
               <>
                 <Edit3 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>{t('calendar:editMode')}</span>
+              </>
+            )}
+          </button>
+
+          {/* Audit Violations Button / Real-time Status */}
+          <button
+            type="button"
+            onClick={() => setIsAuditModalOpen(true)}
+            title={t('calendar:validation.auditButtonTooltip')}
+            aria-label={t('calendar:validation.auditButtonTooltip')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-2xs border ${
+              validationErrors.length > 0
+                ? 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+            }`}
+          >
+            {validationErrors.length > 0 ? (
+              <>
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+                <span>{t('calendar:validation.auditButton', { count: validationErrors.length })}</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="hidden sm:inline">{t('calendar:validation.allCompliant')}</span>
               </>
             )}
           </button>
@@ -415,26 +490,47 @@ export function CalendarGrid() {
                 currentMonth={currentMonth}
                 isEditMode={isEditMode}
                 assignedPersonIds={assigned}
+                dayShiftMap={dayShiftAssignments[dayInfo.dateStr]}
+                activeShifts={activeShifts}
                 allPersons={persons}
                 monthPersons={monthPersons}
                 events={dayEvents}
                 highlightedPerson={highlightedPerson}
                 isHighlightedPersonAvailable={isHighlightedAvail}
                 isPersonAvailable={isPersonAvailable}
+                violations={validationErrors.filter((err) => err.date === dayInfo.dateStr)}
                 onOpenEvents={() => setSelectedDateForEvents(dayInfo.dateStr)}
                 onRemovePerson={(personId) =>
                   removePersonFromDay(dayInfo.dateStr, personId)
                 }
-                onAddPerson={(personId) => {
+                onAddPerson={(personId, shiftId) => {
                   if (isPersonAvailable(personId, dayInfo.dayNumber)) {
-                    addPersonToDay(dayInfo.dateStr, personId)
+                    addPersonToDay(dayInfo.dateStr, personId, shiftId)
                   }
                 }}
+                onAssignPersonToShift={(shiftId, personId) =>
+                  assignPersonToShift(dayInfo.dateStr, shiftId, personId)
+                }
+                onRemovePersonFromShift={(shiftId) =>
+                  removePersonFromShift(dayInfo.dateStr, shiftId)
+                }
               />
             )
           })}
         </div>
       </div>
+
+      {/* Global Schedule Audit & Diagnostics Modal */}
+      <ScheduleAuditModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        violations={validationErrors}
+        allPersons={persons}
+        shiftRules={shiftRules}
+        activeRuleIds={getActiveRuleIds(currentMonth)}
+        currentMonth={currentMonth}
+        onToggleMonthRule={(ruleId) => toggleMonthRule(ruleId, currentMonth)}
+      />
     </div>
   )
 }

@@ -169,5 +169,30 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     const criticalErrors = errors.filter((e) => e.severity === 'error')
     expect(criticalErrors.length).toBe(0)
   })
+
+  it('permite 2 pessoas no mesmo dia quando alocadas em turnos de 12h distintos sem gerar erro multi_assigned', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p3'], // 2 people on the same day
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_d12: 'p1', // Dra. Camila on D12 (07:00-19:00)
+        shift_n12: 'p3', // Enf. Beatriz on N12 (19:00-07:00)
+      },
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      activeRuleIds: ['rule_max_shifts_day'],
+    })
+
+    const multiAssignedError = errors.find((e) => e.rule === 'multi_assigned')
+    expect(multiAssignedError).toBeUndefined()
+  })
 })
 

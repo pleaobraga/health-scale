@@ -417,5 +417,40 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     )
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
+
+  it('deve associar e desassociar profissional de um turno específico via assignPersonToShift e removePersonFromShift', () => {
+    const store = useScheduleStore.getState()
+    const dateStr = '2026-10-15'
+
+    // Atribui p1 ao turno shift_d12
+    store.assignPersonToShift(dateStr, 'shift_d12', 'p1')
+
+    let state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]?.shift_d12).toBe('p1')
+    expect(state.assignments[dateStr]).toContain('p1')
+    expect(state.hasUnsavedChanges).toBe(true)
+
+    // Atribui p2 ao turno shift_n12 no mesmo dia (2 pessoas em turnos de 12h distintos)
+    store.assignPersonToShift(dateStr, 'shift_n12', 'p2')
+
+    state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]?.shift_d12).toBe('p1')
+    expect(state.dayShiftAssignments[dateStr]?.shift_n12).toBe('p2')
+    expect(state.assignments[dateStr]).toEqual(['p1', 'p2'])
+
+    // Remove p1 do shift_d12
+    store.removePersonFromShift(dateStr, 'shift_d12')
+
+    state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]?.shift_d12).toBeUndefined()
+    expect(state.dayShiftAssignments[dateStr]?.shift_n12).toBe('p2')
+    expect(state.assignments[dateStr]).toEqual(['p2'])
+
+    // Limpar mês deve limpar também dayShiftAssignments
+    store.clearMonthAssignments('2026-10')
+    state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]).toBeUndefined()
+    expect(state.assignments[dateStr]).toBeUndefined()
+  })
 })
 

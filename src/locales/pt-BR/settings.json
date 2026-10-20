@@ -61,6 +61,114 @@
   "systemSection": {
     "title": "Gerenciador de Escalas Mensais • v1.0.0",
     "description": "Aplicação Single Page Application (SPA) 100% client-side com persistência local em IndexedDB/LocalStorage, autenticação obrigatória via Firebase Auth e sincronização sob demanda no plano Spark do Firestore."
+  },
+  "nav": {
+    "general": "Geral",
+    "shifts": "Turnos de Trabalho",
+    "rules": "Regras de Validação"
+  },
+  "shifts": {
+    "title": "Gestão Global de Turnos",
+    "subtitle": "Cadastro mestre de turnos, durações em horas e horários de início vinculados às escalas",
+    "newShift": "Novo Turno",
+    "editShift": "Editar Turno",
+    "duplicate": "Duplicar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "name": "Nome do Turno",
+    "namePlaceholder": "Ex: Plantão Diurno 12h, Sobreaviso...",
+    "code": "Sigla / Código",
+    "codePlaceholder": "Ex: D12, P24, N12...",
+    "startTime": "Horário de Início",
+    "durationHours": "Duração (Horas)",
+    "color": "Cor de Identificação",
+    "enabledByDefault": "Ativo por padrão para novos meses",
+    "enabledByDefaultDesc": "Quando ativado, este turno é vinculado automaticamente a qualquer novo mês criado.",
+    "cancel": "Cancelar",
+    "save": "Salvar Alterações",
+    "create": "Criar Turno",
+    "emptyTitle": "Nenhum turno cadastrado",
+    "emptyDesc": "Cadastre os tipos de plantão praticados na instituição para associá-los às escalas.",
+    "deleteConfirm": "Deseja realmente excluir este turno? A ação é irreversível.",
+    "codeBadge": "Código:",
+    "hoursBadge": "{{hours}}h",
+    "totalRegistered": "Total Cadastrado: {{count}}"
+  },
+  "rules": {
+    "title": "Gestão Global de Regras",
+    "subtitle": "Motor hiperflexível de regras de conformidade, descansos mínimos e limites de plantões",
+    "newRule": "Nova Regra",
+    "editRule": "Editar Regra",
+    "duplicate": "Duplicar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "name": "Nome da Regra",
+    "namePlaceholder": "Ex: Limite Semanal de Plantões...",
+    "description": "Descrição Explicativa",
+    "descriptionPlaceholder": "Explique o objetivo ou convenção trabalhista desta regra...",
+    "type": "Tipo de Validação",
+    "types": {
+      "MAX_SHIFTS_PER_PERIOD": "Limite de Turnos por Período",
+      "MAX_HOURS_PER_PERIOD": "Limite de Horas por Período",
+      "MIN_REST_HOURS": "Descanso Mínimo entre Plantões",
+      "CONSECUTIVE_DAYS_LIMIT": "Limite de Dias Consecutivos"
+    },
+    "severity": "Severidade da Violação",
+    "severities": {
+      "ERROR": "Severidade: Erro Bloqueante",
+      "WARNING": "Severidade: Aviso Informativo"
+    },
+    "severityDescriptions": {
+      "ERROR": "Gera erro crítico na escala que impede sua aprovação ou salvamento.",
+      "WARNING": "Gera um alerta de atenção na escala, mas não impede o salvamento."
+    },
+    "severitySelect": {
+      "ERROR": "Erro Bloqueante (Impede publicação da escala)",
+      "WARNING": "Aviso / Advertência (Permite publicação com alerta)"
+    },
+    "banner": {
+      "title": "Como funcionam os critérios de validação e severidade",
+      "description": "As regras abaixo definem os critérios automáticos que auditam os plantões no calendário. O badge 'Severidade' define como uma infração de escala é tratada quando um limite é ultrapassado: Erro Bloqueante (impede publicação) ou Aviso Informativo (alerta de atenção). Não representa um defeito ou erro no cadastro da regra."
+    },
+    "logicExplanation": {
+      "title": "Critério de Disparo (Quando gera erro):",
+      "maxShiftsDay": "Dispara quando o mesmo profissional for escalado em mais de {{count}} plantão(ões) no mesmo dia civil (00:00 às 23:59).",
+      "maxShiftsWeek": "Dispara quando o profissional acumular mais de {{count}} plantão(ões) na mesma semana de domingo a sábado.",
+      "maxShiftsMonth": "Dispara quando o profissional acumular mais de {{count}} plantão(ões) no mesmo mês.",
+      "maxHoursDay": "Dispara quando a soma das horas trabalhadas no mesmo dia ultrapassar {{hours}}h.",
+      "maxHoursWeek": "Dispara quando a soma das horas trabalhadas na semana ultrapassar {{hours}}h.",
+      "maxHoursMonth": "Dispara quando a soma das horas trabalhadas no mês ultrapassar {{hours}}h.",
+      "minRest": "Dispara quando o descanso entre o término de um plantão e o início do próximo for menor que {{hours}}h (ex: sair às 19h e entrar às 7h no dia seguinte gera apenas 12h de descanso).",
+      "consecutiveDays": "Dispara quando o profissional trabalhar em mais de {{days}} dia(s) seguidos sem descanso intermediário."
+    },
+    "activeMonthStatus": {
+      "title": "Impacto na Escala Atual ({{month}}):",
+      "hasViolations": "{{count}} infração",
+      "hasViolationsPlural": "{{count}} infrações",
+      "noViolations": "Conforme (0 infrações)",
+      "viewViolations": "Ver na escala"
+    },
+    "scope": "Janela / Escopo de Avaliação",
+    "scopes": {
+      "DAY": "Dia Civil",
+      "WEEK": "Semana (Dom a Sáb)",
+      "MONTH": "Mês Calendário"
+    },
+    "maxOccurrences": "Quantidade Máxima Permitida",
+    "maxHours": "Carga Horária Máxima Permitida (Horas)",
+    "minRestHours": "Intervalo Mínimo de Descanso (Horas)",
+    "consecutiveDaysLimit": "Limite de Dias Contínuos",
+    "targetShifts": "Turnos Alvo (Filtro)",
+    "allShiftsOption": "Aplicar a todos os turnos cadastrados",
+    "enabledByDefault": "Ativa por padrão para novos meses",
+    "enabledByDefaultDesc": "A regra nascerá automaticamente ligada para novos meses.",
+    "cancel": "Cancelar",
+    "save": "Salvar Regra",
+    "create": "Criar Regra",
+    "emptyTitle": "Nenhuma regra cadastrada",
+    "emptyDesc": "Configure as regras para o motor de auditoria validar automaticamente as escalas.",
+    "deleteConfirm": "Deseja realmente excluir esta regra? A ação é irreversível.",
+    "totalRegistered": "Total Cadastrado: {{count}}"
   }
 }
 

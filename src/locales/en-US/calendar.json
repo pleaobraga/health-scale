@@ -75,6 +75,7 @@
   },
   "candidatePicker": {
     "assignPerson": "Assign person",
+    "noActiveShifts": "No active shifts in this month. Enable at least one shift in the sidebar.",
     "noAvailable": "No staff available for day {{day}}",
     "available": "Available ({{count}})",
     "others": "Other staff ({{count}})",
@@ -144,6 +145,41 @@
     "title": "Schedule Operations & Audit",
     "subtitle": "Validate rest regulations and weekly limits before publishing.",
     "validate": "Validate Schedule",
+    "auditButton": "{{count}} Schedule Violations",
+    "auditButtonTooltip": "Open detailed diagnostic to understand errors",
+    "allCompliant": "Schedule Compliant",
+    "dayViolationsModal": {
+      "title": "Violations on {{date}}",
+      "subtitle": "Labor and rest rules breached on this date",
+      "close": "Close",
+      "noViolations": "No violations found for this day.",
+      "severityError": "Critical Error",
+      "severityWarning": "Warning",
+      "howToFix": "How to resolve:",
+      "howToFixText": "Adjust assigned staff or inspect the corresponding rule in settings."
+    },
+    "auditModal": {
+      "title": "Schedule Rules Diagnostic",
+      "subtitle": "Understand in detail each error flagged by registered rules",
+      "tabByRule": "By Rule ({{count}})",
+      "tabByPerson": "By Person ({{count}})",
+      "tabAll": "All Violations ({{count}})",
+      "noViolationsTitle": "No rule violations found!",
+      "noViolationsDesc": "The monthly roster is 100% compliant with active rest and shift limit rules.",
+      "criticalErrors": "{{count}} Critical Errors",
+      "warnings": "{{count}} Warnings",
+      "affectedPerson": "Affected Person:",
+      "dateAffected": "Affected Date:",
+      "close": "Close Diagnostic",
+      "disableRuleForMonth": "Disable rule for this month",
+      "ruleDisabled": "Rule disabled for this month!",
+      "ruleExplanationTitle": "What this rule evaluates:",
+      "filterPlaceholder": "Filter by name or date...",
+      "occurrencesCount": "{{count}} occurrence",
+      "occurrencesCountPlural": "{{count}} occurrences",
+      "violationsCount": "{{count}} violation",
+      "violationsCountPlural": "{{count}} violations"
+    },
     "save": "Save",
     "saving": "Saving...",
     "saveSuccessCloud": "Schedule saved and synchronized to cloud successfully!",
@@ -169,5 +205,21 @@
       "not_available": "Unavailability",
       "default": "Audit"
     }
+  },
+  "addShiftModal": {
+    "title": "Assign Shift to Day",
+    "step1Shift": "1. Select Shift",
+    "step2Person": "2. Select Staff Member",
+    "alreadyOccupied": "Occupied by {{name}}",
+    "vacant": "Vacant",
+    "durationHours": "{{hours}}h",
+    "startTime": "Start: {{time}}",
+    "availableCandidates": "Available for this shift ({{count}})",
+    "noAvailableCandidates": "No staff member marked availability for this shift on this day",
+    "unavailableCandidates": "Unavailable for this shift ({{count}})",
+    "confirm": "Confirm Assignment",
+    "cancel": "Cancel",
+    "selectShiftFirst": "Select a shift above",
+    "selectPersonFirst": "Select a staff member for the shift"
   }
 }

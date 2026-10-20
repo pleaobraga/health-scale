@@ -1,4 +1,15 @@
-import type { Person, MonthlyAvailability, CalendarEvent, GuestProfile, GuestDataset, Address } from '../types'
+import { DEFAULT_SHIFTS, DEFAULT_RULES } from './validation/rule-engine'
+
+import type {
+  Person,
+  MonthlyAvailability,
+  CalendarEvent,
+  GuestProfile,
+  GuestDataset,
+  Address,
+  ShiftDefinition,
+  ShiftRule,
+} from '../types'
 
 const STORAGE_KEYS = {
   PERSONS: 'scale_manager_persons_v1',
@@ -7,6 +18,11 @@ const STORAGE_KEYS = {
   EVENTS: 'scale_manager_events_v1',
   MONTH_PARTICIPANTS: 'scale_manager_month_participants_v1',
   ADDRESSES: 'scale_manager_addresses_v1',
+  SHIFT_DEFINITIONS: 'scale_manager_shift_definitions_v1',
+  SHIFT_RULES: 'scale_manager_shift_rules_v1',
+  MONTH_ACTIVE_SHIFTS: 'scale_manager_month_shifts_v1',
+  MONTH_ACTIVE_RULES: 'scale_manager_month_rules_v1',
+  DAY_SHIFT_ASSIGNMENTS: 'scale_manager_day_shift_assignments_v1',
   GUEST_PROFILES: 'scale_manager_guest_profiles_v1',
   ACTIVE_GUEST_ID: 'scale_manager_active_guest_id_v1',
   GUEST_DATA_PREFIX: 'scale_manager_guest_data_v1_',
@@ -183,6 +199,135 @@ export class StorageService {
   }
 
   /**
+   * Load shift definitions. Returns DEFAULT_SHIFTS if none in storage.
+   */
+  static getShiftDefinitions(): ShiftDefinition[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SHIFT_DEFINITIONS)
+      if (!data) {
+        return DEFAULT_SHIFTS
+      }
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load shift definitions from localStorage:', err)
+      return DEFAULT_SHIFTS
+    }
+  }
+
+  static saveShiftDefinitions(shifts: ShiftDefinition[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SHIFT_DEFINITIONS, JSON.stringify(shifts))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save shift definitions to localStorage:', err)
+    }
+  }
+
+  /**
+   * Load shift rules. Returns DEFAULT_RULES if none in storage.
+   */
+  static getShiftRules(): ShiftRule[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SHIFT_RULES)
+      if (!data) {
+        return DEFAULT_RULES
+      }
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load shift rules from localStorage:', err)
+      return DEFAULT_RULES
+    }
+  }
+
+  static saveShiftRules(rules: ShiftRule[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SHIFT_RULES, JSON.stringify(rules))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save shift rules to localStorage:', err)
+    }
+  }
+
+  /**
+   * Load month active shifts mapping ('YYYY-MM' -> string[])
+   */
+  static getMonthActiveShiftsMap(): Record<string, string[]> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MONTH_ACTIVE_SHIFTS)
+      if (!data) return {}
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load month active shifts from localStorage:', err)
+      return {}
+    }
+  }
+
+  static saveMonthActiveShiftsMap(map: Record<string, string[]>): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MONTH_ACTIVE_SHIFTS, JSON.stringify(map))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save month active shifts to localStorage:', err)
+    }
+  }
+
+  /**
+   * Load month active rules mapping ('YYYY-MM' -> string[])
+   */
+  static getMonthActiveRulesMap(): Record<string, string[]> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MONTH_ACTIVE_RULES)
+      if (!data) return {}
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load month active rules from localStorage:', err)
+      return {}
+    }
+  }
+
+  static saveMonthActiveRulesMap(map: Record<string, string[]>): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MONTH_ACTIVE_RULES, JSON.stringify(map))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save month active rules to localStorage:', err)
+    }
+  }
+
+  /**
+   * Load day shift assignments mapping ('YYYY-MM-DD' -> { [shiftId]: personId })
+   */
+  static getDayShiftAssignments(): Record<string, Record<string, string>> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.DAY_SHIFT_ASSIGNMENTS)
+      if (!data) return {}
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load day shift assignments from localStorage:', err)
+      return {}
+    }
+  }
+
+  static saveDayShiftAssignments(map: Record<string, Record<string, string>>): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.DAY_SHIFT_ASSIGNMENTS, JSON.stringify(map))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save day shift assignments to localStorage:', err)
+    }
+  }
+
+  /**
    * Reset all active storage keys
    */
   static resetToDefault(): void {
@@ -192,6 +337,11 @@ export class StorageService {
     localStorage.removeItem(STORAGE_KEYS.EVENTS)
     localStorage.removeItem(STORAGE_KEYS.MONTH_PARTICIPANTS)
     localStorage.removeItem(STORAGE_KEYS.ADDRESSES)
+    localStorage.removeItem(STORAGE_KEYS.SHIFT_DEFINITIONS)
+    localStorage.removeItem(STORAGE_KEYS.SHIFT_RULES)
+    localStorage.removeItem(STORAGE_KEYS.MONTH_ACTIVE_SHIFTS)
+    localStorage.removeItem(STORAGE_KEYS.MONTH_ACTIVE_RULES)
+    localStorage.removeItem(STORAGE_KEYS.DAY_SHIFT_ASSIGNMENTS)
   }
 
   /**
@@ -287,6 +437,11 @@ export class StorageService {
       events: StorageService.getEvents(),
       monthParticipants: StorageService.getMonthParticipants(),
       addresses: StorageService.getAddresses(),
+      shiftDefinitions: StorageService.getShiftDefinitions(),
+      shiftRules: StorageService.getShiftRules(),
+      monthActiveShifts: StorageService.getMonthActiveShiftsMap(),
+      monthActiveRules: StorageService.getMonthActiveRulesMap(),
+      dayShiftAssignments: StorageService.getDayShiftAssignments(),
     }
   }
 
@@ -299,6 +454,21 @@ export class StorageService {
       StorageService.saveEvents(dataset.events || [])
       StorageService.saveMonthParticipants(dataset.monthParticipants || {})
       StorageService.saveAddresses(dataset.addresses || [])
+      if (dataset.shiftDefinitions) {
+        StorageService.saveShiftDefinitions(dataset.shiftDefinitions)
+      }
+      if (dataset.shiftRules) {
+        StorageService.saveShiftRules(dataset.shiftRules)
+      }
+      if (dataset.monthActiveShifts) {
+        StorageService.saveMonthActiveShiftsMap(dataset.monthActiveShifts)
+      }
+      if (dataset.monthActiveRules) {
+        StorageService.saveMonthActiveRulesMap(dataset.monthActiveRules)
+      }
+      if (dataset.dayShiftAssignments) {
+        StorageService.saveDayShiftAssignments(dataset.dayShiftAssignments)
+      }
     } finally {
       isRestoringDataset = false
       StorageService.snapshotActiveGuest()
