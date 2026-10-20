@@ -74,6 +74,13 @@ export interface AppDataSnapshot {
   assignments: Record<string, unknown>; // Schedule assignments and daily allocations
   events: Array<CalendarEvent | (CalendarEvent & { [key: string]: unknown })>;
   addresses?: Address[];
+  shiftDefinitions?: ShiftDefinition[];
+  shiftRules?: ShiftRule[];
+  monthActiveShifts?: Record<string, string[]>;
+  monthActiveRules?: Record<string, string[]>;
+  monthDailyShifts?: Record<string, Record<string, number[]>>;
+  dayShiftAssignments?: Record<string, Record<string, string>>;
+  theme?: string;
   [key: string]: unknown; // Extensible for global settings, themes, or future properties
 }
 

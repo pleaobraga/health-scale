@@ -7,7 +7,14 @@ import {
 
 import { auth, db } from './firebase'
 
-import type { MonthlyAvailability, CalendarEvent, Person, Address } from '../types'
+import type {
+  MonthlyAvailability,
+  CalendarEvent,
+  Person,
+  Address,
+  ShiftDefinition,
+  ShiftRule,
+} from '../types'
 import type { DocumentData } from 'firebase/firestore'
 
 export const CLOUD_SYNC_STORAGE_KEY = 'scale_manager_cloud_sync_enabled'
@@ -18,6 +25,10 @@ export interface MonthScheduleDoc {
   monthParticipants?: Record<string, string[]>;
   availabilities?: MonthlyAvailability[];
   events?: CalendarEvent[];
+  dayShiftAssignments?: Record<string, Record<string, string>>;
+  monthDailyShifts?: Record<string, Record<string, number[]>>;
+  monthActiveShifts?: Record<string, string[]>;
+  monthActiveRules?: Record<string, string[]>;
   updatedAt?: unknown;
 }
 
@@ -93,10 +104,70 @@ export class CloudSyncService {
         monthParticipants: data.monthParticipants,
         availabilities: data.availabilities,
         events: data.events,
+        dayShiftAssignments: data.dayShiftAssignments,
+        monthDailyShifts: data.monthDailyShifts,
+        monthActiveShifts: data.monthActiveShifts,
+        monthActiveRules: data.monthActiveRules,
         updatedAt: data.updatedAt,
       }
     } catch (err) {
       console.error(`Failed to fetch schedule for ${month} from Firestore:`, err)
+      return null
+    }
+  }
+
+  /**
+   * Pulls master shifts definition list from Firestore on-demand.
+   */
+  static async fetchShiftsFromCloud(
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<ShiftDefinition[] | null> {
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
+      return null
+    }
+
+    try {
+      const docRef = doc(db, 'schedules', '_master_shifts')
+      const snapshot = await getDoc(docRef)
+
+      if (!snapshot.exists()) {
+        return null
+      }
+
+      const data = snapshot.data() as DocumentData
+      return (data.shifts as ShiftDefinition[]) || null
+    } catch (err) {
+      console.error('Failed to fetch shifts from Firestore:', err)
+      return null
+    }
+  }
+
+  /**
+   * Pulls master shift rules list from Firestore on-demand.
+   */
+  static async fetchRulesFromCloud(
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<ShiftRule[] | null> {
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
+      return null
+    }
+
+    try {
+      const docRef = doc(db, 'schedules', '_master_rules')
+      const snapshot = await getDoc(docRef)
+
+      if (!snapshot.exists()) {
+        return null
+      }
+
+      const data = snapshot.data() as DocumentData
+      return (data.rules as ShiftRule[]) || null
+    } catch (err) {
+      console.error('Failed to fetch rules from Firestore:', err)
       return null
     }
   }
@@ -158,7 +229,7 @@ export class CloudSyncService {
   }
 
   /**
-   * Consolidated on-demand pull for monthly schedule, personnel and addresses.
+   * Consolidated on-demand pull for monthly schedule, personnel, addresses, shifts and rules.
    * By default, ignores the local sync toggle for on-demand pull requests.
    */
   static async pullAllFromCloud(
@@ -169,13 +240,17 @@ export class CloudSyncService {
     monthData: MonthScheduleDoc | null;
     persons: Person[] | null;
     addresses: Address[] | null;
+    shifts: ShiftDefinition[] | null;
+    rules: ShiftRule[] | null;
   }> {
-    const [monthData, persons, addresses] = await Promise.all([
+    const [monthData, persons, addresses, shifts, rules] = await Promise.all([
       this.fetchMonthFromCloud(month, isAdmin, ignoreSyncEnabled),
       this.fetchPeopleFromCloud(isAdmin, ignoreSyncEnabled),
       this.fetchAddressesFromCloud(isAdmin, ignoreSyncEnabled),
+      this.fetchShiftsFromCloud(isAdmin, ignoreSyncEnabled),
+      this.fetchRulesFromCloud(isAdmin, ignoreSyncEnabled),
     ])
-    return { monthData, persons, addresses }
+    return { monthData, persons, addresses, shifts, rules }
   }
 
   /**
@@ -189,6 +264,10 @@ export class CloudSyncService {
       monthParticipants?: Record<string, string[]>;
       availabilities?: MonthlyAvailability[];
       events?: CalendarEvent[];
+      dayShiftAssignments?: Record<string, Record<string, string>>;
+      monthDailyShifts?: Record<string, Record<string, number[]>>;
+      monthActiveShifts?: Record<string, string[]>;
+      monthActiveRules?: Record<string, string[]>;
     },
     isAdmin?: boolean,
     ignoreSyncEnabled = false,
@@ -280,7 +359,69 @@ export class CloudSyncService {
   }
 
   /**
-   * Directly pushes local schedule, personnel and addresses to Firestore,
+   * Syncs master shift definitions to Firestore when saving if sync is active.
+   */
+  static async saveShiftsToCloud(
+    shifts: ShiftDefinition[],
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<boolean> {
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
+      return false
+    }
+
+    try {
+      const docRef = doc(db, 'schedules', '_master_shifts')
+      const sanitizedShifts = JSON.parse(JSON.stringify(shifts))
+      await setDoc(
+        docRef,
+        {
+          shifts: sanitizedShifts,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+      return true
+    } catch (err) {
+      console.error('Failed to sync shifts with Firestore:', err)
+      return false
+    }
+  }
+
+  /**
+   * Syncs master shift rules to Firestore when saving if sync is active.
+   */
+  static async saveRulesToCloud(
+    rules: ShiftRule[],
+    isAdmin?: boolean,
+    ignoreSyncEnabled = false,
+  ): Promise<boolean> {
+    const authorized = isAdmin !== undefined ? isAdmin : await this.isCurrentUserAdmin()
+    if (!authorized || (!ignoreSyncEnabled && !this.isSyncEnabled())) {
+      return false
+    }
+
+    try {
+      const docRef = doc(db, 'schedules', '_master_rules')
+      const sanitizedRules = JSON.parse(JSON.stringify(rules))
+      await setDoc(
+        docRef,
+        {
+          rules: sanitizedRules,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+      return true
+    } catch (err) {
+      console.error('Failed to sync rules with Firestore:', err)
+      return false
+    }
+  }
+
+  /**
+   * Directly pushes local schedule, personnel, addresses, shifts and rules to Firestore,
    * without requiring or altering the local sync toggle.
    */
   static async pushAllToCloud(
@@ -291,18 +432,33 @@ export class CloudSyncService {
         monthParticipants?: Record<string, string[]>;
         availabilities?: MonthlyAvailability[];
         events?: CalendarEvent[];
+        dayShiftAssignments?: Record<string, Record<string, string>>;
+        monthDailyShifts?: Record<string, Record<string, number[]>>;
+        monthActiveShifts?: Record<string, string[]>;
+        monthActiveRules?: Record<string, string[]>;
       };
       persons: Person[];
       addresses: Address[];
+      shifts?: ShiftDefinition[];
+      rules?: ShiftRule[];
     },
     isAdmin?: boolean,
     ignoreSyncEnabled = true,
   ): Promise<boolean> {
-    const [monthSaved, peopleSaved, addressesSaved] = await Promise.all([
+    const promises: Promise<boolean>[] = [
       this.saveMonthToCloud(month, data.monthData, isAdmin, ignoreSyncEnabled),
       this.savePeopleToCloud(data.persons, isAdmin, ignoreSyncEnabled),
       this.saveAddressesToCloud(data.addresses, isAdmin, ignoreSyncEnabled),
-    ])
-    return monthSaved && peopleSaved && addressesSaved
+    ]
+
+    if (data.shifts) {
+      promises.push(this.saveShiftsToCloud(data.shifts, isAdmin, ignoreSyncEnabled))
+    }
+    if (data.rules) {
+      promises.push(this.saveRulesToCloud(data.rules, isAdmin, ignoreSyncEnabled))
+    }
+
+    const results = await Promise.all(promises)
+    return results.every(Boolean)
   }
 }

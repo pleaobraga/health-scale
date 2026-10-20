@@ -70,6 +70,10 @@ describe('CloudSyncService - On-Demand Refresh and Explicit Save', () => {
       monthParticipants: { '2026-10': ['p1'] },
       availabilities: undefined,
       events: undefined,
+      dayShiftAssignments: undefined,
+      monthDailyShifts: undefined,
+      monthActiveShifts: undefined,
+      monthActiveRules: undefined,
       updatedAt: undefined,
     })
   })
@@ -218,5 +222,108 @@ describe('CloudSyncService - On-Demand Refresh and Explicit Save', () => {
     expect(firestoreModule.setDoc).toHaveBeenCalledTimes(3)
     // O toggle de sync não pode ter sido alterado
     expect(CloudSyncService.isSyncEnabled()).toBe(false)
+  })
+
+  it('deve sincronizar definições de turnos e regras no Firestore via saveShiftsToCloud e saveRulesToCloud', async () => {
+    CloudSyncService.setSyncEnabled(true)
+
+    const shiftsSuccess = await CloudSyncService.saveShiftsToCloud(
+      [
+        {
+          id: 'shift-1',
+          name: 'Plantão Diurno',
+          code: 'D12',
+          startTime: '07:00',
+          durationHours: 12,
+          color: '#3b82f6',
+          enabledByDefault: true,
+          createdAt: '2026-10-20T00:00:00.000Z',
+          updatedAt: '2026-10-20T00:00:00.000Z',
+        },
+      ],
+      true,
+    )
+    expect(shiftsSuccess).toBe(true)
+    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+      { path: 'schedules/_master_shifts' },
+      expect.objectContaining({
+        shifts: expect.any(Array),
+        updatedAt: 'mock-server-timestamp',
+      }),
+      { merge: true },
+    )
+
+    const rulesSuccess = await CloudSyncService.saveRulesToCloud(
+      [
+        {
+          id: 'rule-1',
+          name: 'Descanso 11h',
+          description: 'Regra CLT',
+          type: 'MIN_REST_HOURS',
+          enabledByDefault: true,
+          severity: 'ERROR',
+          parameters: { minRestHours: 11 },
+          createdAt: '2026-10-20T00:00:00.000Z',
+          updatedAt: '2026-10-20T00:00:00.000Z',
+        },
+      ],
+      true,
+    )
+    expect(rulesSuccess).toBe(true)
+    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+      { path: 'schedules/_master_rules' },
+      expect.objectContaining({
+        rules: expect.any(Array),
+        updatedAt: 'mock-server-timestamp',
+      }),
+      { merge: true },
+    )
+  })
+
+  it('deve incluir turnos e regras no pushAllToCloud quando fornecidos', async () => {
+    CloudSyncService.setSyncEnabled(false)
+
+    const success = await CloudSyncService.pushAllToCloud(
+      '2026-10',
+      {
+        monthData: {
+          assignments: { '2026-10-01': ['p1'] },
+          dayShiftAssignments: { '2026-10-01': { 's1': 'p1' } },
+        },
+        persons: [{ id: 'p1', name: 'Dr. Teste', color: '#6366f1', active: true }],
+        addresses: [],
+        shifts: [
+          {
+            id: 's1',
+            name: 'Diurno',
+            code: 'D',
+            startTime: '07:00',
+            durationHours: 12,
+            color: '#000',
+            enabledByDefault: true,
+            createdAt: '2026-10-20T00:00:00.000Z',
+            updatedAt: '2026-10-20T00:00:00.000Z',
+          },
+        ],
+        rules: [
+          {
+            id: 'r1',
+            name: 'Regra',
+            description: '',
+            type: 'CONSECUTIVE_DAYS_LIMIT',
+            enabledByDefault: true,
+            severity: 'WARNING',
+            parameters: { consecutiveDaysLimit: 3 },
+            createdAt: '2026-10-20T00:00:00.000Z',
+            updatedAt: '2026-10-20T00:00:00.000Z',
+          },
+        ],
+      },
+      true,
+      true,
+    )
+
+    expect(success).toBe(true)
+    expect(firestoreModule.setDoc).toHaveBeenCalledTimes(5)
   })
 })

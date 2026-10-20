@@ -234,5 +234,61 @@ describe('BackupService', () => {
       expect(storeState.persons[0].name).toBe('Enf. Mariana')
       expect(storeState.isDarkMode).toBe(true)
     })
+
+    it('deve restaurar configurações avançadas de turnos, regras e escalas diárias', async () => {
+      const snapshot: AppDataSnapshot = {
+        exportedAt: '2026-10-20T17:00:00.000Z',
+        people: [{ id: 'p1', name: 'Dr. Lucas', color: '#3b82f6' }],
+        monthParticipants: { '2026-10': ['p1'] },
+        availabilities: [{ personId: 'p1', month: '2026-10', availableDays: [1, 2], shiftRates: { s1: { 1: 1500 } } }],
+        assignments: { '2026-10-01': ['p1'] },
+        events: [],
+        shiftDefinitions: [
+          {
+            id: 's1',
+            name: 'Plantão Diurno',
+            code: 'D12',
+            startTime: '07:00',
+            durationHours: 12,
+            color: '#3b82f6',
+            enabledByDefault: true,
+            createdAt: '2026-10-20T00:00:00.000Z',
+            updatedAt: '2026-10-20T00:00:00.000Z',
+          },
+        ],
+        shiftRules: [
+          {
+            id: 'r1',
+            name: 'Intervalo mínimo',
+            description: 'Descanso',
+            type: 'MIN_REST_HOURS',
+            enabledByDefault: true,
+            severity: 'ERROR',
+            parameters: { minRestHours: 11 },
+            createdAt: '2026-10-20T00:00:00.000Z',
+            updatedAt: '2026-10-20T00:00:00.000Z',
+          },
+        ],
+        monthActiveShifts: { '2026-10': ['s1'] },
+        monthActiveRules: { '2026-10': ['r1'] },
+        monthDailyShifts: { '2026-10': { s1: [1, 2, 3] } },
+        dayShiftAssignments: { '2026-10-01': { s1: 'p1' } },
+      }
+
+      await restoreAppData(snapshot)
+
+      expect(StorageService.getShiftDefinitions()).toHaveLength(1)
+      expect(StorageService.getShiftDefinitions()[0].id).toBe('s1')
+      expect(StorageService.getShiftRules()).toHaveLength(1)
+      expect(StorageService.getMonthActiveShiftsMap()['2026-10']).toEqual(['s1'])
+      expect(StorageService.getMonthActiveRulesMap()['2026-10']).toEqual(['r1'])
+      expect(StorageService.getMonthDailyShiftsMap()['2026-10']?.s1).toEqual([1, 2, 3])
+      expect(StorageService.getDayShiftAssignments()['2026-10-01']).toEqual({ s1: 'p1' })
+
+      const storeState = useScheduleStore.getState()
+      expect(storeState.shiftDefinitions).toHaveLength(1)
+      expect(storeState.shiftRules).toHaveLength(1)
+      expect(storeState.dayShiftAssignments['2026-10-01']).toEqual({ s1: 'p1' })
+    })
   })
 })

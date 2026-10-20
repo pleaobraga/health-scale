@@ -1,7 +1,12 @@
 import { StorageService } from './storage-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 
-import type { AppDataSnapshot, MonthlyAvailability } from '../types'
+import type {
+  AppDataSnapshot,
+  MonthlyAvailability,
+  ShiftDefinition,
+  ShiftRule,
+} from '../types'
 
 /**
  * Generates the standardized filename for exports:
@@ -26,8 +31,10 @@ export async function hasExistingLocalData(): Promise<boolean> {
     const rawAssignments = localStorage.getItem('scale_manager_assignments_v1')
     const rawMonthParticipants = localStorage.getItem('scale_manager_month_participants_v1')
     const rawEvents = localStorage.getItem('scale_manager_events_v1')
+    const rawDayShiftAssignments = localStorage.getItem('scale_manager_day_shift_assignments_v1')
+    const rawShifts = localStorage.getItem('scale_manager_shifts_v1')
 
-    if (!rawPersons && !rawAssignments && !rawMonthParticipants && !rawEvents) {
+    if (!rawPersons && !rawAssignments && !rawMonthParticipants && !rawEvents && !rawDayShiftAssignments && !rawShifts) {
       return false
     }
 
@@ -35,6 +42,8 @@ export async function hasExistingLocalData(): Promise<boolean> {
     const assignments = rawAssignments ? JSON.parse(rawAssignments) : {}
     const monthParticipants = rawMonthParticipants ? JSON.parse(rawMonthParticipants) : {}
     const events = rawEvents ? JSON.parse(rawEvents) : []
+    const dayShiftAssignments = rawDayShiftAssignments ? JSON.parse(rawDayShiftAssignments) : {}
+    const shifts = rawShifts ? JSON.parse(rawShifts) : []
 
     const hasPersons = Array.isArray(persons) && persons.length > 0
     const hasAssignments =
@@ -46,8 +55,13 @@ export async function hasExistingLocalData(): Promise<boolean> {
       typeof monthParticipants === 'object' &&
       Object.values(monthParticipants).some((v) => Array.isArray(v) && v.length > 0)
     const hasEvents = Array.isArray(events) && events.length > 0
+    const hasDayShiftAssignments =
+      dayShiftAssignments &&
+      typeof dayShiftAssignments === 'object' &&
+      Object.values(dayShiftAssignments).some((v) => v && typeof v === 'object' && Object.keys(v).length > 0)
+    const hasShifts = Array.isArray(shifts) && shifts.length > 0
 
-    return Boolean(hasPersons || hasAssignments || hasMonthParticipants || hasEvents)
+    return Boolean(hasPersons || hasAssignments || hasMonthParticipants || hasEvents || hasDayShiftAssignments || hasShifts)
   } catch {
     return false
   }
@@ -64,6 +78,12 @@ export async function exportAppData(): Promise<void> {
   const assignments = StorageService.getAssignments()
   const events = StorageService.getEvents()
   const addresses = StorageService.getAddresses()
+  const shiftDefinitions = StorageService.getShiftDefinitions()
+  const shiftRules = StorageService.getShiftRules()
+  const monthActiveShifts = StorageService.getMonthActiveShiftsMap()
+  const monthActiveRules = StorageService.getMonthActiveRulesMap()
+  const monthDailyShifts = StorageService.getMonthDailyShiftsMap()
+  const dayShiftAssignments = StorageService.getDayShiftAssignments()
   const theme = localStorage.getItem('theme') || 'light'
 
   const snapshot: AppDataSnapshot = {
@@ -74,6 +94,12 @@ export async function exportAppData(): Promise<void> {
     assignments,
     events,
     addresses,
+    shiftDefinitions,
+    shiftRules,
+    monthActiveShifts,
+    monthActiveRules,
+    monthDailyShifts,
+    dayShiftAssignments,
     theme,
   }
 
@@ -144,6 +170,24 @@ export async function validateAndParseBackup(file: File): Promise<AppDataSnapsho
   const events = Array.isArray(raw.events) ? raw.events : []
   const addresses = Array.isArray(raw.addresses) ? raw.addresses : []
   const availabilities = raw.availabilities ?? []
+  const shiftDefinitions = Array.isArray(raw.shiftDefinitions) ? (raw.shiftDefinitions as ShiftDefinition[]) : undefined
+  const shiftRules = Array.isArray(raw.shiftRules) ? (raw.shiftRules as ShiftRule[]) : undefined
+  const monthActiveShifts =
+    raw.monthActiveShifts && typeof raw.monthActiveShifts === 'object' && !Array.isArray(raw.monthActiveShifts)
+      ? (raw.monthActiveShifts as Record<string, string[]>)
+      : undefined
+  const monthActiveRules =
+    raw.monthActiveRules && typeof raw.monthActiveRules === 'object' && !Array.isArray(raw.monthActiveRules)
+      ? (raw.monthActiveRules as Record<string, string[]>)
+      : undefined
+  const monthDailyShifts =
+    raw.monthDailyShifts && typeof raw.monthDailyShifts === 'object' && !Array.isArray(raw.monthDailyShifts)
+      ? (raw.monthDailyShifts as Record<string, Record<string, number[]>>)
+      : undefined
+  const dayShiftAssignments =
+    raw.dayShiftAssignments && typeof raw.dayShiftAssignments === 'object' && !Array.isArray(raw.dayShiftAssignments)
+      ? (raw.dayShiftAssignments as Record<string, Record<string, string>>)
+      : undefined
 
   return {
     ...raw,
@@ -154,6 +198,12 @@ export async function validateAndParseBackup(file: File): Promise<AppDataSnapsho
     assignments,
     events,
     addresses,
+    shiftDefinitions,
+    shiftRules,
+    monthActiveShifts,
+    monthActiveRules,
+    monthDailyShifts,
+    dayShiftAssignments,
   }
 }
 
@@ -191,6 +241,30 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
   const addresses = Array.isArray(data.addresses) ? data.addresses : []
   StorageService.saveAddresses(addresses)
 
+  if (data.shiftDefinitions && Array.isArray(data.shiftDefinitions)) {
+    StorageService.saveShiftDefinitions(data.shiftDefinitions)
+  }
+
+  if (data.shiftRules && Array.isArray(data.shiftRules)) {
+    StorageService.saveShiftRules(data.shiftRules)
+  }
+
+  if (data.monthActiveShifts) {
+    StorageService.saveMonthActiveShiftsMap(data.monthActiveShifts)
+  }
+
+  if (data.monthActiveRules) {
+    StorageService.saveMonthActiveRulesMap(data.monthActiveRules)
+  }
+
+  if (data.monthDailyShifts) {
+    StorageService.saveMonthDailyShiftsMap(data.monthDailyShifts)
+  }
+
+  if (data.dayShiftAssignments) {
+    StorageService.saveDayShiftAssignments(data.dayShiftAssignments)
+  }
+
   if (data.theme === 'dark' || data.theme === 'light') {
     localStorage.setItem('theme', data.theme)
     if (typeof document !== 'undefined') {
@@ -202,6 +276,13 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
     }
   }
 
+  const restoredShiftDefinitions = data.shiftDefinitions || StorageService.getShiftDefinitions()
+  const restoredShiftRules = data.shiftRules || StorageService.getShiftRules()
+  const restoredMonthActiveShifts = data.monthActiveShifts || StorageService.getMonthActiveShiftsMap()
+  const restoredMonthActiveRules = data.monthActiveRules || StorageService.getMonthActiveRulesMap()
+  const restoredMonthDailyShifts = data.monthDailyShifts || StorageService.getMonthDailyShiftsMap()
+  const restoredDayShiftAssignments = data.dayShiftAssignments || StorageService.getDayShiftAssignments()
+
   // Update zustand store
   useScheduleStore.setState({
     persons: people,
@@ -210,6 +291,14 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
     assignments,
     savedAssignments: { ...assignments },
     events,
+    addresses,
+    shiftDefinitions: restoredShiftDefinitions,
+    shiftRules: restoredShiftRules,
+    monthActiveShifts: restoredMonthActiveShifts,
+    monthActiveRules: restoredMonthActiveRules,
+    monthDailyShifts: restoredMonthDailyShifts,
+    dayShiftAssignments: restoredDayShiftAssignments,
+    savedDayShiftAssignments: { ...restoredDayShiftAssignments },
     hasUnsavedChanges: false,
     isEditMode: false,
     validationErrors: [],

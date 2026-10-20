@@ -1355,17 +1355,23 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     let cloudSaved = false
     if (CloudSyncService.isSyncEnabled()) {
       try {
-        const [monthSaved, peopleSaved, addressesSaved] = await Promise.all([
+        const [monthSaved, peopleSaved, addressesSaved, shiftsSaved, rulesSaved] = await Promise.all([
           CloudSyncService.saveMonthToCloud(get().currentMonth, {
             assignments: get().assignments,
             monthParticipants: get().monthParticipants,
             availabilities: get().availabilities,
             events: get().events,
+            dayShiftAssignments: get().dayShiftAssignments,
+            monthDailyShifts: get().monthDailyShifts,
+            monthActiveShifts: get().monthActiveShifts,
+            monthActiveRules: get().monthActiveRules,
           }),
           CloudSyncService.savePeopleToCloud(get().persons),
           CloudSyncService.saveAddressesToCloud(get().addresses),
+          CloudSyncService.saveShiftsToCloud(get().shiftDefinitions),
+          CloudSyncService.saveRulesToCloud(get().shiftRules),
         ])
-        cloudSaved = monthSaved && peopleSaved && addressesSaved
+        cloudSaved = monthSaved && peopleSaved && addressesSaved && shiftsSaved && rulesSaved
       } catch (err) {
         console.error('Failed to sync schedule to cloud:', err)
       }
@@ -1398,13 +1404,13 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const targetMonth = month || get().currentMonth
 
     try {
-      const { monthData, persons, addresses } = await CloudSyncService.pullAllFromCloud(
+      const { monthData, persons, addresses, shifts, rules } = await CloudSyncService.pullAllFromCloud(
         targetMonth,
         isAdmin,
         true,
       )
 
-      if (!monthData && !persons && !addresses) {
+      if (!monthData && !persons && !addresses && !shifts && !rules) {
         return {
           success: false,
           code: 'no_data',
@@ -1420,6 +1426,16 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       if (Array.isArray(addresses)) {
         StorageService.saveAddresses(addresses)
         set({ addresses })
+      }
+
+      if (Array.isArray(shifts)) {
+        StorageService.saveShiftDefinitions(shifts)
+        set({ shiftDefinitions: shifts })
+      }
+
+      if (Array.isArray(rules)) {
+        StorageService.saveShiftRules(rules)
+        set({ shiftRules: rules })
       }
 
       if (monthData) {
@@ -1441,6 +1457,25 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         if (monthData.events) {
           StorageService.saveEvents(monthData.events)
           set({ events: monthData.events })
+        }
+        if (monthData.dayShiftAssignments) {
+          StorageService.saveDayShiftAssignments(monthData.dayShiftAssignments)
+          set({
+            dayShiftAssignments: monthData.dayShiftAssignments,
+            savedDayShiftAssignments: { ...monthData.dayShiftAssignments },
+          })
+        }
+        if (monthData.monthDailyShifts) {
+          StorageService.saveMonthDailyShiftsMap(monthData.monthDailyShifts)
+          set({ monthDailyShifts: monthData.monthDailyShifts })
+        }
+        if (monthData.monthActiveShifts) {
+          StorageService.saveMonthActiveShiftsMap(monthData.monthActiveShifts)
+          set({ monthActiveShifts: monthData.monthActiveShifts })
+        }
+        if (monthData.monthActiveRules) {
+          StorageService.saveMonthActiveRulesMap(monthData.monthActiveRules)
+          set({ monthActiveRules: monthData.monthActiveRules })
         }
       }
 
@@ -1470,9 +1505,15 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
             monthParticipants: get().monthParticipants,
             availabilities: get().availabilities,
             events: get().events,
+            dayShiftAssignments: get().dayShiftAssignments,
+            monthDailyShifts: get().monthDailyShifts,
+            monthActiveShifts: get().monthActiveShifts,
+            monthActiveRules: get().monthActiveRules,
           },
           persons: get().persons,
           addresses: get().addresses,
+          shifts: get().shiftDefinitions,
+          rules: get().shiftRules,
         },
         isAdmin,
         true,

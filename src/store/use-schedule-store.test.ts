@@ -414,6 +414,8 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       monthData: { month: '2026-10', assignments: { '2026-10-01': ['p1'] } },
       persons: [{ id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' }],
       addresses: [],
+      shifts: null,
+      rules: null,
     })
     const store = useScheduleStore.getState()
 
