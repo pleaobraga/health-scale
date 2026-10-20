@@ -23,7 +23,7 @@
     "newPerson": "New Staff Member",
     "searchPlaceholder": "Search staff by name...",
     "clearSearch": "Clear",
-    "totalRegistered": "Total Registered:",
+    "totalRegistered": "Total Registered: {{count}}",
     "activeBadge": "{{count}} active",
     "activeBadgePlural": "{{count}} active",
     "inactiveBadge": "{{count}} inactive",

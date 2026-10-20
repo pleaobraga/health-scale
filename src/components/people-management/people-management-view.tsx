@@ -1,4 +1,4 @@
-import { Users, UserPlus, Search, ShieldCheck } from 'lucide-react'
+import { Users, UserPlus, Search } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -33,9 +33,6 @@ export function PeopleManagementView() {
   const filteredPersons = persons.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
   )
-
-  const activeCount = persons.filter((p) => p.active !== false).length
-  const inactiveCount = persons.filter((p) => p.active === false).length
 
   const handleOpenAdd = () => {
     setPersonToEdit(null)
@@ -101,49 +98,23 @@ export function PeopleManagementView() {
         </button>
       </div>
 
-      {/* Filters & Stats Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Search */}
-        <div className="md:col-span-2 relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 flex items-center shadow-2xs">
-          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 ml-2.5 shrink-0" />
+      {/* Search and Stats */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
+            placeholder={t('people:management.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('people:management.searchPlaceholder')}
-            className="w-full px-3 py-1.5 text-xs sm:text-sm bg-transparent focus:outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
           />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-2 py-1"
-            >
-              {t('people:management.clearSearch')}
-            </button>
-          )}
         </div>
 
-        {/* Counter Pill */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 px-5 py-3 flex items-center justify-between shadow-2xs">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{t('people:management.totalRegistered')}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg">
-              {activeCount === 1
-                ? t('people:management.activeBadge', { count: activeCount })
-                : t('people:management.activeBadgePlural', { count: activeCount })}
-            </span>
-            {inactiveCount > 0 && (
-              <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800">
-                {inactiveCount === 1
-                  ? t('people:management.inactiveBadge', { count: inactiveCount })
-                  : t('people:management.inactiveBadgePlural', { count: inactiveCount })}
-              </span>
-            )}
-          </div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 self-end sm:self-center">
+          <span className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
+            {t('people:management.totalRegistered', { count: persons.length })}
+          </span>
         </div>
       </div>
 

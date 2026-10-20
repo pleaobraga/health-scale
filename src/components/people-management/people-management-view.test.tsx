@@ -27,7 +27,7 @@ describe('PeopleManagementView Component', () => {
     expect(screen.getByText('Cadastro Geral de Funcionários')).toBeInTheDocument()
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument()
     expect(screen.getByText('Dr. Lucas Oliveira')).toBeInTheDocument()
-    expect(screen.getByText(/2 ativos/i)).toBeInTheDocument()
+    expect(screen.getByText('Total Cadastrado: 2')).toBeInTheDocument()
   })
 
   it('deve filtrar funcionários pelo campo de busca', () => {

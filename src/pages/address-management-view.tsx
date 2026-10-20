@@ -6,7 +6,6 @@ import {
   MapPin,
   Pencil,
   Plus,
-  RefreshCw,
   Search,
   Trash2,
   X,
@@ -383,8 +382,8 @@ function ConfirmDeleteAddressModal({
 }
 
 export function AddressManagementView() {
-  const { t } = useTranslation(['addresses', 'common', 'settings'])
-  const { addresses, addAddress, updateAddress, deleteAddress, pullCloudData } =
+  const { t } = useTranslation(['addresses', 'common'])
+  const { addresses, addAddress, updateAddress, deleteAddress } =
     useScheduleStore()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -392,26 +391,6 @@ export function AddressManagementView() {
   const [addressToEdit, setAddressToEdit] = useState<Address | null>(null)
   const [addressToDelete, setAddressToDelete] = useState<Address | null>(null)
   const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null)
-  const [isPulling, setIsPulling] = useState(false)
-  const [pullFeedback, setPullFeedback] = useState<string | null>(null)
-
-  const handlePullCloudData = async () => {
-    try {
-      setIsPulling(true)
-      setPullFeedback(null)
-      const res = await pullCloudData()
-      if (res.success) {
-        setPullFeedback(t('addresses:pullSuccess', { defaultValue: 'Dados da nuvem sincronizados com sucesso!' }))
-      } else {
-        setPullFeedback(res.message || t('settings:cloudSyncSection.pullError', { defaultValue: 'Erro ao sincronizar com a nuvem.' }))
-      }
-    } catch {
-      setPullFeedback(t('settings:cloudSyncSection.pullError', { defaultValue: 'Erro ao conectar com a nuvem.' }))
-    } finally {
-      setIsPulling(false)
-      setTimeout(() => setPullFeedback(null), 4000)
-    }
-  }
 
   const filteredAddresses = addresses.filter((a) => {
     const q = searchQuery.toLowerCase().trim()
@@ -476,20 +455,6 @@ export function AddressManagementView() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handlePullCloudData}
-            disabled={isPulling}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:bg-slate-300 dark:active:bg-slate-600 border border-slate-200 dark:border-slate-700 shadow-2xs transition-all shrink-0 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isPulling ? 'animate-spin' : ''}`} />
-            <span>
-              {isPulling
-                ? t('addresses:pullingCloud', { defaultValue: 'Puxando...' })
-                : t('addresses:pullCloud', { defaultValue: 'Puxar dados da nuvem' })}
-            </span>
-          </button>
-
-          <button
-            type="button"
             onClick={handleOpenAdd}
             className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition-all shrink-0"
           >
@@ -498,15 +463,6 @@ export function AddressManagementView() {
           </button>
         </div>
       </div>
-
-      {pullFeedback && (
-        <div
-          data-testid="pull-feedback-banner"
-          className="p-3 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 rounded-xl text-xs font-semibold text-indigo-800 dark:text-indigo-200 animate-fadeIn"
-        >
-          {pullFeedback}
-        </div>
-      )}
 
       {/* Search and Stats */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">

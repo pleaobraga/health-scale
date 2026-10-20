@@ -193,22 +193,9 @@ describe('AddressManagementView', () => {
     expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
 
-  it('deve exibir botão Puxar da Nuvem mesmo sem sincronização ativada e disparar pullCloudData', async () => {
-    localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
-    const pullCloudDataMock = vi.fn().mockResolvedValue({
-      success: true,
-      message: 'Dados locais atualizados a partir da nuvem com sucesso!',
-    })
-    useScheduleStore.setState({ pullCloudData: pullCloudDataMock })
-
+  it('não deve exibir botão de puxar dados da nuvem na gestão de endereços', () => {
     render(<AddressManagementView />)
 
-    const pullBtn = screen.getByRole('button', { name: /Puxar dados da nuvem/i })
-    expect(pullBtn).toBeInTheDocument()
-
-    fireEvent.click(pullBtn)
-
-    expect(pullCloudDataMock).toHaveBeenCalledTimes(1)
-    expect(await screen.findByText('Dados da nuvem sincronizados com sucesso!')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Puxar dados da nuvem/i })).not.toBeInTheDocument()
   })
 })

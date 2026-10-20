@@ -23,7 +23,7 @@
     "newPerson": "Novo Funcionário",
     "searchPlaceholder": "Buscar funcionários por nome...",
     "clearSearch": "Limpar",
-    "totalRegistered": "Total Cadastrado:",
+    "totalRegistered": "Total Cadastrado: {{count}}",
     "activeBadge": "{{count}} ativo",
     "activeBadgePlural": "{{count}} ativos",
     "inactiveBadge": "{{count}} inativo",
