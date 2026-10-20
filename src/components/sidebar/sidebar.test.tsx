@@ -98,8 +98,10 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(useScheduleStore.getState().persons.some((p) => p.id === 'p1')).toBe(true)
   })
 
-  it('deve alternar entre recolhido e expandido ao clicar no botão de alternância', () => {
+  it('deve alternar entre recolhido e expandido ao clicar no botão de alternância e exibir o título Painel do Mês no cabeçalho mobile', () => {
     renderSidebar()
+
+    expect(screen.getByText('Painel do Mês')).toBeInTheDocument()
 
     const toggleBtn = screen.getByTestId('toggle-sidebar-collapse')
     expect(toggleBtn).toBeInTheDocument()
