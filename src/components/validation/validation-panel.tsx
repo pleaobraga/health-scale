@@ -1,14 +1,17 @@
 import {
-  CheckCircle2,
-  AlertTriangle,
   AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  RotateCcw,
   Save,
   ShieldCheck,
-  RotateCcw,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { useScheduleStore, type SaveFeedbackData } from '../../store/use-schedule-store'
+import {
+  useScheduleStore,
+  type SaveFeedbackData,
+} from '../../store/use-schedule-store'
 
 export function ValidationPanel() {
   const { t } = useTranslation(['calendar', 'common'])
@@ -44,8 +47,12 @@ export function ValidationPanel() {
     }
   }
 
-  const errorsCount = validationErrors.filter((e) => e.severity === 'error').length
-  const warningsCount = validationErrors.filter((e) => e.severity === 'warning').length
+  const errorsCount = validationErrors.filter(
+    (e) => e.severity === 'error',
+  ).length
+  const warningsCount = validationErrors.filter(
+    (e) => e.severity === 'warning',
+  ).length
 
   const handleValidate = () => {
     validateCurrentSchedule()
@@ -54,20 +61,41 @@ export function ValidationPanel() {
   const getRuleBadge = (rule: string) => {
     switch (rule) {
       case 'consecutive_days':
-        return { label: t('calendar:validation.rules.consecutive_days'), color: 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800' }
+        return {
+          label: t('calendar:validation.rules.consecutive_days'),
+          color:
+            'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 border-rose-300 dark:border-rose-800',
+        }
       case 'weekly_limit':
-        return { label: t('calendar:validation.rules.weekly_limit'), color: 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800' }
+        return {
+          label: t('calendar:validation.rules.weekly_limit'),
+          color:
+            'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-800',
+        }
       case 'multi_assigned':
-        return { label: t('calendar:validation.rules.multi_assigned'), color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800' }
+        return {
+          label: t('calendar:validation.rules.multi_assigned'),
+          color:
+            'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800',
+        }
       case 'empty_day':
-        return { label: t('calendar:validation.rules.empty_day'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
+        return {
+          label: t('calendar:validation.rules.empty_day'),
+          color:
+            'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700',
+        }
       case 'not_available':
-        return { label: t('calendar:validation.rules.not_available'), color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' }
+        return {
+          label: t('calendar:validation.rules.not_available'),
+          color:
+            'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800',
+        }
       default: {
         const dynamicRule = shiftRules.find((r) => r.id === rule)
         return {
           label: dynamicRule?.name || t('calendar:validation.rules.default'),
-          color: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800',
+          color:
+            'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800',
         }
       }
     }
@@ -95,9 +123,15 @@ export function ValidationPanel() {
                     ? t('calendar:validation.allCompliant')
                     : t('calendar:validation.resultsSummary', {
                         errors: errorsCount,
-                        errorLabel: errorsCount === 1 ? t('calendar:validation.criticalError') : t('calendar:validation.criticalErrors'),
+                        errorLabel:
+                          errorsCount === 1
+                            ? t('calendar:validation.criticalError')
+                            : t('calendar:validation.criticalErrors'),
                         warnings: warningsCount,
-                        warningLabel: warningsCount === 1 ? t('calendar:validation.warning') : t('calendar:validation.warnings'),
+                        warningLabel:
+                          warningsCount === 1
+                            ? t('calendar:validation.warning')
+                            : t('calendar:validation.warnings'),
                       })}
                 </span>
               )}
@@ -137,7 +171,11 @@ export function ValidationPanel() {
             className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 rounded-xl transition shadow-sm"
           >
             <Save className="w-4 h-4" />
-            <span>{isSaving ? t('calendar:validation.saving') : t('calendar:validation.save')}</span>
+            <span>
+              {isSaving
+                ? t('calendar:validation.saving')
+                : t('calendar:validation.save')}
+            </span>
           </button>
         </div>
       </div>
@@ -155,26 +193,14 @@ export function ValidationPanel() {
       {/* Audit Results Section (Seamlessly inside the unified card) */}
       {hasValidated && (
         <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3 animate-fadeIn">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              {t('calendar:validation.resultsTitle')}
-            </h4>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              {t('calendar:validation.resultsSummary', {
-                errors: errorsCount,
-                errorLabel: errorsCount === 1 ? t('calendar:validation.criticalError') : t('calendar:validation.criticalErrors'),
-                warnings: warningsCount,
-                warningLabel: warningsCount === 1 ? t('calendar:validation.warning') : t('calendar:validation.warnings'),
-              })}
-            </span>
-          </div>
-
           {/* All Good State */}
           {validationErrors.length === 0 ? (
             <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 text-emerald-800 dark:text-emerald-200">
               <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
-                <p className="text-sm font-bold">{t('calendar:validation.allGoodTitle')}</p>
+                <p className="text-sm font-bold">
+                  {t('calendar:validation.allGoodTitle')}
+                </p>
                 <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
                   {t('calendar:validation.allGoodDesc')}
                 </p>
@@ -213,10 +239,14 @@ export function ValidationPanel() {
 
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isCritical ? 'bg-rose-600 text-white' : 'bg-amber-500 text-white'
+                            isCritical
+                              ? 'bg-rose-600 text-white'
+                              : 'bg-amber-500 text-white'
                           }`}
                         >
-                          {isCritical ? t('calendar:validation.blocking') : t('calendar:validation.warningBadge')}
+                          {isCritical
+                            ? t('calendar:validation.blocking')
+                            : t('calendar:validation.warningBadge')}
                         </span>
                       </div>
 

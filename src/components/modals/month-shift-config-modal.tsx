@@ -1,24 +1,18 @@
 import {
-  Calendar,
-  Clock,
-  Plus,
-  X,
-  Check,
-  CheckSquare,
-  Sparkles,
-  Eraser,
-  Trash2,
   CalendarDays,
+  Check,
+  Clock,
+  Eraser,
+  Plus,
+  Trash2,
+  X,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
 import { useScheduleStore } from '../../store/use-schedule-store'
-import {
-  formatMonthYear,
-  getDaysCountInMonth,
-} from '../../utils/date-utils'
+import { formatMonthYear, getDaysCountInMonth } from '../../utils/date-utils'
 
 import type { ShiftDefinition } from '../../types'
 
@@ -33,7 +27,12 @@ export function MonthShiftConfigModal({
   onClose,
   currentMonth,
 }: MonthShiftConfigModalProps) {
-  const { t, i18n } = useTranslation(['calendar', 'settings', 'people', 'common'])
+  const { t, i18n } = useTranslation([
+    'calendar',
+    'settings',
+    'people',
+    'common',
+  ])
   const {
     shiftDefinitions,
     monthDailyShifts,
@@ -45,7 +44,9 @@ export function MonthShiftConfigModal({
   const daysArray = Array.from({ length: totalDays }, (_, i) => i + 1)
 
   // Local state for shift days: { [shiftId]: number[] }
-  const [localShiftDays, setLocalShiftDays] = useState<Record<string, number[]>>({})
+  const [localShiftDays, setLocalShiftDays] = useState<
+    Record<string, number[]>
+  >({})
   const [selectedShiftId, setSelectedShiftId] = useState<string>('')
   const [isCreatingNewShift, setIsCreatingNewShift] = useState(false)
 
@@ -103,7 +104,9 @@ export function MonthShiftConfigModal({
     .map((sId) => shiftDefinitions.find((s) => s.id === sId))
     .filter((s): s is ShiftDefinition => Boolean(s))
 
-  const currentSelectedShift = shiftDefinitions.find((s) => s.id === selectedShiftId)
+  const currentSelectedShift = shiftDefinitions.find(
+    (s) => s.id === selectedShiftId,
+  )
   const currentSelectedDays = localShiftDays[selectedShiftId] || []
 
   // Day toggle handler
@@ -181,7 +184,9 @@ export function MonthShiftConfigModal({
       return next
     })
     if (selectedShiftId === shiftId) {
-      const remainingIds = Object.keys(localShiftDays).filter((id) => id !== shiftId)
+      const remainingIds = Object.keys(localShiftDays).filter(
+        (id) => id !== shiftId,
+      )
       setSelectedShiftId(remainingIds[0] || '')
     }
   }
@@ -218,7 +223,7 @@ export function MonthShiftConfigModal({
 
   // Shifts from global list not yet added to this month
   const availableGlobalShiftsToAdd = shiftDefinitions.filter(
-    (s) => !localShiftDays[s.id]
+    (s) => !localShiftDays[s.id],
   )
 
   return createPortal(
@@ -240,7 +245,8 @@ export function MonthShiftConfigModal({
                 id="month-shift-config-title"
                 className="text-base font-extrabold text-slate-900 dark:text-white"
               >
-                {t('calendar:dailyShiftsConfig.title')} ({formatMonthYear(currentMonth, i18n.language)})
+                {t('calendar:dailyShiftsConfig.title')} (
+                {formatMonthYear(currentMonth, i18n.language)})
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {t('calendar:dailyShiftsConfig.subtitle')}
@@ -263,7 +269,9 @@ export function MonthShiftConfigModal({
           <div className="w-full md:w-80 p-4 flex flex-col min-h-0 bg-slate-50/40 dark:bg-slate-900/40 overflow-y-auto custom-scrollbar shrink-0 gap-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                {t('calendar:dailyShiftsConfig.shiftsInMonth', { count: shiftsInModal.length })}
+                {t('calendar:dailyShiftsConfig.shiftsInMonth', {
+                  count: shiftsInModal.length,
+                })}
               </span>
               <button
                 type="button"
@@ -303,7 +311,9 @@ export function MonthShiftConfigModal({
                     required
                     value={newShiftName}
                     onChange={(e) => setNewShiftName(e.target.value)}
-                    placeholder={t('calendar:dailyShiftsConfig.shiftNamePlaceholder')}
+                    placeholder={t(
+                      'calendar:dailyShiftsConfig.shiftNamePlaceholder',
+                    )}
                     className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -331,7 +341,9 @@ export function MonthShiftConfigModal({
                       min={1}
                       max={72}
                       value={newShiftDuration}
-                      onChange={(e) => setNewShiftDuration(Number(e.target.value))}
+                      onChange={(e) =>
+                        setNewShiftDuration(Number(e.target.value))
+                      }
                       className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
@@ -347,7 +359,9 @@ export function MonthShiftConfigModal({
                       maxLength={5}
                       value={newShiftCode}
                       onChange={(e) => setNewShiftCode(e.target.value)}
-                      placeholder={t('calendar:dailyShiftsConfig.codePlaceholder')}
+                      placeholder={t(
+                        'calendar:dailyShiftsConfig.codePlaceholder',
+                      )}
                       className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
@@ -362,7 +376,9 @@ export function MonthShiftConfigModal({
                         onChange={(e) => setNewShiftColor(e.target.value)}
                         className="w-7 h-7 rounded border border-slate-300 dark:border-slate-600 cursor-pointer p-0"
                       />
-                      <span className="text-[10px] text-slate-500 font-mono">{newShiftColor}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        {newShiftColor}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -382,7 +398,9 @@ export function MonthShiftConfigModal({
               {shiftsInModal.length === 0 ? (
                 <div className="text-center py-6 px-3 bg-white dark:bg-slate-800 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                   <Clock className="w-6 h-6 mx-auto text-slate-400 mb-1.5" />
-                  <p className="text-xs text-slate-500">{t('calendar:dailyShiftsConfig.noShiftsConfigured')}</p>
+                  <p className="text-xs text-slate-500">
+                    {t('calendar:dailyShiftsConfig.noShiftsConfigured')}
+                  </p>
                   <p className="text-[11px] text-indigo-600 dark:text-indigo-400 mt-1">
                     {t('calendar:dailyShiftsConfig.noShiftsConfiguredDesc')}
                   </p>
@@ -414,10 +432,18 @@ export function MonthShiftConfigModal({
                             {shift.name}
                           </p>
                           <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
-                            <span>{t('people:sidebar.shiftSummary', { startTime: shift.startTime, hours: shift.durationHours })}</span>
+                            <span>
+                              {t('people:sidebar.shiftSummary', {
+                                startTime: shift.startTime,
+                                hours: shift.durationHours,
+                              })}
+                            </span>
                             <span>•</span>
                             <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                              {daysCount} {daysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')}
+                              {daysCount}{' '}
+                              {daysCount === 1
+                                ? t('people:card.dayLabel')
+                                : t('people:card.dayLabelPlural')}
                             </span>
                           </div>
                         </div>
@@ -429,8 +455,12 @@ export function MonthShiftConfigModal({
                           e.stopPropagation()
                           handleRemoveShiftFromMonth(shift.id)
                         }}
-                        title={t('calendar:dailyShiftsConfig.removeShiftTooltip')}
-                        aria-label={t('calendar:dailyShiftsConfig.removeShiftTooltip')}
+                        title={t(
+                          'calendar:dailyShiftsConfig.removeShiftTooltip',
+                        )}
+                        aria-label={t(
+                          'calendar:dailyShiftsConfig.removeShiftTooltip',
+                        )}
                         className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -459,7 +489,10 @@ export function MonthShiftConfigModal({
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: s.color }}
                       />
-                      <span>{s.name} ({s.durationHours}{t('calendar:dailyShiftsConfig.hoursUnit')})</span>
+                      <span>
+                        {s.name} ({s.durationHours}
+                        {t('calendar:dailyShiftsConfig.hoursUnit')})
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -485,13 +518,20 @@ export function MonthShiftConfigModal({
                         {currentSelectedShift.name}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                        <span>{t('people:sidebar.shiftSummary', { startTime: currentSelectedShift.startTime, hours: currentSelectedShift.durationHours })}</span>
+                        <span>
+                          {t('people:sidebar.shiftSummary', {
+                            startTime: currentSelectedShift.startTime,
+                            hours: currentSelectedShift.durationHours,
+                          })}
+                        </span>
                       </p>
                     </div>
                   </div>
 
                   <span className="self-start sm:self-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                    {t('calendar:dailyShiftsConfig.markedDays', { count: currentSelectedDays.length })}
+                    {t('calendar:dailyShiftsConfig.markedDays', {
+                      count: currentSelectedDays.length,
+                    })}
                   </span>
                 </div>
 
@@ -502,7 +542,6 @@ export function MonthShiftConfigModal({
                     onClick={selectWeekdays}
                     className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
                   >
-                    <Calendar className="w-3.5 h-3.5 text-indigo-600" />
                     <span>{t('calendar:dailyShiftsConfig.weekdays')}</span>
                   </button>
                   <button
@@ -510,7 +549,6 @@ export function MonthShiftConfigModal({
                     onClick={selectWeekends}
                     className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
                   >
-                    <Clock className="w-3.5 h-3.5 text-purple-600" />
                     <span>{t('calendar:dailyShiftsConfig.weekends')}</span>
                   </button>
                   <button
@@ -518,7 +556,6 @@ export function MonthShiftConfigModal({
                     onClick={selectEven}
                     className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
                   >
-                    <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
                     <span>{t('calendar:dailyShiftsConfig.evenDays')}</span>
                   </button>
                   <button
@@ -526,7 +563,6 @@ export function MonthShiftConfigModal({
                     onClick={selectOdd}
                     className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
                   >
-                    <CheckSquare className="w-3.5 h-3.5 text-amber-600" />
                     <span>{t('calendar:dailyShiftsConfig.oddDays')}</span>
                   </button>
                   <button
@@ -534,7 +570,6 @@ export function MonthShiftConfigModal({
                     onClick={selectAll}
                     className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
                     <span>{t('calendar:dailyShiftsConfig.allDays')}</span>
                   </button>
                   <button
@@ -564,14 +599,19 @@ export function MonthShiftConfigModal({
                     {Array.from({
                       length: new Date(`${currentMonth}-01T12:00:00`).getDay(),
                     }).map((_, i) => (
-                      <div key={`empty-${i}`} className="p-2" />
+                      <div
+                        key={`empty-${i}`}
+                        className="p-2"
+                      />
                     ))}
 
                     {daysArray.map((day) => {
                       const isSelected = currentSelectedDays.includes(day)
                       // Check which other shifts are active on this day
                       const otherShiftsOnDay = shiftsInModal.filter(
-                        (s) => s.id !== selectedShiftId && localShiftDays[s.id]?.includes(day)
+                        (s) =>
+                          s.id !== selectedShiftId &&
+                          localShiftDays[s.id]?.includes(day),
                       )
 
                       return (
@@ -594,7 +634,9 @@ export function MonthShiftConfigModal({
                               : 'bg-slate-50/70 dark:bg-slate-800/40 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'
                           }`}
                         >
-                          <span className={`text-xs font-bold ${isSelected ? 'text-white' : ''}`}>
+                          <span
+                            className={`text-xs font-bold ${isSelected ? 'text-white' : ''}`}
+                          >
                             {day}
                           </span>
 
@@ -621,7 +663,9 @@ export function MonthShiftConfigModal({
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-slate-400">
                 <Clock className="w-10 h-10 mb-2 opacity-40" />
-                <p className="text-sm font-semibold">{t('calendar:dailyShiftsConfig.selectShiftPrompt')}</p>
+                <p className="text-sm font-semibold">
+                  {t('calendar:dailyShiftsConfig.selectShiftPrompt')}
+                </p>
                 <p className="text-xs text-slate-500 mt-1">
                   {t('calendar:dailyShiftsConfig.selectShiftPromptDesc')}
                 </p>
@@ -650,6 +694,6 @@ export function MonthShiftConfigModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   )
 }

@@ -1,13 +1,12 @@
 import {
-  X,
-  Search,
-  DollarSign,
-  Calendar,
-  Users,
-  ChevronDown,
   AlertCircle,
+  ChevronDown,
+  DollarSign,
+  Search,
+  Users,
+  X,
 } from 'lucide-react'
-import { useState, useMemo, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -41,10 +40,16 @@ export interface PersonPaymentSummary {
   items: PersonShiftWorkItem[]
 }
 
-const getWeekdayLabel = (yearMonth: string, day: number, lang: string): string => {
+const getWeekdayLabel = (
+  yearMonth: string,
+  day: number,
+  lang: string,
+): string => {
   const [y, m] = yearMonth.split('-').map(Number)
   const date = new Date(y, m - 1, day)
-  return date.toLocaleDateString(lang.startsWith('en') ? 'en-US' : 'pt-BR', { weekday: 'short' })
+  return date.toLocaleDateString(lang.startsWith('en') ? 'en-US' : 'pt-BR', {
+    weekday: 'short',
+  })
 }
 
 export function MonthPaymentsModal({
@@ -107,7 +112,7 @@ export function MonthPaymentsModal({
 
           const shiftDef = shiftDefMap.get(shiftId)
           const userAvail = availabilities.find(
-            (a) => a.personId === personId && a.month === currentMonth
+            (a) => a.personId === personId && a.month === currentMonth,
           )
 
           const rate = userAvail?.shiftRates?.[shiftId]?.[day] ?? 0
@@ -118,7 +123,8 @@ export function MonthPaymentsModal({
             day,
             weekday,
             shiftId,
-            shiftName: shiftDef?.name || t('calendar:paymentsModal.defaultShiftName'),
+            shiftName:
+              shiftDef?.name || t('calendar:paymentsModal.defaultShiftName'),
             shiftCode: shiftDef?.code || 'PL',
             shiftColor: shiftDef?.color || '#3B82F6',
             rate,
@@ -137,7 +143,7 @@ export function MonthPaymentsModal({
         for (const personId of legacyPersonIds) {
           if (handledPersonsOnDay.has(personId)) continue // Already recorded for this day
           const userAvail = availabilities.find(
-            (a) => a.personId === personId && a.month === currentMonth
+            (a) => a.personId === personId && a.month === currentMonth,
           )
           const rate = userAvail?.shiftRates?.['default']?.[day] ?? 0
 
@@ -180,7 +186,11 @@ export function MonthPaymentsModal({
     })
 
     // Sort by total amount desc, then name asc
-    return result.sort((a, b) => b.totalAmount - a.totalAmount || a.person.name.localeCompare(b.person.name))
+    return result.sort(
+      (a, b) =>
+        b.totalAmount - a.totalAmount ||
+        a.person.name.localeCompare(b.person.name),
+    )
   }, [
     currentMonth,
     dayShiftAssignments,
@@ -202,11 +212,11 @@ export function MonthPaymentsModal({
   // Totals
   const grandTotal = useMemo(
     () => summaries.reduce((acc, curr) => acc + curr.totalAmount, 0),
-    [summaries]
+    [summaries],
   )
   const totalShiftsScheduled = useMemo(
     () => summaries.reduce((acc, curr) => acc + curr.shiftsCount, 0),
-    [summaries]
+    [summaries],
   )
 
   if (!isOpen || typeof document === 'undefined') return null
@@ -269,7 +279,7 @@ export function MonthPaymentsModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Grand Total */}
             <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
                 {t('calendar:paymentsModal.totalToPay')}
               </span>
               <span className="text-xl font-black text-emerald-700 dark:text-emerald-400 mt-1">
@@ -279,27 +289,33 @@ export function MonthPaymentsModal({
 
             {/* Total Shifts */}
             <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/50 flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" />
+              <span className="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
                 {t('calendar:paymentsModal.totalShifts')}
               </span>
               <span className="text-xl font-black text-indigo-700 dark:text-indigo-400 mt-1">
                 {totalShiftsScheduled === 1
-                  ? t('calendar:paymentsModal.shiftsCount', { count: totalShiftsScheduled })
-                  : t('calendar:paymentsModal.shiftsCountPlural', { count: totalShiftsScheduled })}
+                  ? t('calendar:paymentsModal.shiftsCount', {
+                      count: totalShiftsScheduled,
+                    })
+                  : t('calendar:paymentsModal.shiftsCountPlural', {
+                      count: totalShiftsScheduled,
+                    })}
               </span>
             </div>
 
             {/* Active People */}
             <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-              <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" />
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                 {t('calendar:paymentsModal.totalActivePeople')}
               </span>
               <span className="text-xl font-black text-slate-800 dark:text-slate-200 mt-1">
                 {summaries.length === 1
-                  ? t('calendar:paymentsModal.peopleCount', { count: summaries.length })
-                  : t('calendar:paymentsModal.peopleCountPlural', { count: summaries.length })}
+                  ? t('calendar:paymentsModal.peopleCount', {
+                      count: summaries.length,
+                    })
+                  : t('calendar:paymentsModal.peopleCountPlural', {
+                      count: summaries.length,
+                    })}
               </span>
             </div>
           </div>
@@ -341,7 +357,9 @@ export function MonthPaymentsModal({
             <div className="space-y-3">
               {filteredSummaries.map((summary) => {
                 const isExpanded = expandedPersonIds.includes(summary.person.id)
-                const unconfiguredCount = summary.items.filter((it) => !it.hasRateConfigured).length
+                const unconfiguredCount = summary.items.filter(
+                  (it) => !it.hasRateConfigured,
+                ).length
 
                 return (
                   <div
@@ -370,14 +388,19 @@ export function MonthPaymentsModal({
                                 ? t('calendar:paymentsModal.shiftsCompleted', {
                                     count: summary.shiftsCount,
                                   })
-                                : t('calendar:paymentsModal.shiftsCompletedPlural', {
-                                    count: summary.shiftsCount,
-                                  })}
+                                : t(
+                                    'calendar:paymentsModal.shiftsCompletedPlural',
+                                    {
+                                      count: summary.shiftsCount,
+                                    },
+                                  )}
                             </span>
                             {unconfiguredCount > 0 && (
                               <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
                                 <AlertCircle className="w-3 h-3" />
-                                {t('calendar:paymentsModal.unconfiguredCount', { count: unconfiguredCount })}
+                                {t('calendar:paymentsModal.unconfiguredCount', {
+                                  count: unconfiguredCount,
+                                })}
                               </span>
                             )}
                           </div>
@@ -439,7 +462,9 @@ export function MonthPaymentsModal({
                               ) : (
                                 <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                                   <AlertCircle className="w-3 h-3" />
-                                  {t('calendar:paymentsModal.rateNotConfigured')}
+                                  {t(
+                                    'calendar:paymentsModal.rateNotConfigured',
+                                  )}
                                 </span>
                               )}
                             </div>
@@ -475,6 +500,6 @@ export function MonthPaymentsModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   )
 }
