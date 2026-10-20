@@ -477,5 +477,33 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.dayShiftAssignments[dateStr]).toBeUndefined()
     expect(state.assignments[dateStr]).toBeUndefined()
   })
+
+  it('deve retornar lista vazia em getDayActiveShifts quando o mês não tiver plantão diário configurado', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-11'
+    useScheduleStore.setState({
+      monthDailyShifts: { [month]: {} },
+    })
+
+    // Como não há plantões diários configurados para 2026-11, deve retornar vazio
+    const activeShifts = store.getDayActiveShifts('2026-11-05')
+    expect(activeShifts).toEqual([])
+  })
+
+  it('deve retornar apenas os turnos alocados ao dia quando o mês tiver plantões configurados', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-12'
+    store.setMonthDailyShifts(month, {
+      shift_d12: [1, 2, 3],
+      shift_n12: [3, 4, 5],
+    })
+
+    // Dia 1: apenas shift_d12
+    expect(store.getDayActiveShifts('2026-12-01').map((s) => s.id)).toEqual(['shift_d12'])
+    // Dia 3: shift_d12 e shift_n12
+    expect(store.getDayActiveShifts('2026-12-03').map((s) => s.id)).toEqual(['shift_d12', 'shift_n12'])
+    // Dia 10: nenhum turno alocado
+    expect(store.getDayActiveShifts('2026-12-10')).toEqual([])
+  })
 })
 

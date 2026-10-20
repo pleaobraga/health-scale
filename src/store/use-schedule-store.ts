@@ -1042,9 +1042,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       return dayShifts
     }
 
-    // Fallback: active shifts of the month
-    const activeIds = get().getActiveShiftIds(month)
-    return get().shiftDefinitions.filter((s) => activeIds.includes(s.id))
+    // When no daily shift is configured for the month, return empty (vazio)
+    return []
   },
 
   setMonthDailyShifts: (month, dailyShifts) => {

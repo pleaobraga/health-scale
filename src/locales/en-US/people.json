@@ -123,6 +123,7 @@
     "restoreDefaultsTooltip": "Restores default shifts and rules for this month",
     "manageRules": "Manage Rules",
     "manageShifts": "Manage Shifts",
+    "managePeople": "Manage People",
     "noRules": "No rules registered",
     "noShifts": "No shifts registered",
     "errorSeverity": "Error",

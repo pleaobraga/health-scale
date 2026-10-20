@@ -194,5 +194,21 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
 
     expect(useScheduleStore.getState().getActiveRuleIds('2026-10')).toContain('rule_max_shifts_day')
   })
+
+  it('deve possuir botões de engrenagem para gerenciar pessoas e turnos no sidebar', () => {
+    renderSidebar()
+
+    const managePeopleBtn = screen.getByRole('button', { name: /gerenciar pessoas/i })
+    expect(managePeopleBtn).toBeInTheDocument()
+
+    const manageShiftsBtn = screen.getByRole('button', { name: /gerenciar turnos/i })
+    expect(manageShiftsBtn).toBeInTheDocument()
+
+    fireEvent.click(managePeopleBtn)
+    expect(useScheduleStore.getState().currentView).toBe('people')
+
+    fireEvent.click(manageShiftsBtn)
+    expect(useScheduleStore.getState().currentView).toBe('settings')
+  })
 })
 

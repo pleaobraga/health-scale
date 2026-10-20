@@ -1,11 +1,11 @@
 import {
   UserPlus,
   Users,
-  Sparkles,
   Search,
   ChevronDown,
   ChevronUp,
   ShieldCheck,
+  Clock,
   Settings,
   CalendarDays,
   X,
@@ -131,6 +131,11 @@ export function Sidebar() {
     navigate('/configuracoes/regras')
   }
 
+  const handleGoToShiftsManagement = () => {
+    setCurrentView('settings')
+    navigate('/configuracoes/turnos')
+  }
+
   return (
     <aside className="w-full h-full max-h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col shadow-xs overflow-hidden transition-all duration-300 select-none">
       {/* Mobile Header Toggle on screens < 1024px */}
@@ -211,6 +216,16 @@ export function Sidebar() {
               >
                 <UserPlus className="w-3 h-3" />
                 <span className="hidden xs:inline">{t('people:sidebar.linkButton')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleGoToGlobalManagement}
+                title={t('people:sidebar.managePeople')}
+                aria-label={t('people:sidebar.managePeople')}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+              >
+                <Settings className="w-3.5 h-3.5" />
               </button>
 
               <button
@@ -318,14 +333,6 @@ export function Sidebar() {
                   })
                 )}
               </div>
-
-              {/* Informative Hint */}
-              {monthPersons.length > 0 && (
-                <div className="p-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 shrink-0">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span dangerouslySetInnerHTML={{ __html: t('people:sidebar.hint') }} />
-                </div>
-              )}
             </div>
           )}
         </section>
@@ -372,6 +379,15 @@ export function Sidebar() {
               >
                 <CalendarDays className="w-3 h-3" />
                 <span className="hidden xs:inline">{t('people:sidebar.configureDailyShifts')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleGoToShiftsManagement}
+                title={t('people:sidebar.manageShifts')}
+                aria-label={t('people:sidebar.manageShifts')}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+              >
+                <Settings className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
