@@ -71,4 +71,50 @@ describe('ValidationPanel Component', () => {
     // Should display save feedback
     expect(useScheduleStore.getState().hasValidated).toBe(true)
   })
+
+  it('deve recolher e expandir o conteúdo do painel sem limpar a validação da store', () => {
+    useScheduleStore.setState({
+      hasValidated: true,
+      validationErrors: [],
+    })
+
+    render(<ValidationPanel />)
+
+    expect(screen.getByText('Escala 100% Conforme!')).toBeInTheDocument()
+
+    // Click Recolher painel
+    const collapseBtn = screen.getByRole('button', { name: /Recolher painel/i })
+    fireEvent.click(collapseBtn)
+
+    // Audit content is hidden
+    expect(screen.queryByText('Escala 100% Conforme!')).not.toBeInTheDocument()
+    // Store validation state remains active!
+    expect(useScheduleStore.getState().hasValidated).toBe(true)
+
+    // Click Expandir painel
+    const expandBtn = screen.getByRole('button', { name: /Expandir painel/i })
+    fireEvent.click(expandBtn)
+
+    // Audit content is visible again
+    expect(screen.getByText('Escala 100% Conforme!')).toBeInTheDocument()
+  })
+
+  it('deve ocultar a validação e limpar o estado da store ao clicar no botão Ocultar validação', () => {
+    useScheduleStore.setState({
+      hasValidated: true,
+      validationErrors: [],
+    })
+
+    render(<ValidationPanel />)
+
+    const hideBtn = screen.getByRole('button', { name: /Ocultar validação/i })
+    fireEvent.click(hideBtn)
+
+    // Store validation state is cleared
+    expect(useScheduleStore.getState().hasValidated).toBe(false)
+    expect(useScheduleStore.getState().validationErrors).toEqual([])
+    expect(screen.queryByText('Escala 100% Conforme!')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Ocultar validação/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Recolher painel/i })).not.toBeInTheDocument()
+  })
 })

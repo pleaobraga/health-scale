@@ -252,6 +252,8 @@
     "warning": "warning",
     "warnings": "warnings",
     "collapse": "Collapse panel",
+    "expand": "Expand panel",
+    "hideValidation": "Hide validation",
     "allGoodTitle": "Schedule 100% Compliant!",
     "allGoodDesc": "No consecutive rest violations, weekly limit infringements, or availability divergences found.",
     "blocking": "BLOCKING",

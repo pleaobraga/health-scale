@@ -252,6 +252,8 @@
     "warning": "aviso",
     "warnings": "avisos",
     "collapse": "Recolher painel",
+    "expand": "Expandir painel",
+    "hideValidation": "Ocultar validação",
     "allGoodTitle": "Escala 100% Conforme!",
     "allGoodDesc": "Nenhuma infração de descanso consecutivo, limite semanal ou divergência de disponibilidade foi encontrada.",
     "blocking": "BLOQUEANTE",
