@@ -107,5 +107,41 @@ describe('MonthPaymentsModal Component', () => {
     expect(screen.getByText('Dra. Beatriz Santos')).toBeInTheDocument()
     expect(screen.queryByText('Dr. Lucas Ferreira')).not.toBeInTheDocument()
   })
+
+  it('calcula corretamente valores quando profissionais estão alocados via assignments legados', () => {
+    useScheduleStore.setState({
+      persons: [
+        { id: 'p1', name: 'Dr. Lucas Ferreira', color: '#3b82f6', active: true },
+      ],
+      dayShiftAssignments: {},
+      assignments: {
+        '2026-10-01': ['p1'],
+        '2026-10-02': ['p1'],
+      },
+      availabilities: [
+        {
+          personId: 'p1',
+          month: '2026-10',
+          availableDays: [1, 2],
+          shiftRates: {
+            shift_d12: { 1: 500, 2: 500 },
+          },
+        },
+      ],
+    })
+
+    render(
+      <MonthPaymentsModal
+        isOpen={true}
+        onClose={vi.fn()}
+        currentMonth="2026-10"
+      />
+    )
+
+    // Should resolve rate to R$ 1000 total (500 + 500), not R$ 0
+    expect(screen.getByText('Dr. Lucas Ferreira')).toBeInTheDocument()
+    expect(screen.getByText('2 plantões')).toBeInTheDocument()
+    expect(screen.getAllByText(/1\.000,00/).length).toBeGreaterThanOrEqual(2)
+  })
 })
 

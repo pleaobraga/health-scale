@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear, getDaysCountInMonth } from '../../utils/date-utils'
+import { getPersonShiftRate } from '../../utils/shift-rate-utils'
 
 import type { Person, ShiftDefinition } from '../../types'
 
@@ -111,11 +112,7 @@ export function MonthPaymentsModal({
           handledPersonsOnDay.add(personId)
 
           const shiftDef = shiftDefMap.get(shiftId)
-          const userAvail = availabilities.find(
-            (a) => a.personId === personId && a.month === currentMonth,
-          )
-
-          const rate = userAvail?.shiftRates?.[shiftId]?.[day] ?? 0
+          const rate = getPersonShiftRate(availabilities, personId, currentMonth, shiftId, day)
           const hasRateConfigured = rate > 0
 
           const item: PersonShiftWorkItem = {
@@ -142,10 +139,7 @@ export function MonthPaymentsModal({
       if (legacyPersonIds && Array.isArray(legacyPersonIds)) {
         for (const personId of legacyPersonIds) {
           if (handledPersonsOnDay.has(personId)) continue // Already recorded for this day
-          const userAvail = availabilities.find(
-            (a) => a.personId === personId && a.month === currentMonth,
-          )
-          const rate = userAvail?.shiftRates?.['default']?.[day] ?? 0
+          const rate = getPersonShiftRate(availabilities, personId, currentMonth, undefined, day)
 
           const item: PersonShiftWorkItem = {
             dateStr,

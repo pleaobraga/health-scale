@@ -98,7 +98,8 @@ export function AvailabilityMiniCalendar({
       <div className="grid grid-cols-7 gap-1 pt-1">
         {daysArray.map((day) => {
           const isSelected = selectedDays.includes(day)
-          const hasRate = isSelected && dayRates && dayRates[day] !== undefined && dayRates[day] > 0
+          const rate = dayRates ? (dayRates[day] ?? dayRates[0] ?? 0) : 0
+          const hasRate = isSelected && rate > 0
           return (
             <button
               key={day}
@@ -118,7 +119,7 @@ export function AvailabilityMiniCalendar({
               <span>{day}</span>
               {hasRate && (
                 <span className="text-[9px] font-bold opacity-90 leading-tight">
-                  {`${t('people:monthAvailability.currencySymbol')}${dayRates[day]}`}
+                  {`${t('people:monthAvailability.currencySymbol')}${rate}`}
                 </span>
               )}
             </button>

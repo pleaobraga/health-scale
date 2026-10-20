@@ -13,7 +13,8 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
 import { AvailabilityMiniCalendar } from './availability-mini-calendar'
-import { formatMonthYear } from '../../utils/date-utils'
+import { formatMonthYear, getMonthDaysArray } from '../../utils/date-utils'
+import { parseNumericRate } from '../../utils/shift-rate-utils'
 
 import type { Person, ShiftDefinition } from '../../types'
 
@@ -120,9 +121,9 @@ export function MonthAvailabilityModal({
   // Group current shift rates by rate value
   const rateGroups = useMemo(() => {
     const groups: Record<number, number[]> = {}
-    currentShiftDays.forEach((d) => {
-      const rate = currentRates[d]
-      if (rate !== undefined && rate > 0) {
+    Object.entries(currentRates).forEach(([dStr, rate]) => {
+      const d = Number(dStr)
+      if (d > 0 && typeof rate === 'number' && rate > 0) {
         if (!groups[rate]) groups[rate] = []
         groups[rate].push(d)
       }
@@ -132,7 +133,7 @@ export function MonthAvailabilityModal({
       days: days.sort((a, b) => a - b),
       total: Number(rateStr) * days.length,
     }))
-  }, [currentShiftDays, currentRates])
+  }, [currentRates])
 
   const daysWithoutRate = useMemo(() => {
     return currentShiftDays.filter((d) => currentRates[d] === undefined || currentRates[d] <= 0)
@@ -154,35 +155,56 @@ export function MonthAvailabilityModal({
     setShiftAvailability(updated)
   }
 
-  const handleApplyRate = () => {
-    const numericRate = parseFloat(rateInput.replace(',', '.'))
-    if (isNaN(numericRate) || numericRate <= 0) return
+  const computeRateApplication = (
+    currentRateMap: Record<number, number>,
+    numericRate: number,
+    scope: 'all' | 'weekdays' | 'weekends' | 'custom',
+    customDays: number[],
+  ): Record<number, number> => {
+    const updated = { ...currentRateMap }
+    const allMonthDays = getMonthDaysArray(currentMonth)
+    const baseDaysPool = currentShiftDays.length > 0 ? currentShiftDays : allMonthDays
 
     let targetDays: number[] = []
-    if (rateApplyScope === 'all') {
-      targetDays = [...currentShiftDays]
-    } else if (rateApplyScope === 'weekdays') {
-      targetDays = currentShiftDays.filter((d) => {
+    if (scope === 'all') {
+      targetDays = baseDaysPool
+    } else if (scope === 'weekdays') {
+      targetDays = baseDaysPool.filter((d) => {
         const dow = getDayOfWeek(currentMonth, d)
         return dow >= 1 && dow <= 5
       })
-    } else if (rateApplyScope === 'weekends') {
-      targetDays = currentShiftDays.filter((d) => {
+    } else if (scope === 'weekends') {
+      targetDays = baseDaysPool.filter((d) => {
         const dow = getDayOfWeek(currentMonth, d)
         return dow === 0 || dow === 6
       })
-    } else if (rateApplyScope === 'custom') {
-      targetDays = customRateDays.filter((d) => currentShiftDays.includes(d))
+    } else if (scope === 'custom') {
+      targetDays = customDays.length > 0 ? customDays : baseDaysPool
     }
 
-    if (targetDays.length === 0) return
+    targetDays.forEach((d) => {
+      updated[d] = numericRate
+    })
+    // Store as default base rate for this shift
+    updated[0] = numericRate
+
+    return updated
+  }
+
+  const handleApplyRate = () => {
+    const numericRate = parseNumericRate(rateInput)
+    if (isNaN(numericRate) || numericRate <= 0) return
 
     const updatedShiftRates = { ...shiftRates }
     const currentEffective = { ...(updatedShiftRates[effectiveShiftId] || {}) }
-    targetDays.forEach((d) => {
-      currentEffective[d] = numericRate
-    })
-    updatedShiftRates[effectiveShiftId] = currentEffective
+    const newEffective = computeRateApplication(
+      currentEffective,
+      numericRate,
+      rateApplyScope,
+      customRateDays,
+    )
+
+    updatedShiftRates[effectiveShiftId] = newEffective
     setShiftRates(updatedShiftRates)
     setRateInput('')
     setCustomRateDays([])
@@ -210,10 +232,24 @@ export function MonthAvailabilityModal({
   }
 
   const handleSave = () => {
+    const finalShiftRates = { ...shiftRates }
+    const pendingRate = parseNumericRate(rateInput)
+
+    // Auto-apply if user typed a rate and clicked Save directly
+    if (!isNaN(pendingRate) && pendingRate > 0) {
+      const currentEffective = { ...(finalShiftRates[effectiveShiftId] || {}) }
+      finalShiftRates[effectiveShiftId] = computeRateApplication(
+        currentEffective,
+        pendingRate,
+        rateApplyScope,
+        customRateDays,
+      )
+    }
+
     if (hasMultipleShifts) {
-      onSave(person.id, uniqueDaysUnion, shiftAvailability, shiftRates)
+      onSave(person.id, uniqueDaysUnion, shiftAvailability, finalShiftRates)
     } else {
-      onSave(person.id, availableDays, undefined, shiftRates)
+      onSave(person.id, availableDays, undefined, finalShiftRates)
     }
     onClose()
   }
@@ -402,7 +438,7 @@ export function MonthAvailabilityModal({
                 <button
                   type="button"
                   onClick={handleApplyRate}
-                  disabled={!rateInput || currentShiftDays.length === 0}
+                  disabled={!rateInput.trim()}
                   className="flex items-center justify-center gap-1 px-3.5 py-1.5 text-xs font-bold rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition cursor-pointer shrink-0"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -417,7 +453,10 @@ export function MonthAvailabilityModal({
                     {t('people:monthAvailability.selectShiftDays')}
                   </span>
                   <div className="flex flex-wrap gap-1">
-                    {currentShiftDays.map((d) => {
+                    {(currentShiftDays.length > 0
+                      ? currentShiftDays
+                      : getMonthDaysArray(currentMonth)
+                    ).map((d) => {
                       const isChecked = customRateDays.includes(d)
                       return (
                         <button

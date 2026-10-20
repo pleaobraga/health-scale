@@ -3,6 +3,7 @@ import { ptBR } from 'date-fns/locale'
 import * as XLSX from 'xlsx'
 
 import { getMonthDaysArray, formatMonthYear } from './date-utils'
+import { getPersonShiftRate } from './shift-rate-utils'
 
 import type {
   Person,
@@ -151,10 +152,7 @@ export const generateScheduleWorkbook = ({
             const code = shiftDef ? shiftDef.code : 'PL'
             shiftCounts[code] = (shiftCounts[code] || 0) + 1
 
-            const userAvail = availabilities.find(
-              (a) => a.personId === person.id && a.month === month,
-            )
-            const rate = userAvail?.shiftRates?.[shiftId]?.[dayNum] ?? 0
+            const rate = getPersonShiftRate(availabilities, person.id, month, shiftId, dayNum)
             personTotalAmount += rate
           }
         }
@@ -164,10 +162,7 @@ export const generateScheduleWorkbook = ({
         workedThisDay = true
         shiftCounts['PL'] = (shiftCounts['PL'] || 0) + 1
 
-        const userAvail = availabilities.find(
-          (a) => a.personId === person.id && a.month === month,
-        )
-        const rate = userAvail?.shiftRates?.['default']?.[dayNum] ?? 0
+        const rate = getPersonShiftRate(availabilities, person.id, month, undefined, dayNum)
         personTotalAmount += rate
       }
 
@@ -291,10 +286,7 @@ export const generateScheduleWorkbook = ({
           if (!pId) continue
           const person = personMap.get(pId)
           const shiftDef = shiftDefMap.get(shiftId)
-          const userAvail = availabilities.find(
-            (a) => a.personId === pId && a.month === month,
-          )
-          const rate = userAvail?.shiftRates?.[shiftId]?.[dayNum] ?? 0
+          const rate = getPersonShiftRate(availabilities, pId, month, shiftId, dayNum)
           grandTotal += rate
 
           financialRows.push([
