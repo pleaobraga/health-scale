@@ -31,8 +31,6 @@ export function RulesManagementView() {
   const {
     shiftRules,
     shiftDefinitions,
-    currentMonth,
-    validationErrors,
     addShiftRule,
     updateShiftRule,
     deleteShiftRule,
@@ -503,36 +501,6 @@ export function RulesManagementView() {
                           )}
                         </div>
                       </div>
-
-                      {/* Active Month Impact Status */}
-                      {(() => {
-                        const violationsForRule = validationErrors.filter(
-                          (v) => v.rule === rule.id || v.id?.startsWith(rule.id)
-                        )
-                        const count = violationsForRule.length
-                        return (
-                          <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60 dark:border-slate-700/60">
-                            <span className="text-slate-400 font-medium">
-                              {t('settings:rules.activeMonthStatus.title', { month: currentMonth })}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                count > 0
-                                  ? 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300'
-                                  : 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300'
-                              }`}
-                            >
-                              {count > 0
-                                ? count === 1
-                                  ? t('settings:rules.activeMonthStatus.hasViolations', { count: 1 })
-                                  : t('settings:rules.activeMonthStatus.hasViolationsPlural', {
-                                      count,
-                                    })
-                                : t('settings:rules.activeMonthStatus.noViolations')}
-                            </span>
-                          </div>
-                        )
-                      })()}
                     </div>
                   </div>
 

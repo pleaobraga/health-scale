@@ -183,8 +183,8 @@ describe('RulesManagementView Component', () => {
       screen.getByText(/Dispara quando o mesmo profissional for escalado em mais de 1 plantão/i)
     ).toBeInTheDocument()
 
-    // Impacto no mês ativo
-    expect(screen.getByText(/Impacto na Escala Atual/i)).toBeInTheDocument()
+    // Impacto no mês ativo não deve ser exibido
+    expect(screen.queryByText(/Impacto na Escala Atual/i)).not.toBeInTheDocument()
   })
 
   it('deve filtrar as regras de acordo com a busca', () => {
