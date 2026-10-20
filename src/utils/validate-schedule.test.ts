@@ -296,5 +296,56 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(multiError).toBeDefined()
     expect(multiError?.severity).toBe('error')
   })
+
+  it('não deve gerar aviso de dia vazio para datas que não possuem plantão agendado', () => {
+    // Only day 1 has a shift scheduled; days 2..31 have no shifts
+    const monthDailyShifts = {
+      '2026-10': {
+        shift_d12: [1],
+      },
+    }
+
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1'], // Day 1 covered
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      monthDailyShifts,
+    })
+
+    const emptyErrors = errors.filter((e) => e.rule === 'empty_day')
+    // No empty day warning should be generated since day 1 is covered and days 2..31 have no scheduled shifts
+    expect(emptyErrors.length).toBe(0)
+  })
+
+  it('deve gerar aviso de dia vazio apenas se a data possui plantão agendado mas ninguém foi escalado', () => {
+    // Day 1 and Day 2 have shifts scheduled, but only Day 1 is covered
+    const monthDailyShifts = {
+      '2026-10': {
+        shift_d12: [1, 2],
+      },
+    }
+
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1'],
+      // Day 2 has a shift scheduled but no one assigned
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      monthDailyShifts,
+    })
+
+    const emptyErrors = errors.filter((e) => e.rule === 'empty_day')
+    expect(emptyErrors.length).toBe(1)
+    expect(emptyErrors[0].date).toBe('2026-10-02')
+  })
 })
 

@@ -1321,6 +1321,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       activeRuleIds,
       allRules: get().shiftRules,
       allShifts: get().shiftDefinitions,
+      monthDailyShifts: get().monthDailyShifts,
     })
     set({ validationErrors: errors, hasValidated: true })
     return errors

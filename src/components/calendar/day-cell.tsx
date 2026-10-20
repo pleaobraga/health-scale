@@ -267,11 +267,13 @@ export function DayCell({
                   })}
               </>
             ) : assignedPersonIds.length === 0 ? (
-              <div className="text-center py-1">
-                <span className="text-[11px] text-slate-300 dark:text-slate-600 italic">
-                  {t('calendar:dayCell.vacant')}
-                </span>
-              </div>
+              activeShifts && activeShifts.length > 0 ? (
+                <div className="text-center py-1">
+                  <span className="text-[11px] text-slate-300 dark:text-slate-600 italic">
+                    {t('calendar:dayCell.vacant')}
+                  </span>
+                </div>
+              ) : null
             ) : (
               assignedPersonIds.map((personId) => {
                 const person = personMap.get(personId)
@@ -469,28 +471,30 @@ export function DayCell({
                 </div>
 
                 {/* Inline CandidatePicker for single shift / fallback */}
-                <div className="pt-0.5 flex items-center justify-between">
-                  <CandidatePicker
-                    dateStr={dateStr}
-                    dayNumber={dayNumber}
-                    month={currentMonth}
-                    assignedPersonIds={assignedPersonIds}
-                    allPersons={monthPersons || allPersons}
-                    isPersonAvailable={isPersonAvailable}
-                    shiftId={activeShifts?.[0]?.id}
-                    shiftCode={activeShifts?.[0]?.code}
-                    shiftName={activeShifts?.[0]?.name}
-                    onSelectPerson={(personId) => {
-                      if (isPersonAvailable(personId, dayNumber, activeShifts?.[0]?.id)) {
-                        if (activeShifts?.[0]?.id && onAssignPersonToShift) {
-                          onAssignPersonToShift(activeShifts[0].id, personId)
-                        } else {
-                          onAddPerson(personId)
+                {activeShifts && activeShifts.length > 0 && (
+                  <div className="pt-0.5 flex items-center justify-between">
+                    <CandidatePicker
+                      dateStr={dateStr}
+                      dayNumber={dayNumber}
+                      month={currentMonth}
+                      assignedPersonIds={assignedPersonIds}
+                      allPersons={monthPersons || allPersons}
+                      isPersonAvailable={isPersonAvailable}
+                      shiftId={activeShifts?.[0]?.id}
+                      shiftCode={activeShifts?.[0]?.code}
+                      shiftName={activeShifts?.[0]?.name}
+                      onSelectPerson={(personId) => {
+                        if (isPersonAvailable(personId, dayNumber, activeShifts?.[0]?.id)) {
+                          if (activeShifts?.[0]?.id && onAssignPersonToShift) {
+                            onAssignPersonToShift(activeShifts[0].id, personId)
+                          } else {
+                            onAddPerson(personId)
+                          }
                         }
-                      }
-                    }}
-                  />
-                </div>
+                      }}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>

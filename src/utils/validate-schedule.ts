@@ -31,6 +31,7 @@ export interface ValidationParams {
   allRules?: ShiftRule[];
   allShifts?: ShiftDefinition[];
   dayShiftAssignments?: Record<string, Record<string, string>>;
+  monthDailyShifts?: Record<string, Record<string, number[]>>;
 }
 
 /**
@@ -52,6 +53,7 @@ export function validateSchedule({
   allRules,
   allShifts,
   dayShiftAssignments,
+  monthDailyShifts,
 }: ValidationParams): ValidationError[] {
   const errors: ValidationError[] = []
   const personMap = new Map<string, Person>(persons.map((p) => [p.id, p]))
@@ -73,15 +75,29 @@ export function validateSchedule({
     const dateStr = `${currentMonth}-${dayStr}`
     const assignedIds = allAssignments[dateStr] || []
 
-    // Check: Empty day
+    // Determine if this day is expected to have a shift scheduled
+    let isShiftExpectedOnDay = true
+    if (monthDailyShifts !== undefined) {
+      const monthDailyConfig = monthDailyShifts[currentMonth]
+      isShiftExpectedOnDay = Boolean(
+        monthDailyConfig &&
+          Object.values(monthDailyConfig).some(
+            (days) => Array.isArray(days) && days.includes(dayNum),
+          ),
+      )
+    }
+
+    // Check: Empty day (only warn if this day has a scheduled shift or if daily shift schedule is not provided)
     if (assignedIds.length === 0) {
-      errors.push({
-        id: `empty_${dateStr}`,
-        rule: 'empty_day',
-        severity: 'warning',
-        date: dateStr,
-        message: `Dia sem responsável: o dia ${formatDisplayDate(dateStr)} está sem nenhuma pessoa escalada.`,
-      })
+      if (isShiftExpectedOnDay) {
+        errors.push({
+          id: `empty_${dateStr}`,
+          rule: 'empty_day',
+          severity: 'warning',
+          date: dateStr,
+          message: `Dia sem responsável: o dia ${formatDisplayDate(dateStr)} está sem nenhuma pessoa escalada.`,
+        })
+      }
       continue
     }
 

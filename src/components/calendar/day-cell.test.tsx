@@ -435,5 +435,53 @@ describe('DayCell Component', () => {
     expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toBeInTheDocument()
     expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
   })
+
+  it('não deve mostrar nada (nem Vago nem picker) quando o dia não tem plantão definido e não tem ninguém escalado', () => {
+    // Read mode
+    const { unmount } = render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={[]}
+        dayShiftMap={{}}
+        activeShifts={[]}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    expect(screen.queryByText(/vago/i)).not.toBeInTheDocument()
+    unmount()
+
+    // Edit mode
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={true}
+        assignedPersonIds={[]}
+        dayShiftMap={{}}
+        activeShifts={[]}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    expect(screen.queryByText(/vago/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /escalar pessoa/i })).not.toBeInTheDocument()
+  })
 })
 

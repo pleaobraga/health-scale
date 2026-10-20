@@ -219,13 +219,13 @@ export function FullScreenCalendarModal() {
               const dayEvents = events.filter((e) => e.date === dayInfo.dateStr)
               const hasEvents = dayEvents.length > 0
               const hasMultiplePersons = assigned.length > 1
+              const dayShifts = getDayActiveShifts(dayInfo.dateStr)
 
               const getPersonShift = (personId: string): ShiftDefinition | undefined => {
                 const entry = Object.entries(dayShiftMap).find(([, pId]) => pId === personId)
                 if (entry) {
                   return shiftMap.get(entry[0])
                 }
-                const dayShifts = getDayActiveShifts(dayInfo.dateStr)
                 if (dayShifts.length > 0) {
                   const personIndex = assigned.indexOf(personId)
                   if (personIndex >= 0 && personIndex < dayShifts.length) {
@@ -291,11 +291,13 @@ export function FullScreenCalendarModal() {
                   {/* Cell Body with Assigned Persons */}
                   <div className="flex-1 flex flex-col justify-center space-y-1">
                     {sortedAssigned.length === 0 ? (
-                      <div className="text-center py-1">
-                        <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400">
-                          {t('calendar:dayCell.vacant')}
-                        </span>
-                      </div>
+                      dayShifts.length > 0 ? (
+                        <div className="text-center py-1">
+                          <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400">
+                            {t('calendar:dayCell.vacant')}
+                          </span>
+                        </div>
+                      ) : null
                     ) : (
                       sortedAssigned.map((personId) => {
                         const person = personMap.get(personId)
