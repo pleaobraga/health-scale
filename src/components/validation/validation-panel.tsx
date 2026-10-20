@@ -20,6 +20,7 @@ export function ValidationPanel() {
     isSaving,
     saveFeedback,
     dismissValidation,
+    shiftRules,
   } = useScheduleStore()
 
   const getSaveFeedbackText = (feedback: SaveFeedbackData | string) => {
@@ -62,24 +63,46 @@ export function ValidationPanel() {
         return { label: t('calendar:validation.rules.empty_day'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
       case 'not_available':
         return { label: t('calendar:validation.rules.not_available'), color: 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-800' }
-      default:
-        return { label: t('calendar:validation.rules.default'), color: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700' }
+      default: {
+        const dynamicRule = shiftRules.find((r) => r.id === rule)
+        return {
+          label: dynamicRule?.name || t('calendar:validation.rules.default'),
+          color: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800',
+        }
+      }
     }
   }
 
   return (
-    <div className="space-y-4 pt-2">
-      {/* Operational Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs transition-colors">
+    <section
+      aria-label={t('calendar:validation.title')}
+      className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 shadow-xs transition-colors space-y-4"
+    >
+      {/* Unified Action & Header Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-              {t('calendar:validation.title')}
-            </h3>
-            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                {t('calendar:validation.title')}
+              </h3>
+              {hasValidated && (
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  {validationErrors.length === 0
+                    ? t('calendar:validation.allCompliant')
+                    : t('calendar:validation.resultsSummary', {
+                        errors: errorsCount,
+                        errorLabel: errorsCount === 1 ? t('calendar:validation.criticalError') : t('calendar:validation.criticalErrors'),
+                        warnings: warningsCount,
+                        warningLabel: warningsCount === 1 ? t('calendar:validation.warning') : t('calendar:validation.warnings'),
+                      })}
+                </span>
+              )}
+            </div>
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {t('calendar:validation.subtitle')}
             </p>
           </div>
@@ -87,6 +110,17 @@ export function ValidationPanel() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
+          {hasValidated && (
+            <button
+              type="button"
+              onClick={dismissValidation}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{t('calendar:validation.collapse')}</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleValidate}
@@ -118,32 +152,21 @@ export function ValidationPanel() {
         </div>
       )}
 
-      {/* Log / Error Panel (Displayed on demand after validation or save) */}
+      {/* Audit Results Section (Seamlessly inside the unified card) */}
       {hasValidated && (
-        <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-xs animate-fadeIn space-y-4 transition-colors">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                {t('calendar:validation.resultsTitle')}
-              </h4>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {t('calendar:validation.resultsSummary', {
-                  errors: errorsCount,
-                  errorLabel: errorsCount === 1 ? t('calendar:validation.criticalError') : t('calendar:validation.criticalErrors'),
-                  warnings: warningsCount,
-                  warningLabel: warningsCount === 1 ? t('calendar:validation.warning') : t('calendar:validation.warnings'),
-                })}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={dismissValidation}
-              className="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 flex items-center gap-1 transition"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              {t('calendar:validation.collapse')}
-            </button>
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3 animate-fadeIn">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {t('calendar:validation.resultsTitle')}
+            </h4>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {t('calendar:validation.resultsSummary', {
+                errors: errorsCount,
+                errorLabel: errorsCount === 1 ? t('calendar:validation.criticalError') : t('calendar:validation.criticalErrors'),
+                warnings: warningsCount,
+                warningLabel: warningsCount === 1 ? t('calendar:validation.warning') : t('calendar:validation.warnings'),
+              })}
+            </span>
           </div>
 
           {/* All Good State */}
@@ -158,7 +181,7 @@ export function ValidationPanel() {
               </div>
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
               {validationErrors.map((err) => {
                 const badge = getRuleBadge(err.rule)
                 const isCritical = err.severity === 'error'
@@ -208,6 +231,6 @@ export function ValidationPanel() {
           )}
         </div>
       )}
-    </div>
+    </section>
   )
 }

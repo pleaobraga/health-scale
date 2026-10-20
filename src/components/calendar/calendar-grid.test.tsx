@@ -109,7 +109,7 @@ describe('CalendarGrid Component', () => {
     expect(screen.getByRole('button', { name: /edição/i })).toBeInTheDocument()
   })
 
-  it('deve abrir o menu de ações ao clicar no gatilho e exibir as 4 opções agrupadas', () => {
+  it('deve abrir o menu de ações ao clicar no gatilho e exibir as opções agrupadas', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
@@ -142,6 +142,9 @@ describe('CalendarGrid Component', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('menuitem', { name: /tela cheia/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('menuitem', { name: /valores a pagar/i }),
     ).toBeInTheDocument()
   })
 

@@ -1,8 +1,14 @@
 import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
-import type { Person } from '../../types'
+import type { Person, ShiftDefinition } from '../../types'
+
+export interface ShiftOption {
+  shift: ShiftDefinition
+  daysCount: number
+}
 
 export interface PersonCardProps {
   person: Person
@@ -10,9 +16,10 @@ export interface PersonCardProps {
   workingDaysCount?: number
   isHighlighted: boolean
   isEditMode?: boolean
+  availableShifts?: ShiftOption[]
   onToggleHighlight: () => void
   onEdit: () => void
-  onInsertAllDays: () => void
+  onInsertAllDays: (shiftId?: string) => void
   onRemoveFromMonth?: () => void
 }
 
@@ -22,6 +29,7 @@ export function PersonCard({
   workingDaysCount = 0,
   isHighlighted,
   isEditMode = false,
+  availableShifts = [],
   onToggleHighlight,
   onEdit,
   onInsertAllDays,
@@ -29,15 +37,100 @@ export function PersonCard({
 }: PersonCardProps) {
   const { t } = useTranslation(['people', 'common'])
   const [justInserted, setJustInserted] = useState(false)
+  const [isBalloonOpen, setIsBalloonOpen] = useState(false)
+  const [balloonPosition, setBalloonPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
+  const balloonRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   const canInsertAllDays = isEditMode && availableDaysCount > 0
+  const hasMultipleShifts = isEditMode && availableShifts && availableShifts.length > 1
 
-  const handleInsert = (e: React.MouseEvent) => {
+  const updatePosition = () => {
+    if (!buttonRef.current) return
+    const rect = buttonRef.current.getBoundingClientRect()
+    const balloonWidth = 260
+    const balloonHeight = 220
+
+    // Horizontal: align with the button's right edge, but clamp so it never goes off-screen to the left (min 12px)
+    // or off-screen to the right (max window.innerWidth - balloonWidth - 12)
+    let left = rect.right - balloonWidth
+    if (left < 12) {
+      left = 12
+    }
+    if (left + balloonWidth > window.innerWidth - 12) {
+      left = window.innerWidth - balloonWidth - 12
+    }
+
+    // Vertical: place below the button, or flip above if near the bottom of viewport
+    let top = rect.bottom + 6
+    if (top + balloonHeight > window.innerHeight - 12) {
+      top = Math.max(12, rect.top - balloonHeight - 6)
+    }
+
+    setBalloonPosition({ top, left })
+  }
+
+  const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onInsertAllDays()
+    if (hasMultipleShifts) {
+      if (!isBalloonOpen) {
+        updatePosition()
+        setIsBalloonOpen(true)
+      } else {
+        setIsBalloonOpen(false)
+      }
+    } else {
+      const shiftId = availableShifts?.[0]?.shift.id
+      onInsertAllDays(shiftId)
+      setJustInserted(true)
+      setTimeout(() => setJustInserted(false), 1500)
+    }
+  }
+
+  const handleSelectShiftOption = (shiftId?: string) => {
+    setIsBalloonOpen(false)
+    onInsertAllDays(shiftId)
     setJustInserted(true)
     setTimeout(() => setJustInserted(false), 1500)
   }
+
+  // Click outside, scroll, resize and Escape key to handle balloon
+  useEffect(() => {
+    if (!isBalloonOpen) return
+
+    updatePosition()
+
+    const handleScrollOrResize = () => {
+      updatePosition()
+    }
+
+    window.addEventListener('scroll', handleScrollOrResize, true)
+    window.addEventListener('resize', handleScrollOrResize)
+
+    const handleClickOutside = (ev: MouseEvent) => {
+      if (
+        balloonRef.current &&
+        !balloonRef.current.contains(ev.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(ev.target as Node)
+      ) {
+        setIsBalloonOpen(false)
+      }
+    }
+    const handleKeyDown = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') {
+        setIsBalloonOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true)
+      window.removeEventListener('resize', handleScrollOrResize)
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isBalloonOpen])
 
   const workingDayLabel = workingDaysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')
   const availableDayLabel = availableDaysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')
@@ -85,27 +178,101 @@ export function PersonCard({
       <div className="flex items-center gap-1 shrink-0">
         {/* Insert all days into calendar - Only visible in Edit Mode and if person has available days */}
         {canInsertAllDays && (
-          <button
-            type="button"
-            onClick={handleInsert}
-            title={
-              justInserted
-                ? t('people:card.insertedFeedback')
-                : t('people:card.insertTooltip', { count: availableDaysCount, name: person.name })
-            }
-            aria-label={t('people:card.insertAria', { name: person.name })}
-            className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
-              justInserted
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
-            }`}
-          >
-            {justInserted ? (
-              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-            ) : (
-              <CalendarPlus className="w-3.5 h-3.5" />
-            )}
-          </button>
+          <div>
+            <button
+              ref={buttonRef}
+              type="button"
+              onClick={handleButtonClick}
+              title={
+                justInserted
+                  ? t('people:card.insertedFeedback')
+                  : t('people:card.insertTooltip', { count: availableDaysCount, name: person.name })
+              }
+              aria-label={t('people:card.insertAria', { name: person.name })}
+              className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 cursor-pointer ${
+                justInserted
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : isBalloonOpen
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 ring-2 ring-emerald-500/30'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
+              }`}
+            >
+              {justInserted ? (
+                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+              ) : (
+                <CalendarPlus className="w-3.5 h-3.5" />
+              )}
+            </button>
+
+            {/* Balão / Popover de seleção de escala renderizado no body via Portal */}
+            {isBalloonOpen &&
+              hasMultipleShifts &&
+              typeof document !== 'undefined' &&
+              createPortal(
+                <div
+                  ref={balloonRef}
+                  data-testid="shift-selection-balloon"
+                  role="dialog"
+                  aria-label={t('people:card.selectShiftTitle')}
+                  style={{
+                    position: 'fixed',
+                    top: `${balloonPosition.top}px`,
+                    left: `${balloonPosition.left}px`,
+                    zIndex: 9999,
+                  }}
+                  className="w-64 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl animate-fadeIn"
+                >
+                  <div className="px-2 py-1 mb-1 border-b border-slate-100 dark:border-slate-800">
+                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200">
+                      {t('people:card.selectShiftTitle')}
+                    </p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                      {t('people:card.selectShiftSubtitle')}
+                    </p>
+                  </div>
+
+                  <div className="space-y-0.5 max-h-48 overflow-y-auto custom-scrollbar">
+                    {availableShifts.map(({ shift, daysCount }) => (
+                      <button
+                        key={shift.id}
+                        type="button"
+                        onClick={() => handleSelectShiftOption(shift.id)}
+                        className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center justify-between gap-2 cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span
+                            style={{ backgroundColor: shift.color }}
+                            className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded text-white shrink-0 shadow-2xs"
+                          >
+                            {shift.code}
+                          </span>
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                            {shift.name}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0">
+                          {daysCount} {daysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectShiftOption(undefined)}
+                      className="w-full text-left px-2 py-1.5 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold text-xs transition flex items-center justify-between gap-2 cursor-pointer"
+                    >
+                      <span>{t('people:card.allShiftsOption')}</span>
+                      <span className="text-[10px] font-semibold text-indigo-500">
+                        {availableDaysCount} {availableDaysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')}
+                      </span>
+                    </button>
+                  </div>
+                </div>,
+                document.body
+              )}
+          </div>
         )}
 
         {/* Toggle View Availability */}

@@ -38,6 +38,12 @@ describe('HoverSidebar Component', () => {
       screen.getByRole('link', { name: /gerenciar pessoas/i }),
     ).toBeInTheDocument()
     expect(
+      screen.getByRole('link', { name: /turnos de trabalho/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /regras de validação/i }),
+    ).toBeInTheDocument()
+    expect(
       screen.getByRole('button', { name: /mudar para modo escuro/i }),
     ).toBeInTheDocument()
   })
@@ -49,6 +55,24 @@ describe('HoverSidebar Component', () => {
     fireEvent.click(peopleLink)
 
     expect(useScheduleStore.getState().currentView).toBe('people')
+  })
+
+  it('deve alternar a tela para "shifts" ao clicar em Turnos de Trabalho', () => {
+    renderWithRouter()
+
+    const shiftsLink = screen.getByRole('link', { name: /turnos de trabalho/i })
+    fireEvent.click(shiftsLink)
+
+    expect(useScheduleStore.getState().currentView).toBe('shifts')
+  })
+
+  it('deve alternar a tela para "rules" ao clicar em Regras de Validação', () => {
+    renderWithRouter()
+
+    const rulesLink = screen.getByRole('link', { name: /regras de validação/i })
+    fireEvent.click(rulesLink)
+
+    expect(useScheduleStore.getState().currentView).toBe('rules')
   })
 
   it('deve alternar a tela para "calendar" ao clicar em Calendário de Escalas', () => {

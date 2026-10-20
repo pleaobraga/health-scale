@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import { validateSchedule } from './validate-schedule'
 
-import type { Person, MonthlyAvailability } from '../types'
+import type { Person, MonthlyAvailability, ShiftRule } from '../types'
 
 describe('validateSchedule - Motor de Regras e Auditoria', () => {
   const mockPersons: Person[] = [
@@ -168,6 +168,184 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
 
     const criticalErrors = errors.filter((e) => e.severity === 'error')
     expect(criticalErrors.length).toBe(0)
+  })
+
+  it('permite 2 pessoas no mesmo dia quando alocadas em turnos de 12h distintos sem gerar erro multi_assigned', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p3'], // 2 people on the same day
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_d12: 'p1', // Dra. Camila on D12 (07:00-19:00)
+        shift_n12: 'p3', // Enf. Beatriz on N12 (19:00-07:00)
+      },
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      activeRuleIds: ['rule_max_shifts_day'],
+    })
+
+    const multiAssignedError = errors.find((e) => e.rule === 'multi_assigned')
+    expect(multiAssignedError).toBeUndefined()
+  })
+
+  it('valida regra dinâmica MAX_PEOPLE_PER_SHIFT acusando erro quando limite de pessoas no mesmo turno é ultrapassado', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p2'],
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_d12: 'p1',
+      },
+    }
+
+    const maxOnePersonRule: ShiftRule = {
+      id: 'rule_max_1_person_shift',
+      name: 'Máx 1 pessoa por plantão',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // Both p1 and p2 end up assigned to default shift if dayShiftAssignments isn't distinguishing, or if both are on shift_d12
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      allRules: [maxOnePersonRule],
+      activeRuleIds: ['rule_max_1_person_shift'],
+    })
+
+    const ruleError = errors.find((e) => e.rule === 'rule_max_1_person_shift')
+    expect(ruleError).toBeDefined()
+    expect(ruleError?.severity).toBe('error')
+  })
+
+  it('valida regra dinâmica MAX_PEOPLE_PER_SHIFT acusando erro quando 2 turnos diferentes no mesmo dia se sobrepõem no horário (ex: 24h e 12h noite)', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p2'],
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_p24: 'p1', // Plantão 24h (07:00-07:00)
+        shift_n12: 'p2', // Plantão Noturno 12h (19:00-07:00)
+      },
+    }
+
+    const maxOnePersonRule: ShiftRule = {
+      id: 'rule_max_1_person_shift',
+      name: 'Máx 1 pessoa por plantão',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      allRules: [maxOnePersonRule],
+      activeRuleIds: ['rule_max_1_person_shift'],
+    })
+
+    const ruleErrors = errors.filter((e) => e.rule === 'rule_max_1_person_shift')
+    expect(ruleErrors.length).toBe(2)
+    expect(ruleErrors[0].message).toContain('trabalhando simultaneamente')
+  })
+
+  it('acusa conflito de alocação se 2 turnos diferentes no mesmo dia se sobrepõem quando não há regra dinâmica configurada', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p2'],
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_p24: 'p1', // Plantão 24h (07:00-07:00)
+        shift_n12: 'p2', // Plantão Noturno 12h (19:00-07:00) - sobrepõem-se das 19h às 07h
+      },
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      activeRuleIds: ['rule_max_shifts_day'], // MAX_PEOPLE_PER_SHIFT não ativo
+    })
+
+    const multiError = errors.find((e) => e.rule === 'multi_assigned')
+    expect(multiError).toBeDefined()
+    expect(multiError?.severity).toBe('error')
+  })
+
+  it('não deve gerar aviso de dia vazio para datas que não possuem plantão agendado', () => {
+    // Only day 1 has a shift scheduled; days 2..31 have no shifts
+    const monthDailyShifts = {
+      '2026-10': {
+        shift_d12: [1],
+      },
+    }
+
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1'], // Day 1 covered
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      monthDailyShifts,
+    })
+
+    const emptyErrors = errors.filter((e) => e.rule === 'empty_day')
+    // No empty day warning should be generated since day 1 is covered and days 2..31 have no scheduled shifts
+    expect(emptyErrors.length).toBe(0)
+  })
+
+  it('deve gerar aviso de dia vazio apenas se a data possui plantão agendado mas ninguém foi escalado', () => {
+    // Day 1 and Day 2 have shifts scheduled, but only Day 1 is covered
+    const monthDailyShifts = {
+      '2026-10': {
+        shift_d12: [1, 2],
+      },
+    }
+
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1'],
+      // Day 2 has a shift scheduled but no one assigned
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      monthDailyShifts,
+    })
+
+    const emptyErrors = errors.filter((e) => e.rule === 'empty_day')
+    expect(emptyErrors.length).toBe(1)
+    expect(emptyErrors[0].date).toBe('2026-10-02')
   })
 })
 

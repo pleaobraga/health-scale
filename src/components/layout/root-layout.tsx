@@ -26,6 +26,10 @@ export function RootLayout() {
       setCurrentView('calendar')
     } else if (path.startsWith('/pessoas')) {
       setCurrentView('people')
+    } else if (path.startsWith('/turnos')) {
+      setCurrentView('shifts')
+    } else if (path.startsWith('/regras')) {
+      setCurrentView('rules')
     } else if (path.startsWith('/importar')) {
       setCurrentView('import')
     } else if (path.startsWith('/enderecos')) {

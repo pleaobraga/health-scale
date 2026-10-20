@@ -248,6 +248,31 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(assignments['2026-10-06']).toBeUndefined()
   })
 
+  it('deve inserir dias vinculados a uma escala específica com insertAllPersonDaysToMonth e shiftId', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-10'
+    const personId = store.persons[0].id
+
+    // Set shift availability (days 3 and 7 for shift_d12, days 4 and 8 for shift_n12)
+    store.setPersonAvailability(personId, month, [3, 4, 7, 8], {
+      shift_d12: [3, 7],
+      shift_n12: [4, 8],
+    })
+
+    // Clear month first
+    store.clearMonthAssignments(month)
+
+    // Insert only days for shift_d12
+    store.insertAllPersonDaysToMonth(personId, month, 'shift_d12')
+
+    const state = useScheduleStore.getState()
+    expect(state.assignments['2026-10-03']).toContain(personId)
+    expect(state.assignments['2026-10-07']).toContain(personId)
+    expect(state.assignments['2026-10-04']).toBeUndefined()
+    expect(state.dayShiftAssignments['2026-10-03']?.shift_d12).toBe(personId)
+    expect(state.dayShiftAssignments['2026-10-07']?.shift_d12).toBe(personId)
+  })
+
   it('deve reverter alterações no calendário ao sair do modo de edição sem salvar', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'
@@ -416,6 +441,69 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       true,
     )
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
+  })
+
+  it('deve associar e desassociar profissional de um turno específico via assignPersonToShift e removePersonFromShift', () => {
+    const store = useScheduleStore.getState()
+    const dateStr = '2026-10-15'
+
+    // Atribui p1 ao turno shift_d12
+    store.assignPersonToShift(dateStr, 'shift_d12', 'p1')
+
+    let state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]?.shift_d12).toBe('p1')
+    expect(state.assignments[dateStr]).toContain('p1')
+    expect(state.hasUnsavedChanges).toBe(true)
+
+    // Atribui p2 ao turno shift_n12 no mesmo dia (2 pessoas em turnos de 12h distintos)
+    store.assignPersonToShift(dateStr, 'shift_n12', 'p2')
+
+    state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]?.shift_d12).toBe('p1')
+    expect(state.dayShiftAssignments[dateStr]?.shift_n12).toBe('p2')
+    expect(state.assignments[dateStr]).toEqual(['p1', 'p2'])
+
+    // Remove p1 do shift_d12
+    store.removePersonFromShift(dateStr, 'shift_d12')
+
+    state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]?.shift_d12).toBeUndefined()
+    expect(state.dayShiftAssignments[dateStr]?.shift_n12).toBe('p2')
+    expect(state.assignments[dateStr]).toEqual(['p2'])
+
+    // Limpar mês deve limpar também dayShiftAssignments
+    store.clearMonthAssignments('2026-10')
+    state = useScheduleStore.getState()
+    expect(state.dayShiftAssignments[dateStr]).toBeUndefined()
+    expect(state.assignments[dateStr]).toBeUndefined()
+  })
+
+  it('deve retornar lista vazia em getDayActiveShifts quando o mês não tiver plantão diário configurado', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-11'
+    useScheduleStore.setState({
+      monthDailyShifts: { [month]: {} },
+    })
+
+    // Como não há plantões diários configurados para 2026-11, deve retornar vazio
+    const activeShifts = store.getDayActiveShifts('2026-11-05')
+    expect(activeShifts).toEqual([])
+  })
+
+  it('deve retornar apenas os turnos alocados ao dia quando o mês tiver plantões configurados', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-12'
+    store.setMonthDailyShifts(month, {
+      shift_d12: [1, 2, 3],
+      shift_n12: [3, 4, 5],
+    })
+
+    // Dia 1: apenas shift_d12
+    expect(store.getDayActiveShifts('2026-12-01').map((s) => s.id)).toEqual(['shift_d12'])
+    // Dia 3: shift_d12 e shift_n12
+    expect(store.getDayActiveShifts('2026-12-03').map((s) => s.id)).toEqual(['shift_d12', 'shift_n12'])
+    // Dia 10: nenhum turno alocado
+    expect(store.getDayActiveShifts('2026-12-10')).toEqual([])
   })
 })
 

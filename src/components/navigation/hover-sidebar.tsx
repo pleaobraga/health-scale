@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   Check,
+  Clock,
   Cloud,
   CloudDownload,
   CloudOff,
@@ -15,6 +16,7 @@ import {
   Sun,
   Upload,
   User as UserIcon,
+  UserCog,
   Users,
   X,
 } from 'lucide-react'
@@ -85,6 +87,20 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
       end: false,
     },
     {
+      id: 'shifts',
+      path: '/turnos',
+      label: t('nav.shifts', { defaultValue: 'Turnos de Trabalho' }),
+      icon: Clock,
+      end: false,
+    },
+    {
+      id: 'rules',
+      path: '/regras',
+      label: t('nav.rules', { defaultValue: 'Regras de Validação' }),
+      icon: ShieldCheck,
+      end: false,
+    },
+    {
       id: 'addresses',
       path: '/enderecos',
       label: t('nav.addresses', { defaultValue: 'Gerenciar Endereços' }),
@@ -112,7 +128,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
       id: 'users',
       path: '/usuarios',
       label: t('nav.users', { defaultValue: 'Gestão de Usuários' }),
-      icon: ShieldCheck,
+      icon: UserCog,
       end: false,
     })
   }

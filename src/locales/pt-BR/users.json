@@ -10,6 +10,8 @@
   "loading": "Carregando usuários cadastrados...",
   "emptySearchTitle": "Nenhum usuário encontrado",
   "emptySearchSubtitle": "Tente buscar com outro termo ou cadastre um novo usuário.",
+  "emptyTitle": "Nenhum usuário cadastrado",
+  "emptySubtitle": "Cadastre novos usuários com permissões de acesso ao sistema.",
   "roles": {
     "admin": "Admin",
     "user": "Usuário"

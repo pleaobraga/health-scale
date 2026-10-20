@@ -8,6 +8,7 @@ export interface AvailabilityMiniCalendarProps {
   selectedDays: number[]
   onChange: (days: number[]) => void
   accentColor?: string
+  dayRates?: Record<number, number>
 }
 
 export function AvailabilityMiniCalendar({
@@ -15,6 +16,7 @@ export function AvailabilityMiniCalendar({
   selectedDays,
   onChange,
   accentColor = '#3b82f6',
+  dayRates,
 }: AvailabilityMiniCalendarProps) {
   const { t, i18n } = useTranslation(['people', 'common'])
   const totalDays = getDaysCountInMonth(month)
@@ -96,6 +98,7 @@ export function AvailabilityMiniCalendar({
       <div className="grid grid-cols-7 gap-1 pt-1">
         {daysArray.map((day) => {
           const isSelected = selectedDays.includes(day)
+          const hasRate = isSelected && dayRates && dayRates[day] !== undefined && dayRates[day] > 0
           return (
             <button
               key={day}
@@ -106,13 +109,18 @@ export function AvailabilityMiniCalendar({
                   ? { backgroundColor: accentColor, color: '#ffffff', borderColor: accentColor }
                   : undefined
               }
-              className={`h-8 text-xs font-medium rounded-lg flex items-center justify-center transition-all ${
+              className={`min-h-8 py-1 px-0.5 text-xs font-medium rounded-lg flex flex-col items-center justify-center transition-all ${
                 isSelected
-                  ? 'shadow-sm font-semibold'
+                  ? 'shadow-xs font-semibold'
                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
-              {day}
+              <span>{day}</span>
+              {hasRate && (
+                <span className="text-[9px] font-bold opacity-90 leading-tight">
+                  {`${t('people:monthAvailability.currencySymbol')}${dayRates[day]}`}
+                </span>
+              )}
             </button>
           )
         })}

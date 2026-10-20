@@ -219,4 +219,97 @@ describe('FullScreenCalendarModal', () => {
     expect(responsibleBadge).toHaveClass('print-person-chip')
     expect(responsibleBadge).toHaveStyle({ backgroundColor: '#10B981' })
   })
+
+  it('deve exibir a sigla da escala mesmo quando apenas 1 pessoa estiver escalada no dia', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      shiftDefinitions: [
+        {
+          id: 's_d12',
+          name: 'Plantão Diurno 12h',
+          code: 'D12',
+          startTime: '07:00',
+          durationHours: 12,
+          color: '#3B82F6',
+          enabledByDefault: true,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+      ],
+      persons: [{ id: 'p1', name: 'Dr. Roberto Alves', color: '#3B82F6' }],
+      assignments: {
+        '2026-10-15': ['p1'],
+      },
+      dayShiftAssignments: {
+        '2026-10-15': { s_d12: 'p1' },
+      },
+      events: [],
+    })
+
+    render(<FullScreenCalendarModal />)
+
+    // Name must be present
+    expect(screen.getByText('Dr. Roberto Alves')).toBeInTheDocument()
+    // Shift badge D12 must be present
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
+  })
+
+  it('deve exibir a sigla da escala de cada profissional quando houver mais de 1 pessoa escalada no dia', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      shiftDefinitions: [
+        {
+          id: 's_d12',
+          name: 'Plantão Diurno 12h',
+          code: 'D12',
+          startTime: '07:00',
+          durationHours: 12,
+          color: '#3B82F6',
+          enabledByDefault: true,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+        {
+          id: 's_n12',
+          name: 'Plantão Noturno 12h',
+          code: 'N12',
+          startTime: '19:00',
+          durationHours: 12,
+          color: '#8B5CF6',
+          enabledByDefault: true,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+      ],
+      persons: [
+        { id: 'p1', name: 'Dra. Camila', color: '#10B981' },
+        { id: 'p2', name: 'Dra. Ana', color: '#F59E0B' },
+      ],
+      assignments: {
+        '2026-10-15': ['p1', 'p2'],
+      },
+      dayShiftAssignments: {
+        '2026-10-15': {
+          s_d12: 'p1',
+          s_n12: 'p2',
+        },
+      },
+      events: [],
+    })
+
+    render(<FullScreenCalendarModal />)
+
+    expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
+    expect(screen.getByText('Dra. Ana')).toBeInTheDocument()
+
+    // Shift badges must be present because there is more than 1 person assigned
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
+
+    expect(screen.getByTestId('shift-badge-2026-10-15-N12')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-N12')).toHaveTextContent('N12')
+  })
 })

@@ -13,6 +13,8 @@
   "nav": {
     "calendar": "Calendário de Escalas",
     "people": "Gerenciar Pessoas",
+    "shifts": "Turnos de Trabalho",
+    "rules": "Regras de Validação",
     "addresses": "Gerenciar Endereços",
     "import": "Importar Dados",
     "settings": "Configurações",
@@ -46,7 +48,13 @@
     "modeDarkLabel": "Modo Escuro",
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu",
-    "logout": "Sair da Conta"
+    "logout": "Sair da Conta",
+    "activate": "Ativar",
+    "deactivate": "Desativar"
+  },
+  "theme": {
+    "light": "Modo Claro",
+    "dark": "Modo Escuro"
   },
   "sync": {
     "cloudActive": "Nuvem Ativa",
@@ -57,6 +65,10 @@
     "select": "Selecione o idioma",
     "ptBR": "Português (Brasil)",
     "enUS": "English (US)"
+  },
+  "status": {
+    "defaultActive": "Padrão Ativo",
+    "defaultInactive": "Padrão Inativo"
   }
 }
 
