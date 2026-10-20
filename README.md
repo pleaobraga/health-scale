@@ -14,6 +14,8 @@
 
 - [Overview](#-overview)
 - [Key Features](#-key-features)
+- [Shift Types & Pricing Architecture](#-shift-types--pricing-architecture)
+- [Compliance & Dynamic Rule Engine](#-compliance--dynamic-rule-engine)
 - [Internationalization (i18n)](#-internationalization-i18n)
 - [Authentication & Cloud Synchronization](#-authentication--cloud-synchronization)
 - [Live Demo & Static Hosting](#-live-demo--static-hosting)
@@ -63,17 +65,31 @@
   - Professionals with **zero historical allocations** can be permanently removed from the system.
 - **Month-Specific Linking**: Isolate global staff into only the participants active for the selected month via `AddMonthParticipantsModal`.
 
-### 🛡️ 3. Shift Compliance & Audit Engine
+### ⏰ 3. Shift Definitions & Multi-Shift Allocation
+
+- **Custom Shift Types (`ShiftDefinition`)**: Create and manage customizable shifts (e.g., 12h Day, 12h Night, 24h Emergency) with custom codes, start times, durations, and high-contrast colors.
+- **Daily Shift Requirements**: Set different daily coverage rules per month (e.g. 24h continuous coverage on weekdays, 12h on weekends, or custom dates) via `MonthShiftConfigModal`.
+- **Granular Multi-Shift Assignment**: Cells in the calendar support multiple shifts per day with instant assignment and vacancy tracking.
+
+### 💰 4. Shift Pricing, Day-Specific Rates & Financial Closing
+
+- **Flexible Rate Configuration**: Healthcare professionals can define distinct rates (in R$) for each shift type they are willing to take.
+- **Day-Specific Differentiation**: Within the same shift, staff can specify different rates depending on the day (e.g., standard rates for weekdays and surge/premium rates for weekends or specific holidays).
+- **In-Calendar Rate Badges**: When selecting availability in `AvailabilityMiniCalendar`, each marked day displays its configured rate (e.g., `R$350`) directly inside the day cell.
+- **Monthly Payments Report (`MonthPaymentsModal`)**:
+  - Accessible directly from the **Options** menu in the calendar grid (**"Valores a Pagar"**).
+  - Displays instant KPI summary cards: **Total Amount Due**, **Total Scheduled Shifts**, and **Active Healthcare Workers**.
+  - Search filter by professional name and collapsible day-by-day breakdowns detailing dates, shift codes, and rates earned.
+  - Automatic detection and warnings for shifts completed without a pre-configured rate.
+
+### 🛡️ 5. Shift Compliance & Audit Engine
 
 - **Consecutive Days Rule**: Prohibits assigning the same professional to consecutive days ($D$ and $D+1$), seamlessly validating across month boundaries (e.g., October 31st and November 1st).
 - **Weekly Shift Limit**: Enforces a maximum allocation threshold (default: $\le 2$ shifts per Sunday-to-Saturday block), auditing across month transitions.
-- **Conflict & Availability Checks**:
-  - Flags days with more than one assigned professional (unresolved multi-allocation).
-  - Flags days where an assigned professional has not registered availability.
-  - Warns about unassigned empty days.
-- **Audit Panel**: Instant diagnostic panel providing clear, actionable warnings and blocking errors.
+- **Dynamic Rule Engine**: Full global rule builder supporting `MAX_SHIFTS_PER_PERIOD`, `MAX_HOURS_PER_PERIOD`, `MIN_REST_HOURS`, `CONSECUTIVE_DAYS_LIMIT`, `MAX_PEOPLE_PER_SHIFT`, and `DAILY_SHIFT_HOURS`.
+- **Audit Modal (`ScheduleAuditModal`)**: Unified diagnostics modal providing clear, actionable warnings and blocking errors with rule toggling.
 
-### 📊 4. Advanced Multi-Sheet Excel Export (.xlsx)
+### 📊 6. Advanced Multi-Sheet Excel Export (.xlsx)
 
 Export the active month schedule with one click into a formatted spreadsheet containing 3 dedicated sheets:
 
@@ -81,26 +97,31 @@ Export the active month schedule with one click into a formatted spreadsheet con
 2. **Summary by Professional**: Total shift count and specific days worked per team member.
 3. **Panoramic Grid Matrix**: Full matrix cross-referencing all professionals against days 1 to $N$, with daily totals.
 
-### 💾 5. Backup, Restore & Data Migration
+### 💾 7. Backup, Restore & Data Migration
 
 - **JSON Snapshot Export**: One-click full database export (`escala_backup_YYYY-MM-DD_HHmm.json`).
 - **Inspection & Conflict Prevention**: Preview backup contents before restoring, with confirmation modals preventing accidental data overwrite.
 - **Onboarding Redirection**: If first opening the app with no local data, new users are automatically guided to import existing data or start fresh.
 - **Admin Cloud Recovery**: Administrators can pull data saved on Firestore directly from the Import screen.
 
-### 🌓 6. Ergonomics, Theme & Print System
+### 🌓 8. Ergonomics, Theme & Print System
 
 - **Dark & Light Mode**: Fluid theme switching with persistent user preference and accessible contrast ratios.
 - **Dark Theme Print Support**: Intelligent CSS media queries (`@media print`) ensure that schedules and event tables print with high-contrast, paper-optimized light backgrounds even when using dark theme.
+- **Structured Accordion Sidebar**: Clean hierarchical ordering:
+  1. **Plantões do Mês** (Month Shifts configuration and overview)
+  2. **Pessoas do Mês** (Active monthly staff, availability, and color badges)
+  3. **Regras de Validação** (Validation rules active for the period)
+- **Responsive Mobile Header**: For viewports under 1024px, the sidebar collapses into a sleek mobile header titled **"Painel do Mês"** with a `SlidersHorizontal` icon.
 - **Hover Sidebar (Desktop)**: Space-saving retractable drawer that smoothly expands on hover.
 - **Mobile Friendly**: Dedicated top navigation bar and full-screen drawer menu for smartphones and tablets.
 
-### 🛡️ 7. Fault Isolation & Error Boundaries
+### 🛡️ 9. Fault Isolation & Error Boundaries
 
 - **Component & Route Isolation**: Implements React 19 `ErrorBoundary` wrappers around main application views and route outlets.
 - **Graceful Error Recovery**: Traps runtime exceptions to prevent full application crashes, providing users with actionable error messages and one-click reload/retry options.
 
-### 🌐 8. Multilingual Support & Internationalization (i18n)
+### 🌐 10. Multilingual Support & Internationalization (i18n)
 
 - **Two First-Class Locales**: Full native support for Brazilian Portuguese (`pt-BR`, default) and US English (`en-US`).
 - **Modern Accessible Language Selector**: Dropdown component (`LanguageSelector`) featuring vector SVG flags for Brazil 🇧🇷 and USA 🇺🇸, keyboard navigation (`Escape`), and outside-click auto-dismiss.
@@ -321,7 +342,7 @@ graph TD
 | **Routing**        | [React Router 7](https://reactrouter.com/)                                                                                                | Declarative client-side Hash routing (`createHashRouter`)                      |
 | **Icons**          | [Lucide React](https://lucide.dev/)                                                                                                       | Lightweight, customizable SVG icons                                            |
 | **Spreadsheets**   | [SheetJS (xlsx)](https://sheetjs.com/)                                                                                                    | Client-side Excel workbook and sheet generation                                |
-| **Testing**        | [Vitest 5](https://vitest.dev/) + Testing Library                                                                                         | 29 test suites with 198 unit and integration tests                             |
+| **Testing**        | [Vitest 5](https://vitest.dev/) + Testing Library                                                                                         | 44 test files with 327 unit and integration tests (100% pass rate)             |
 | **i18n**           | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/) + [LanguageDetector](https://github.com/i18next/i18next-browser-languageDetector) | Multilingual architecture (`pt-BR` & `en-US`) with strict TypeScript typings |
 | **Linter & Hooks** | [ESLint 10](https://eslint.org/) + [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) | Flat config, semicolon-free formatting, named exports, and pre-commit auto-fix |
 | **Documentation**  | [Storybook 10](https://storybook.js.org/)                                                                                                 | Isolated stories for every UI component and modal                              |
@@ -468,7 +489,7 @@ The project features a comprehensive test suite covering utilities, services, st
 pnpm test:run
 ```
 
-_Current test metrics: **29 test files, 198 tests passing** (100% pass rate)._
+_Current test metrics: **44 test files, 327 tests passing** (100% pass rate)._
 
 ### ESLint Flat Config & Code Quality
 
@@ -479,6 +500,7 @@ Configured in `eslint.config.js` using the modern ESLint Flat Config format:
 - **Import Ordering & Grouping**: Deterministic organization of external, internal, and sibling modules (`import/order`).
 - **Consistent Type Imports**: Enforces `import type` for type-only imports (`@typescript-eslint/consistent-type-imports`).
 - **Storybook Linting**: Dedicated validation for component stories (`eslint-plugin-storybook`).
+- **i18n String Safety**: Checks for untranslated raw literal strings via `eslint-plugin-i18next`.
 
 ### Git Hooks & Automated Pre-Commit (Husky & lint-staged)
 
@@ -491,9 +513,16 @@ The repository enforces code quality automatically via Git hooks managed by **Hu
 
 Component development and UI states are documented in isolation using **Storybook 10**:
 
-- Comprehensive story coverage for all modals (Day Events, Unsaved Changes, Confirm Overwrite, Availability, Fullscreen Calendar).
+- Comprehensive story coverage for all modals:
+  - `MonthPaymentsModal` (Financial overview, payment KPIs, and detailed shift rates).
+  - `MonthShiftConfigModal` (Daily shift occurrences and monthly requirements).
+  - `MonthAvailabilityModal` (Multi-shift availability and day-specific pricing rules).
+  - `ScheduleAuditModal` (Unified audit diagnostics, rule toggles, and violation reports).
+  - `DayViolationsModal`, `DayEventsModal`, `AddDayShiftModal`, and `FullscreenCalendarModal`.
+- Settings and management view stories:
+  - `RulesManagementView`, `ShiftsManagementView`, `PeopleManagementView`, `UserManagementView`, and `LoginPage`.
 - Interactive parameter and argTypes exploration for calendar cells, cards, and navigation bars.
-- Test stories verify visual states under both light and dark themes.
+- Stories verify visual states under both light and dark themes.
 
 ---
 
