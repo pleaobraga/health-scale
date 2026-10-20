@@ -521,7 +521,7 @@ export function DayEventsModal() {
                     key={addr.id}
                     value={addr.id}
                   >
-                    {addr.name} ({addr.street}, {addr.number})
+                    {addr.name} — {addr.street}, {addr.number}
                   </option>
                 ))}
                 <option value="__new__">

@@ -1,16 +1,16 @@
 import {
-  UserPlus,
-  Users,
-  Search,
+  CalendarDays,
   ChevronDown,
   ChevronUp,
-  ShieldCheck,
   Clock,
-  Settings,
-  CalendarDays,
-  X,
   Plus,
+  Search,
+  Settings,
+  ShieldCheck,
   SlidersHorizontal,
+  UserPlus,
+  Users,
+  X,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -27,7 +27,12 @@ import { MonthShiftConfigModal } from '../modals/month-shift-config-modal'
 import type { Person, ShiftRule } from '../../types'
 
 export function Sidebar() {
-  const { t, i18n } = useTranslation(['people', 'settings', 'calendar', 'common'])
+  const { t, i18n } = useTranslation([
+    'people',
+    'settings',
+    'calendar',
+    'common',
+  ])
   const navigate = useNavigate()
   const {
     persons,
@@ -55,7 +60,8 @@ export function Sidebar() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isAddRulesModalOpen, setIsAddRulesModalOpen] = useState(false)
   const [isShiftConfigModalOpen, setIsShiftConfigModalOpen] = useState(false)
-  const [personForAvailability, setPersonForAvailability] = useState<Person | null>(null)
+  const [personForAvailability, setPersonForAvailability] =
+    useState<Person | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   // Accordion state: Plantões Diários, Pessoas, Regras
@@ -81,25 +87,29 @@ export function Sidebar() {
 
   // Active items for current month
   const currentParticipantIds = monthParticipants[currentMonth] || []
-  const monthPersons = persons.filter((p) => currentParticipantIds.includes(p.id))
+  const monthPersons = persons.filter((p) =>
+    currentParticipantIds.includes(p.id),
+  )
   const activeShiftIds = getActiveShiftIds(currentMonth)
-  const activeShifts = shiftDefinitions.filter((s) => activeShiftIds.includes(s.id))
+  const activeShifts = shiftDefinitions.filter((s) =>
+    activeShiftIds.includes(s.id),
+  )
   const activeRuleIds = getActiveRuleIds(currentMonth)
   const activeRules = shiftRules.filter((r) => activeRuleIds.includes(r.id))
 
   // Configured daily shifts for current month
   const currentMonthDailyConfig = monthDailyShifts[currentMonth] || {}
-  const configuredDailyShiftEntries = Object.entries(currentMonthDailyConfig).filter(
-    ([, days]) => Array.isArray(days) && days.length > 0
-  )
+  const configuredDailyShiftEntries = Object.entries(
+    currentMonthDailyConfig,
+  ).filter(([, days]) => Array.isArray(days) && days.length > 0)
 
   const filteredPersons = monthPersons.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
+    p.name.toLowerCase().includes(searchQuery.toLowerCase().trim()),
   )
 
   const getPersonAvailableDays = (personId: string): number[] => {
     const avail = availabilities.find(
-      (a) => a.personId === personId && a.month === currentMonth
+      (a) => a.personId === personId && a.month === currentMonth,
     )
     return avail ? avail.availableDays : []
   }
@@ -118,9 +128,15 @@ export function Sidebar() {
     personId: string,
     days: number[],
     shiftAvailability?: Record<string, number[]>,
-    shiftRates?: Record<string, Record<number, number>>
+    shiftRates?: Record<string, Record<number, number>>,
   ) => {
-    setPersonAvailability(personId, currentMonth, days, shiftAvailability, shiftRates)
+    setPersonAvailability(
+      personId,
+      currentMonth,
+      days,
+      shiftAvailability,
+      shiftRates,
+    )
   }
 
   const handleGoToGlobalManagement = () => {
@@ -153,14 +169,24 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => setIsMobileCollapsed(!isMobileCollapsed)}
-          title={isMobileCollapsed ? t('people:sidebar.expandAria') : t('people:sidebar.collapseAria')}
-          aria-label={isMobileCollapsed ? t('people:sidebar.expandAria') : t('people:sidebar.collapseAria')}
+          title={
+            isMobileCollapsed
+              ? t('people:sidebar.expandAria')
+              : t('people:sidebar.collapseAria')
+          }
+          aria-label={
+            isMobileCollapsed
+              ? t('people:sidebar.expandAria')
+              : t('people:sidebar.collapseAria')
+          }
           aria-expanded={!isMobileCollapsed}
           data-testid="toggle-sidebar-collapse"
           className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
         >
           <span className="text-[11px]">
-            {isMobileCollapsed ? t('people:sidebar.expand') : t('people:sidebar.collapse')}
+            {isMobileCollapsed
+              ? t('people:sidebar.expand')
+              : t('people:sidebar.collapse')}
           </span>
           {isMobileCollapsed ? (
             <ChevronDown className="w-3.5 h-3.5" />
@@ -196,9 +222,6 @@ export function Sidebar() {
               <div className="min-w-0">
                 <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
                   <span>{t('people:sidebar.dailyShiftsTitle')}</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    ({configuredDailyShiftEntries.length})
-                  </span>
                 </h2>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                   {t('people:sidebar.dailyShiftsCount', {
@@ -208,7 +231,10 @@ export function Sidebar() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex items-center gap-1 shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 type="button"
                 onClick={() => setIsShiftConfigModalOpen(true)}
@@ -217,7 +243,9 @@ export function Sidebar() {
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-white bg-violet-600 hover:bg-violet-700 active:bg-violet-800 rounded-lg shadow-2xs transition"
               >
                 <CalendarDays className="w-3 h-3" />
-                <span className="hidden xs:inline">{t('people:sidebar.configureDailyShifts')}</span>
+                <span className="hidden xs:inline">
+                  {t('people:sidebar.configureDailyShifts')}
+                </span>
               </button>
               <button
                 type="button"
@@ -232,7 +260,11 @@ export function Sidebar() {
                 type="button"
                 onClick={() => toggleSection('dailyShifts')}
                 className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-                aria-label={openSections.dailyShifts ? t('people:sidebar.collapse') : t('people:sidebar.expand')}
+                aria-label={
+                  openSections.dailyShifts
+                    ? t('people:sidebar.collapse')
+                    : t('people:sidebar.expand')
+                }
               >
                 {openSections.dailyShifts ? (
                   <ChevronUp className="w-4 h-4" />
@@ -268,7 +300,9 @@ export function Sidebar() {
                 ) : (
                   <>
                     {configuredDailyShiftEntries.map(([shiftId, days]) => {
-                      const shift = shiftDefinitions.find((s) => s.id === shiftId)
+                      const shift = shiftDefinitions.find(
+                        (s) => s.id === shiftId,
+                      )
                       if (!shift) return null
                       return (
                         <div
@@ -338,19 +372,23 @@ export function Sidebar() {
               <div className="min-w-0">
                 <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
                   <span>{t('people:sidebar.title')}</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    ({monthPersons.length}/{persons.length})
-                  </span>
                 </h2>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                   {monthPersons.length === 1
-                    ? t('people:sidebar.linkedCount', { count: monthPersons.length })
-                    : t('people:sidebar.linkedCountPlural', { count: monthPersons.length })}
+                    ? t('people:sidebar.linkedCount', {
+                        count: monthPersons.length,
+                      })
+                    : t('people:sidebar.linkedCountPlural', {
+                        count: monthPersons.length,
+                      })}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex items-center gap-1 shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(true)}
@@ -359,7 +397,9 @@ export function Sidebar() {
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-2xs transition"
               >
                 <UserPlus className="w-3 h-3" />
-                <span className="hidden xs:inline">{t('people:sidebar.linkButton')}</span>
+                <span className="hidden xs:inline">
+                  {t('people:sidebar.linkButton')}
+                </span>
               </button>
 
               <button
@@ -376,7 +416,11 @@ export function Sidebar() {
                 type="button"
                 onClick={() => toggleSection('people')}
                 className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-                aria-label={openSections.people ? t('people:sidebar.collapse') : t('people:sidebar.expand')}
+                aria-label={
+                  openSections.people
+                    ? t('people:sidebar.collapse')
+                    : t('people:sidebar.expand')
+                }
               >
                 {openSections.people ? (
                   <ChevronUp className="w-4 h-4" />
@@ -418,7 +462,10 @@ export function Sidebar() {
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 max-w-[200px] leading-relaxed">
                       {t('people:sidebar.emptyDesc')}{' '}
-                      <strong className="capitalize">{formatMonthYear(currentMonth, i18n.language)}</strong>.
+                      <strong className="capitalize">
+                        {formatMonthYear(currentMonth, i18n.language)}
+                      </strong>
+                      .
                     </p>
                     <button
                       type="button"
@@ -448,10 +495,15 @@ export function Sidebar() {
                     const availDays = getPersonAvailableDays(person.id)
                     const workingDays = getPersonWorkingDaysCount(person.id)
                     const personAvail = availabilities.find(
-                      (a) => a.personId === person.id && a.month === currentMonth
+                      (a) =>
+                        a.personId === person.id && a.month === currentMonth,
                     )
                     const availableShifts = activeShifts
-                      .filter((s) => (personAvail?.shiftAvailability?.[s.id]?.length || 0) > 0)
+                      .filter(
+                        (s) =>
+                          (personAvail?.shiftAvailability?.[s.id]?.length ||
+                            0) > 0,
+                      )
                       .map((s) => ({
                         shift: s,
                         daysCount: personAvail!.shiftAvailability![s.id].length,
@@ -466,12 +518,20 @@ export function Sidebar() {
                         availableShifts={availableShifts}
                         isHighlighted={highlightedPersonId === person.id}
                         isEditMode={isEditMode}
-                        onToggleHighlight={() => setHighlightedPersonId(person.id)}
+                        onToggleHighlight={() =>
+                          setHighlightedPersonId(person.id)
+                        }
                         onEdit={() => setPersonForAvailability(person)}
                         onInsertAllDays={(shiftId) =>
-                          insertAllPersonDaysToMonth(person.id, currentMonth, shiftId)
+                          insertAllPersonDaysToMonth(
+                            person.id,
+                            currentMonth,
+                            shiftId,
+                          )
                         }
-                        onRemoveFromMonth={() => removePersonFromMonth(person.id, currentMonth)}
+                        onRemoveFromMonth={() =>
+                          removePersonFromMonth(person.id, currentMonth)
+                        }
                       />
                     )
                   })
@@ -501,9 +561,6 @@ export function Sidebar() {
               <div className="min-w-0">
                 <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5 flex-wrap">
                   <span>{t('people:sidebar.rulesTitle')}</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    ({activeRules.length}/{shiftRules.length})
-                  </span>
                 </h2>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                   {t('people:sidebar.rulesCount', {
@@ -514,7 +571,10 @@ export function Sidebar() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="flex items-center gap-1 shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 type="button"
                 onClick={() => setIsAddRulesModalOpen(true)}
@@ -523,7 +583,9 @@ export function Sidebar() {
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-2xs transition"
               >
                 <ShieldCheck className="w-3 h-3" />
-                <span className="hidden xs:inline">{t('people:sidebar.linkButton')}</span>
+                <span className="hidden xs:inline">
+                  {t('people:sidebar.linkButton')}
+                </span>
               </button>
               <button
                 type="button"
@@ -538,7 +600,11 @@ export function Sidebar() {
                 type="button"
                 onClick={() => toggleSection('rules')}
                 className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-                aria-label={openSections.rules ? t('people:sidebar.collapse') : t('people:sidebar.expand')}
+                aria-label={
+                  openSections.rules
+                    ? t('people:sidebar.collapse')
+                    : t('people:sidebar.expand')
+                }
               >
                 {openSections.rules ? (
                   <ChevronUp className="w-4 h-4" />
@@ -563,7 +629,10 @@ export function Sidebar() {
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[200px] mt-0.5 mb-3 leading-tight">
                       {t('people:sidebar.emptyRulesDesc')}{' '}
-                      <strong className="capitalize">{formatMonthYear(currentMonth, i18n.language)}</strong>.
+                      <strong className="capitalize">
+                        {formatMonthYear(currentMonth, i18n.language)}
+                      </strong>
+                      .
                     </p>
                     <button
                       type="button"
@@ -580,22 +649,24 @@ export function Sidebar() {
 
                     const getParamSummary = () => {
                       if (rule.type === 'MAX_SHIFTS_PER_PERIOD') {
-                        const scopeLabel = rule.parameters.scope === 'WEEK'
-                          ? t('settings:rules.scopes.WEEK')
-                          : rule.parameters.scope === 'MONTH'
-                          ? t('settings:rules.scopes.MONTH')
-                          : t('settings:rules.scopes.DAY')
+                        const scopeLabel =
+                          rule.parameters.scope === 'WEEK'
+                            ? t('settings:rules.scopes.WEEK')
+                            : rule.parameters.scope === 'MONTH'
+                              ? t('settings:rules.scopes.MONTH')
+                              : t('settings:rules.scopes.DAY')
                         return t('people:sidebar.paramMaxShifts', {
                           scope: scopeLabel,
                           count: rule.parameters.maxOccurrences || 1,
                         })
                       }
                       if (rule.type === 'MAX_HOURS_PER_PERIOD') {
-                        const scopeLabel = rule.parameters.scope === 'WEEK'
-                          ? t('settings:rules.scopes.WEEK')
-                          : rule.parameters.scope === 'MONTH'
-                          ? t('settings:rules.scopes.MONTH')
-                          : t('settings:rules.scopes.DAY')
+                        const scopeLabel =
+                          rule.parameters.scope === 'WEEK'
+                            ? t('settings:rules.scopes.WEEK')
+                            : rule.parameters.scope === 'MONTH'
+                              ? t('settings:rules.scopes.MONTH')
+                              : t('settings:rules.scopes.DAY')
                         return t('people:sidebar.paramMaxHours', {
                           scope: scopeLabel,
                           hours: rule.parameters.maxHours || 24,
@@ -613,7 +684,10 @@ export function Sidebar() {
                       }
                       if (rule.type === 'MAX_PEOPLE_PER_SHIFT') {
                         return t('people:sidebar.paramMaxPeople', {
-                          count: rule.parameters.maxPeople ?? rule.parameters.maxOccurrences ?? 1,
+                          count:
+                            rule.parameters.maxPeople ??
+                            rule.parameters.maxOccurrences ??
+                            1,
                         })
                       }
                       if (rule.type === 'DAILY_SHIFT_HOURS') {
@@ -666,9 +740,15 @@ export function Sidebar() {
                           {/* Remove rule from month button */}
                           <button
                             type="button"
-                            onClick={() => removeRuleFromMonth(rule.id, currentMonth)}
-                            title={t('people:sidebar.removeRuleTooltip', { name: rule.name })}
-                            aria-label={t('people:sidebar.removeRuleTooltip', { name: rule.name })}
+                            onClick={() =>
+                              removeRuleFromMonth(rule.id, currentMonth)
+                            }
+                            title={t('people:sidebar.removeRuleTooltip', {
+                              name: rule.name,
+                            })}
+                            aria-label={t('people:sidebar.removeRuleTooltip', {
+                              name: rule.name,
+                            })}
                             className="p-1 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
                           >
                             <X className="w-4 h-4" />
@@ -712,19 +792,25 @@ export function Sidebar() {
         currentMonth={currentMonth}
         activeShifts={activeShifts}
         initialAvailableDays={
-          personForAvailability ? getPersonAvailableDays(personForAvailability.id) : []
+          personForAvailability
+            ? getPersonAvailableDays(personForAvailability.id)
+            : []
         }
         initialShiftAvailability={
           personForAvailability
             ? availabilities.find(
-                (a) => a.personId === personForAvailability.id && a.month === currentMonth
+                (a) =>
+                  a.personId === personForAvailability.id &&
+                  a.month === currentMonth,
               )?.shiftAvailability
             : undefined
         }
         initialShiftRates={
           personForAvailability
             ? availabilities.find(
-                (a) => a.personId === personForAvailability.id && a.month === currentMonth
+                (a) =>
+                  a.personId === personForAvailability.id &&
+                  a.month === currentMonth,
               )?.shiftRates
             : undefined
         }

@@ -128,8 +128,8 @@
       "WARNING": "Generates an informative warning on the schedule without blocking saving."
     },
     "severitySelect": {
-      "ERROR": "Blocking Error (Prevents schedule publication)",
-      "WARNING": "Warning / Notice (Allows publication with alert)"
+      "ERROR": "Blocking Error",
+      "WARNING": "Warning / Notice"
     },
     "banner": {
       "title": "How validation criteria and severity work",
@@ -160,7 +160,7 @@
     "scope": "Evaluation Window / Scope",
     "scopes": {
       "DAY": "Calendar Day",
-      "WEEK": "Week (Sun to Sat)",
+      "WEEK": "Week",
       "MONTH": "Calendar Month"
     },
     "maxOccurrences": "Maximum Allowed Occurrences",
@@ -178,14 +178,14 @@
     "dayFilterType": "Apply to Days",
     "dayFilters": {
       "ALL": "All days of the month",
-      "WEEKDAYS": "Weekdays only (Monday to Friday)",
-      "WEEKENDS": "Weekends only (Saturday and Sunday)",
+      "WEEKDAYS": "Weekdays only",
+      "WEEKENDS": "Weekends only",
       "SPECIFIC_DAYS": "Specific days of the week"
     },
     "dayFiltersShort": {
       "ALL": "all days",
-      "WEEKDAYS": "weekdays (Mon to Fri)",
-      "WEEKENDS": "weekends (Sat & Sun)",
+      "WEEKDAYS": "weekdays",
+      "WEEKENDS": "weekends",
       "SPECIFIC_DAYS": "specific days of the week"
     },
     "daysOfWeek": {

@@ -1,4 +1,4 @@
-import { X, Check, Trash2, User, Palette } from 'lucide-react'
+import { X, Check, Trash2, User, Palette, Pipette } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
@@ -117,41 +117,85 @@ export function PersonModal({
             />
           </div>
 
-          {/* Color Picker: High-contrast palette */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          {/* Color Swatches */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Palette className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>{t('people:personModal.colorLabel')}</span>
               </label>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-                  {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.name || t('people:personModal.customColor')}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                  {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())
+                    ?.name || t('people:personModal.customColor')}
                 </span>
-                <span className="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                  {selectedColor.toUpperCase()}
-                </span>
+                <label
+                  title={t('people:personModal.pickColorTooltip')}
+                  className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 rounded-md border border-slate-300 dark:border-slate-600 cursor-pointer transition shadow-2xs"
+                >
+                  <Pipette className="w-3 h-3 text-slate-500" />
+                  <span>{selectedColor.toUpperCase()}</span>
+                  <input
+                    type="color"
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                    className="sr-only"
+                    aria-label={t('people:personModal.colorPickerAria')}
+                  />
+                </label>
               </div>
             </div>
-            <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl max-h-52 overflow-y-auto">
-              {TAILWIND_PALETTE.map((color) => {
-                const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase()
-                return (
-                  <button
-                    key={color.hex}
-                    type="button"
-                    onClick={() => setSelectedColor(color.hex)}
-                    style={{ backgroundColor: color.hex }}
-                    title={`${color.name} (${color.hex})`}
-                    aria-label={color.name}
-                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-                      isSelected ? 'ring-2 ring-slate-800 dark:ring-white ring-offset-2 dark:ring-offset-slate-900 scale-105 shadow-md' : ''
-                    }`}
-                  >
-                    {isSelected && <Check className="w-4 h-4 text-white stroke-[3]" />}
-                  </button>
+
+            <div className="flex flex-wrap items-center gap-1.5 max-h-32 overflow-y-auto p-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+              {/* Native Colorpicker Tile */}
+              {(() => {
+                const isCustom = !TAILWIND_PALETTE.some(
+                  (c) => c.hex.toLowerCase() === selectedColor.toLowerCase()
                 )
-              })}
+                return (
+                  <label
+                    title={t('people:personModal.customColor')}
+                    aria-label={t('people:personModal.customColor')}
+                    className={`relative w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs group ${
+                      isCustom ? 'ring-2 ring-indigo-500 scale-105' : ''
+                    }`}
+                    style={{
+                      background: isCustom
+                        ? selectedColor
+                        : 'linear-gradient(135deg, #f43f5e 0%, #ec4899 20%, #8b5cf6 40%, #3b82f6 60%, #10b981 80%, #f59e0b 100%)',
+                    }}
+                  >
+                    <input
+                      type="color"
+                      value={selectedColor}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      className="sr-only"
+                      aria-label={t('people:personModal.customColor')}
+                    />
+                    {isCustom ? (
+                      <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-xs" />
+                    ) : (
+                      <Pipette className="w-3.5 h-3.5 text-white drop-shadow-xs group-hover:scale-110 transition-transform" />
+                    )}
+                  </label>
+                )
+              })()}
+
+              {TAILWIND_PALETTE.map((pal) => (
+                <button
+                  key={pal.hex}
+                  type="button"
+                  onClick={() => setSelectedColor(pal.hex)}
+                  style={{ backgroundColor: pal.hex }}
+                  className="w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer"
+                  title={pal.name}
+                  aria-label={pal.name}
+                >
+                  {selectedColor.toLowerCase() === pal.hex.toLowerCase() && (
+                    <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 

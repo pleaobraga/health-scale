@@ -128,8 +128,8 @@
       "WARNING": "Gera um alerta de atenção na escala, mas não impede o salvamento."
     },
     "severitySelect": {
-      "ERROR": "Erro Bloqueante (Impede publicação da escala)",
-      "WARNING": "Aviso / Advertência (Permite publicação com alerta)"
+      "ERROR": "Erro Bloqueante",
+      "WARNING": "Aviso / Advertência"
     },
     "banner": {
       "title": "Como funcionam os critérios de validação e severidade",
@@ -160,7 +160,7 @@
     "scope": "Janela / Escopo de Avaliação",
     "scopes": {
       "DAY": "Dia Civil",
-      "WEEK": "Semana (Dom a Sáb)",
+      "WEEK": "Semana",
       "MONTH": "Mês Calendário"
     },
     "maxOccurrences": "Quantidade Máxima Permitida",
@@ -178,14 +178,14 @@
     "dayFilterType": "Aplicar aos Dias",
     "dayFilters": {
       "ALL": "Todos os dias do mês",
-      "WEEKDAYS": "Apenas dias de semana (Segunda a Sexta)",
-      "WEEKENDS": "Apenas finais de semana (Sábado e Domingo)",
+      "WEEKDAYS": "Apenas dias de semana",
+      "WEEKENDS": "Apenas finais de semana",
       "SPECIFIC_DAYS": "Dias específicos da semana"
     },
     "dayFiltersShort": {
       "ALL": "todos os dias",
-      "WEEKDAYS": "dias de semana (seg a sex)",
-      "WEEKENDS": "finais de semana (sáb e dom)",
+      "WEEKDAYS": "dias de semana",
+      "WEEKENDS": "finais de semana",
       "SPECIFIC_DAYS": "dias específicos selecionados"
     },
     "daysOfWeek": {
