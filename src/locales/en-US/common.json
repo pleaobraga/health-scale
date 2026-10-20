@@ -13,6 +13,8 @@
   "nav": {
     "calendar": "Schedule Calendar",
     "people": "Manage People",
+    "shifts": "Work Shifts",
+    "rules": "Validation Rules",
     "addresses": "Manage Addresses",
     "import": "Import Data",
     "settings": "Settings",

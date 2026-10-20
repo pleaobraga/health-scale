@@ -4,6 +4,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Clock,
   CloudDownload,
   Edit3,
   Eye,
@@ -17,7 +18,7 @@ import {
   Trash2,
   Wand2,
 } from 'lucide-react'
-import { use, useEffect, useMemo, useRef, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CalendarHeader } from './calendar-header'
@@ -26,9 +27,8 @@ import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear, getMonthCalendarGrid } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
+import { MonthShiftConfigModal } from '../modals/month-shift-config-modal'
 import { ScheduleAuditModal } from '../modals/schedule-audit-modal'
-
-import type { ShiftDefinition } from '../../types'
 
 export function CalendarGrid() {
   const { t, i18n } = useTranslation(['calendar', 'common'])
@@ -39,6 +39,7 @@ export function CalendarGrid() {
   const [pullSuccess, setPullSuccess] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
+  const [isShiftConfigModalOpen, setIsShiftConfigModalOpen] = useState(false)
   const actionsMenuRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -53,8 +54,6 @@ export function CalendarGrid() {
     availabilities,
     assignments,
     dayShiftAssignments,
-    shiftDefinitions,
-    monthActiveShifts,
     events,
     setSelectedDateForEvents,
     removePersonFromDay,
@@ -73,21 +72,8 @@ export function CalendarGrid() {
     getActiveRuleIds,
     toggleMonthRule,
     validateCurrentSchedule,
+    getDayActiveShifts,
   } = useScheduleStore()
-
-  const activeShiftIds = useMemo(() => {
-    return (
-      monthActiveShifts[currentMonth] ??
-      shiftDefinitions.filter((s) => s.enabledByDefault).map((s) => s.id)
-    )
-  }, [monthActiveShifts, currentMonth, shiftDefinitions])
-
-  const activeShifts = useMemo(() => {
-    const map = new Map(shiftDefinitions.map((s) => [s.id, s]))
-    return activeShiftIds
-      .map((id) => map.get(id))
-      .filter((s): s is ShiftDefinition => Boolean(s))
-  }, [shiftDefinitions, activeShiftIds])
 
   useEffect(() => {
     validateCurrentSchedule()
@@ -318,6 +304,18 @@ export function CalendarGrid() {
             )}
           </button>
 
+          {/* Configure Month Daily Shifts Button */}
+          <button
+            type="button"
+            onClick={() => setIsShiftConfigModalOpen(true)}
+            title={t('calendar:configureDailyShiftsTooltip')}
+            aria-label={t('calendar:configureDailyShifts')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold transition shadow-2xs"
+          >
+            <Clock className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400 shrink-0" />
+            <span className="hidden sm:inline">{t('calendar:configureDailyShifts')}</span>
+          </button>
+
           {/* Grouped Actions Dropdown (Always visible on all screen sizes) */}
           <div ref={actionsMenuRef} className="relative">
             <button
@@ -346,6 +344,20 @@ export function CalendarGrid() {
                 data-testid="calendar-actions-dropdown-menu"
                 className="absolute right-0 top-full mt-2 z-50 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
               >
+                {/* Option 0: Configurar Plantões Diários */}
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsActionsOpen(false)
+                    setIsShiftConfigModalOpen(true)
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-violet-700 dark:hover:text-violet-300 transition"
+                >
+                  <Clock className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                  <span className="truncate">{t('calendar:configureDailyShifts')}</span>
+                </button>
+
                 {/* Option 1: Puxar Dados da Nuvem */}
                 <button
                   type="button"
@@ -491,7 +503,7 @@ export function CalendarGrid() {
                 isEditMode={isEditMode}
                 assignedPersonIds={assigned}
                 dayShiftMap={dayShiftAssignments[dayInfo.dateStr]}
-                activeShifts={activeShifts}
+                activeShifts={getDayActiveShifts(dayInfo.dateStr)}
                 allPersons={persons}
                 monthPersons={monthPersons}
                 events={dayEvents}
@@ -530,6 +542,13 @@ export function CalendarGrid() {
         activeRuleIds={getActiveRuleIds(currentMonth)}
         currentMonth={currentMonth}
         onToggleMonthRule={(ruleId) => toggleMonthRule(ruleId, currentMonth)}
+      />
+
+      {/* Month Shift Configuration Modal */}
+      <MonthShiftConfigModal
+        isOpen={isShiftConfigModalOpen}
+        onClose={() => setIsShiftConfigModalOpen(false)}
+        currentMonth={currentMonth}
       />
     </div>
   )

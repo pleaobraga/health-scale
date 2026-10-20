@@ -22,6 +22,7 @@ const STORAGE_KEYS = {
   SHIFT_RULES: 'scale_manager_shift_rules_v1',
   MONTH_ACTIVE_SHIFTS: 'scale_manager_month_shifts_v1',
   MONTH_ACTIVE_RULES: 'scale_manager_month_rules_v1',
+  MONTH_DAILY_SHIFTS: 'scale_manager_month_daily_shifts_v1',
   DAY_SHIFT_ASSIGNMENTS: 'scale_manager_day_shift_assignments_v1',
   GUEST_PROFILES: 'scale_manager_guest_profiles_v1',
   ACTIVE_GUEST_ID: 'scale_manager_active_guest_id_v1',
@@ -303,6 +304,31 @@ export class StorageService {
   }
 
   /**
+   * Load month daily shift mappings ('YYYY-MM' -> { [shiftId]: number[] })
+   */
+  static getMonthDailyShiftsMap(): Record<string, Record<string, number[]>> {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.MONTH_DAILY_SHIFTS)
+      if (!data) return {}
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load month daily shifts from localStorage:', err)
+      return {}
+    }
+  }
+
+  static saveMonthDailyShiftsMap(map: Record<string, Record<string, number[]>>): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.MONTH_DAILY_SHIFTS, JSON.stringify(map))
+      if (!isRestoringDataset) {
+        StorageService.snapshotActiveGuest()
+      }
+    } catch (err) {
+      console.error('Failed to save month daily shifts to localStorage:', err)
+    }
+  }
+
+  /**
    * Load day shift assignments mapping ('YYYY-MM-DD' -> { [shiftId]: personId })
    */
   static getDayShiftAssignments(): Record<string, Record<string, string>> {
@@ -341,6 +367,7 @@ export class StorageService {
     localStorage.removeItem(STORAGE_KEYS.SHIFT_RULES)
     localStorage.removeItem(STORAGE_KEYS.MONTH_ACTIVE_SHIFTS)
     localStorage.removeItem(STORAGE_KEYS.MONTH_ACTIVE_RULES)
+    localStorage.removeItem(STORAGE_KEYS.MONTH_DAILY_SHIFTS)
     localStorage.removeItem(STORAGE_KEYS.DAY_SHIFT_ASSIGNMENTS)
   }
 
@@ -441,6 +468,7 @@ export class StorageService {
       shiftRules: StorageService.getShiftRules(),
       monthActiveShifts: StorageService.getMonthActiveShiftsMap(),
       monthActiveRules: StorageService.getMonthActiveRulesMap(),
+      monthDailyShifts: StorageService.getMonthDailyShiftsMap(),
       dayShiftAssignments: StorageService.getDayShiftAssignments(),
     }
   }
@@ -465,6 +493,9 @@ export class StorageService {
       }
       if (dataset.monthActiveRules) {
         StorageService.saveMonthActiveRulesMap(dataset.monthActiveRules)
+      }
+      if (dataset.monthDailyShifts) {
+        StorageService.saveMonthDailyShiftsMap(dataset.monthDailyShifts)
       }
       if (dataset.dayShiftAssignments) {
         StorageService.saveDayShiftAssignments(dataset.dayShiftAssignments)

@@ -248,6 +248,31 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(assignments['2026-10-06']).toBeUndefined()
   })
 
+  it('deve inserir dias vinculados a uma escala específica com insertAllPersonDaysToMonth e shiftId', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-10'
+    const personId = store.persons[0].id
+
+    // Set shift availability (days 3 and 7 for shift_d12, days 4 and 8 for shift_n12)
+    store.setPersonAvailability(personId, month, [3, 4, 7, 8], {
+      shift_d12: [3, 7],
+      shift_n12: [4, 8],
+    })
+
+    // Clear month first
+    store.clearMonthAssignments(month)
+
+    // Insert only days for shift_d12
+    store.insertAllPersonDaysToMonth(personId, month, 'shift_d12')
+
+    const state = useScheduleStore.getState()
+    expect(state.assignments['2026-10-03']).toContain(personId)
+    expect(state.assignments['2026-10-07']).toContain(personId)
+    expect(state.assignments['2026-10-04']).toBeUndefined()
+    expect(state.dayShiftAssignments['2026-10-03']?.shift_d12).toBe(personId)
+    expect(state.dayShiftAssignments['2026-10-07']?.shift_d12).toBe(personId)
+  })
+
   it('deve reverter alterações no calendário ao sair do modo de edição sem salvar', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'

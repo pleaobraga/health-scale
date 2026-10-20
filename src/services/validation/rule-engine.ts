@@ -97,6 +97,22 @@ export interface NormalizedShiftEntry {
 }
 
 /**
+ * Checks whether two shift definitions have overlapping work intervals on a given date.
+ */
+export function doShiftDefinitionsOverlap(
+  shiftA: ShiftDefinition,
+  shiftB: ShiftDefinition,
+  dateStr = '2026-01-01'
+): boolean {
+  const startA = parseISO(`${dateStr}T${shiftA.startTime || '07:00'}:00`)
+  const endA = addHours(startA, shiftA.durationHours || 12)
+  const startB = parseISO(`${dateStr}T${shiftB.startTime || '07:00'}:00`)
+  const endB = addHours(startB, shiftB.durationHours || 12)
+
+  return startA.getTime() < endB.getTime() && startB.getTime() < endA.getTime()
+}
+
+/**
  * Extracts and normalizes shift allocations from MonthScheduleDocument.
  * Supports both structured `shifts` (`${date}_${shiftId}`) and legacy `assignments` (`${date}: personId[]`).
  */
@@ -114,7 +130,7 @@ export function extractNormalizedShifts(
       if (!item || !item.personId) continue
       // Key format can be `${YYYY-MM-DD}_${shiftId}` or just a unique key
       const parts = key.split('_')
-      const date = parts[0]
+      const date = item.date || parts[0]
       const shiftDef = shiftMap.get(item.shiftDefinitionId) || defaultShift
       const startTime = shiftDef.startTime || '07:00'
       const startDateTime = parseISO(`${date}T${startTime}:00`)
@@ -132,8 +148,6 @@ export function extractNormalizedShifts(
 
   // 2. Process legacy or fallback `assignments` map
   if (monthSchedule.assignments) {
-    const datesWithShifts = new Set(entries.map((e) => e.date))
-
     for (const [date, personIds] of Object.entries(monthSchedule.assignments)) {
       if (!Array.isArray(personIds) || personIds.length === 0) continue
 
@@ -141,7 +155,7 @@ export function extractNormalizedShifts(
       const existingForDate = entries.filter((e) => e.date === date)
       for (const personId of personIds) {
         const alreadyAllocated = existingForDate.some((e) => e.personId === personId)
-        if (alreadyAllocated && datesWithShifts.has(date)) continue
+        if (alreadyAllocated) continue
 
         const shiftDef = defaultShift
         const startTime = shiftDef.startTime || '07:00'
@@ -420,6 +434,167 @@ export function validateSchedule(
                 personName,
                 date: dateStr,
                 message: `${rule.name}: ${personName} está escalado(a) por ${currentStreak} dias consecutivos (limite: ${limit}).`,
+              })
+            }
+          }
+        }
+        break
+      }
+
+      case 'MAX_PEOPLE_PER_SHIFT': {
+        const maxPeople = rule.parameters.maxPeople ?? rule.parameters.maxOccurrences ?? 1
+        const relevantEntries = shiftEntries.filter(matchesTargetShifts)
+
+        // Map to store violations keyed by `${rule.id}_${personId}_${date}`
+        const violationMap = new Map<string, RuleViolation>()
+        const violationCountMap = new Map<string, number>()
+
+        // Check concurrency at the start of each relevant shift
+        for (const entry of relevantEntries) {
+          const t = entry.startDateTime.getTime()
+          const concurrent = relevantEntries.filter(
+            (other) => other.startDateTime.getTime() <= t && t < other.endDateTime.getTime()
+          )
+
+          const distinctPersonIds = Array.from(new Set(concurrent.map((c) => c.personId)))
+
+          if (distinctPersonIds.length > maxPeople) {
+            const allSameShift = concurrent.every(
+              (c) => c.shiftDefinition.id === concurrent[0].shiftDefinition.id
+            )
+
+            for (const item of concurrent) {
+              const itemDate = item.date
+              const vKey = `${rule.id}_${item.personId}_${itemDate}`
+              const previousCount = violationCountMap.get(vKey) ?? 0
+
+              if (distinctPersonIds.length > previousCount) {
+                let message: string
+                if (allSameShift) {
+                  const shiftDef = item.shiftDefinition
+                  const names = distinctPersonIds.map(getPersonName).join(', ')
+                  message = `${rule.name}: O turno ${shiftDef.name} (${shiftDef.code}) possui ${distinctPersonIds.length} profissionais no dia ${itemDate} (máximo permitido: ${maxPeople}). Profissionais: ${names}.`
+                } else {
+                  const details = distinctPersonIds
+                    .map((pId) => {
+                      const pName = getPersonName(pId)
+                      const shifts = concurrent
+                        .filter((c) => c.personId === pId)
+                        .map((c) => `${c.shiftDefinition.name} [${c.shiftDefinition.code}]`)
+                        .join(', ')
+                      return `${pName} (${shifts})`
+                    })
+                    .join(', ')
+                  message = `${rule.name}: Há ${distinctPersonIds.length} profissionais trabalhando simultaneamente no mesmo horário no dia ${itemDate} (máximo permitido: ${maxPeople}). Profissionais: ${details}.`
+                }
+
+                violationCountMap.set(vKey, distinctPersonIds.length)
+                violationMap.set(vKey, {
+                  ruleId: rule.id,
+                  ruleName: rule.name,
+                  severity: rule.severity,
+                  personId: item.personId,
+                  personName: getPersonName(item.personId),
+                  date: itemDate,
+                  shiftId: item.shiftDefinition.id,
+                  message,
+                })
+              }
+            }
+          }
+        }
+
+        violations.push(...violationMap.values())
+        break
+      }
+
+      case 'DAILY_SHIFT_HOURS': {
+        const targetHours = rule.parameters.targetDailyHours ?? 24
+        const comparison = rule.parameters.dailyHoursComparison ?? 'EXACT'
+        const filterType = rule.parameters.dayFilterType ?? 'ALL'
+        const specificDays = rule.parameters.specificDaysOfWeek ?? []
+
+        // Group shift allocations by date
+        const entriesByDate = new Map<string, NormalizedShiftEntry[]>()
+        for (const entry of shiftEntries) {
+          if (!matchesTargetShifts(entry)) continue
+          const list = entriesByDate.get(entry.date) || []
+          list.push(entry)
+          entriesByDate.set(entry.date, list)
+        }
+
+        const dayNamesPt = [
+          'domingo',
+          'segunda-feira',
+          'terça-feira',
+          'quarta-feira',
+          'quinta-feira',
+          'sexta-feira',
+          'sábado',
+        ]
+
+        for (const [dateStr, dayEntries] of entriesByDate.entries()) {
+          if (dayEntries.length === 0) continue
+
+          const d = parseISO(dateStr)
+          const dayOfWeek = d.getDay() // 0=Sunday, 1=Monday, ..., 6=Saturday
+
+          // Check if date matches day filter
+          let matchesFilter = true
+          if (filterType === 'WEEKDAYS') {
+            matchesFilter = dayOfWeek >= 1 && dayOfWeek <= 5
+          } else if (filterType === 'WEEKENDS') {
+            matchesFilter = dayOfWeek === 0 || dayOfWeek === 6
+          } else if (filterType === 'SPECIFIC_DAYS') {
+            matchesFilter = specificDays.includes(dayOfWeek)
+          }
+
+          if (!matchesFilter) continue
+
+          // Compute unique shifts assigned on this day and sum their duration
+          const uniqueShifts = new Map<string, ShiftDefinition>()
+          for (const item of dayEntries) {
+            uniqueShifts.set(item.shiftDefinition.id, item.shiftDefinition)
+          }
+          const totalHours = Array.from(uniqueShifts.values()).reduce(
+            (acc, s) => acc + (s.durationHours || 12),
+            0
+          )
+
+          let isViolated = false
+          if (comparison === 'EXACT') {
+            isViolated = totalHours !== targetHours
+          } else if (comparison === 'MAX') {
+            isViolated = totalHours > targetHours
+          } else if (comparison === 'MIN') {
+            isViolated = totalHours < targetHours
+          }
+
+          if (isViolated) {
+            const dayName = dayNamesPt[dayOfWeek]
+            const shiftList = Array.from(uniqueShifts.values())
+              .map((s) => `${s.name} [${s.code}] (${s.durationHours}h)`)
+              .join(', ')
+
+            let reason: string
+            if (comparison === 'EXACT') {
+              reason = `possui ${totalHours}h de plantão (esperado: exatamente ${targetHours}h)`
+            } else if (comparison === 'MAX') {
+              reason = `possui ${totalHours}h de plantão (máximo permitido: ${targetHours}h)`
+            } else {
+              reason = `possui apenas ${totalHours}h de plantão (mínimo exigido: ${targetHours}h)`
+            }
+
+            for (const item of dayEntries) {
+              violations.push({
+                ruleId: rule.id,
+                ruleName: rule.name,
+                severity: rule.severity,
+                personId: item.personId,
+                personName: getPersonName(item.personId),
+                date: dateStr,
+                shiftId: item.shiftDefinition.id,
+                message: `${rule.name}: O dia ${dateStr} (${dayName}) ${reason}. Plantões escalados: ${shiftList}.`,
               })
             }
           }

@@ -10,6 +10,8 @@
   "loading": "Loading registered users...",
   "emptySearchTitle": "No users found",
   "emptySearchSubtitle": "Try searching with another term or register a new user.",
+  "emptyTitle": "No users registered",
+  "emptySubtitle": "Register new users with system access permissions.",
   "roles": {
     "admin": "Admin",
     "user": "User"

@@ -55,7 +55,15 @@ export interface ValidationError {
 }
 
 export type MonthParticipants = Record<string, string[]>; // 'YYYY-MM' -> personId[]
-export type NavigationTab = 'calendar' | 'people' | 'import' | 'settings' | 'users' | 'addresses';
+export type NavigationTab =
+  | 'calendar'
+  | 'people'
+  | 'shifts'
+  | 'rules'
+  | 'addresses'
+  | 'import'
+  | 'settings'
+  | 'users';
 
 export interface AppDataSnapshot {
   exportedAt: string; // ISO timestamp of export time
@@ -86,6 +94,7 @@ export interface GuestDataset {
   shiftRules?: ShiftRule[];
   monthActiveShifts?: Record<string, string[]>;
   monthActiveRules?: Record<string, string[]>;
+  monthDailyShifts?: Record<string, Record<string, number[]>>;
   dayShiftAssignments?: Record<string, Record<string, string>>;
 }
 

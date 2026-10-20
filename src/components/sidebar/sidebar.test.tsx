@@ -29,6 +29,8 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
       assignments: {},
       currentMonth: '2026-10',
       isEditMode: false,
+      monthActiveRules: {},
+      validationErrors: [],
     })
   })
 
@@ -60,7 +62,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
   it('deve abrir modal de vinculação e adicionar nova pessoa ao mês', () => {
     renderSidebar()
 
-    const vincularBtn = screen.getByRole('button', { name: /vincular/i })
+    const vincularBtn = screen.getByRole('button', { name: /vincular funcionários ao mês/i })
     fireEvent.click(vincularBtn)
 
     expect(screen.getByText('Vincular Pessoas ao Mês')).toBeInTheDocument()
@@ -112,7 +114,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(toggleBtn).toHaveTextContent(/recolher/i)
   })
 
-  it('deve expandir a seção de Regras de Validação e alternar uma regra ativa', () => {
+  it('deve expandir a seção de Regras de Validação e remover uma regra ativa do mês', () => {
     renderSidebar()
 
     // Regras header is present
@@ -122,69 +124,75 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     // Click to expand rules accordion section
     fireEvent.click(rulesHeader)
 
-    // Should now show rule names
+    // Should now show rule names that are active in this month
     expect(screen.getByText('Máximo 1 turno por dia')).toBeInTheDocument()
 
-    // Find switches
-    const switches = screen.getAllByRole('switch')
-    expect(switches.length).toBeGreaterThanOrEqual(1)
-
-    // Toggle the first rule switch
+    // Initial state has 'rule_max_shifts_day'
     const initialRuleState = useScheduleStore.getState().getActiveRuleIds('2026-10')
     const ruleToToggle = 'rule_max_shifts_day'
     expect(initialRuleState).toContain(ruleToToggle)
 
-    fireEvent.click(switches[0])
+    // Remove button for that rule
+    const removeBtn = screen.getByRole('button', {
+      name: /remover máximo 1 turno por dia deste mês/i,
+    })
+    fireEvent.click(removeBtn)
 
     // Should now be removed from activeRuleIds for this month
     const updatedRuleState = useScheduleStore.getState().getActiveRuleIds('2026-10')
     expect(updatedRuleState).not.toContain(ruleToToggle)
   })
 
-  it('deve expandir a seção de Turnos Vigentes e alternar um turno ativo', () => {
-    renderSidebar()
-
-    // Turnos header is present
-    const shiftsHeader = screen.getByText('Turnos Vigentes')
-    expect(shiftsHeader).toBeInTheDocument()
-
-    // Click to expand shifts accordion section
-    fireEvent.click(shiftsHeader)
-
-    // Should show shift codes and names
-    expect(screen.getByText('Plantão Diurno 12h')).toBeInTheDocument()
-    expect(screen.getByText('D12')).toBeInTheDocument()
-
-    // Find switch for D12
-    const initialShiftState = useScheduleStore.getState().getActiveShiftIds('2026-10')
-    expect(initialShiftState).toContain('shift_d12')
-
-    const switches = screen.getAllByRole('switch')
-    // Click switch
-    fireEvent.click(switches[0])
-
-    const updatedShiftState = useScheduleStore.getState().getActiveShiftIds('2026-10')
-    expect(updatedShiftState).not.toContain('shift_d12')
-  })
-
-  it('deve restaurar os padrões do mês ao clicar no botão "Restaurar Padrões do Mês"', () => {
-    // Set custom non-default state for month
+  it('não deve exibir violações ou diagnósticos na seção de Regras de Validação da Sidebar', () => {
+    // Simulates an error present in store for a rule
     useScheduleStore.setState({
-      monthActiveRules: { '2026-10': [] },
-      monthActiveShifts: { '2026-10': [] },
+      validationErrors: [
+        {
+          id: 'err-1',
+          rule: 'rule_max_shifts_day',
+          severity: 'error',
+          date: '2026-10-02',
+          message: 'Infração de plantões diários',
+        },
+      ],
     })
 
-    expect(useScheduleStore.getState().getActiveRuleIds('2026-10')).toHaveLength(0)
-    expect(useScheduleStore.getState().getActiveShiftIds('2026-10')).toHaveLength(0)
+    renderSidebar()
+
+    const rulesHeader = screen.getByText('Regras de Validação')
+    fireEvent.click(rulesHeader)
+
+    // Rule name is displayed
+    expect(screen.getByText('Máximo 1 turno por dia')).toBeInTheDocument()
+
+    // But no violation details or badges should be in the sidebar rules
+    expect(screen.queryByText(/com violação/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/ver violações/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Infração de plantões diários/i)).not.toBeInTheDocument()
+  })
+
+  it('deve abrir modal de vinculação de regras e adicionar regras ao mês', () => {
+    // Start with empty rules for the month
+    useScheduleStore.setState({
+      monthActiveRules: { '2026-10': [] },
+    })
 
     renderSidebar()
 
-    const restoreBtn = screen.getByRole('button', { name: /restaurar padrões do mês/i })
-    fireEvent.click(restoreBtn)
+    const linkRulesBtn = screen.getByRole('button', { name: /vincular regras ao mês/i })
+    fireEvent.click(linkRulesBtn)
 
-    // Defaults restored
-    expect(useScheduleStore.getState().getActiveRuleIds('2026-10').length).toBeGreaterThan(0)
-    expect(useScheduleStore.getState().getActiveShiftIds('2026-10').length).toBeGreaterThan(0)
+    expect(screen.getByText('Vincular Regras ao Mês')).toBeInTheDocument()
+
+    // Select the first available rule
+    const ruleItem = screen.getByText('Máximo 1 turno por dia')
+    fireEvent.click(ruleItem)
+
+    // Click confirm button
+    const addBtn = screen.getByRole('button', { name: /adicionar selecionadas/i })
+    fireEvent.click(addBtn)
+
+    expect(useScheduleStore.getState().getActiveRuleIds('2026-10')).toContain('rule_max_shifts_day')
   })
 })
 

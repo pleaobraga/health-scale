@@ -81,6 +81,64 @@ describe('RulesManagementView Component', () => {
     expect(screen.getByText('Máximo 2 turnos por semana')).toBeInTheDocument()
   })
 
+  it('deve permitir cadastrar uma regra de quantidade máxima de pessoas no mesmo turno', () => {
+    renderRulesView()
+
+    fireEvent.click(screen.getByRole('button', { name: /nova regra/i }))
+
+    fireEvent.change(screen.getByPlaceholderText(/Ex: Limite Semanal de Plantões/i), {
+      target: { value: 'Máximo 2 pessoas no turno' },
+    })
+
+    // Select MAX_PEOPLE_PER_SHIFT
+    const comboboxes = screen.getAllByRole('combobox')
+    fireEvent.change(comboboxes[0], { target: { value: 'MAX_PEOPLE_PER_SHIFT' } })
+
+    // Set maxPeople to 2
+    const maxPeopleInput = screen.getByDisplayValue('1')
+    fireEvent.change(maxPeopleInput, { target: { value: '2' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /criar regra/i }))
+
+    expect(screen.getByText('Máximo 2 pessoas no turno')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Dispara quando houver mais de 2 profissional\(is\) trabalhando simultaneamente no mesmo turno/i)
+    ).toBeInTheDocument()
+  })
+
+  it('deve permitir cadastrar uma regra flexível de horas de plantão por dia para fins de semana', () => {
+    renderRulesView()
+
+    fireEvent.click(screen.getByRole('button', { name: /nova regra/i }))
+
+    fireEvent.change(screen.getByPlaceholderText(/Ex: Limite Semanal de Plantões/i), {
+      target: { value: 'Plantão fim de semana 12h' },
+    })
+
+    const comboboxes = screen.getAllByRole('combobox')
+    // Select DAILY_SHIFT_HOURS
+    fireEvent.change(comboboxes[0], { target: { value: 'DAILY_SHIFT_HOURS' } })
+
+    // Set targetDailyHours to 12
+    const targetHoursInput = screen.getByDisplayValue('24')
+    fireEvent.change(targetHoursInput, { target: { value: '12' } })
+
+    // Select comparison: MAX
+    const comparisonSelect = screen.getByDisplayValue(/Exatamente X horas/i)
+    fireEvent.change(comparisonSelect, { target: { value: 'MAX' } })
+
+    // Select dayFilterType: WEEKENDS
+    const filterSelect = screen.getByDisplayValue(/Todos os dias do mês/i)
+    fireEvent.change(filterSelect, { target: { value: 'WEEKENDS' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /criar regra/i }))
+
+    expect(screen.getByText('Plantão fim de semana 12h')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Dispara quando a carga horária de plantão do dia ultrapassar 12h em finais de semana/i)
+    ).toBeInTheDocument()
+  })
+
   it('deve permitir duplicar uma regra existente', () => {
     renderRulesView()
 
@@ -127,6 +185,18 @@ describe('RulesManagementView Component', () => {
 
     // Impacto no mês ativo
     expect(screen.getByText(/Impacto na Escala Atual/i)).toBeInTheDocument()
+  })
+
+  it('deve filtrar as regras de acordo com a busca', () => {
+    renderRulesView()
+
+    expect(screen.getByText('Máximo 1 turno por dia')).toBeInTheDocument()
+
+    const searchInput = screen.getByPlaceholderText(/buscar regras/i)
+    fireEvent.change(searchInput, { target: { value: 'Inexistente' } })
+
+    expect(screen.queryByText('Máximo 1 turno por dia')).not.toBeInTheDocument()
+    expect(screen.getByText(/nenhuma regra encontrada/i)).toBeInTheDocument()
   })
 })
 

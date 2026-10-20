@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next'
 import { NavLink } from 'react-router-dom'
 
 import { ConfirmClearLocalDataModal } from './confirm-clear-local-data-modal'
-import { SettingsNavTabs } from './settings-nav-tabs'
 import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
@@ -133,11 +132,6 @@ export function SettingsView() {
       className="flex-1 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 md:p-8 flex flex-col items-center custom-scrollbar"
     >
       <div className="w-full max-w-4xl space-y-6 pb-12">
-        {/* Navigation Tabs */}
-        <div className="pb-2 border-b border-slate-200 dark:border-slate-800">
-          <SettingsNavTabs />
-        </div>
-
         {/* Header */}
         <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">

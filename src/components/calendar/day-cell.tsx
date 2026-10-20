@@ -60,6 +60,27 @@ export function DayCell({
   const [isViolationsModalOpen, setIsViolationsModalOpen] = useState(false)
   const [isAddShiftModalOpen, setIsAddShiftModalOpen] = useState(false)
   const shiftRules = useScheduleStore((state) => state.shiftRules)
+  const shiftDefinitions = useScheduleStore((state) => state.shiftDefinitions)
+
+  const getPersonShift = (personId: string): ShiftDefinition | undefined => {
+    if (dayShiftMap) {
+      const shiftId = Object.entries(dayShiftMap).find(([, pId]) => pId === personId)?.[0]
+      if (shiftId) {
+        const found =
+          (activeShifts || []).find((s) => s.id === shiftId) ||
+          shiftDefinitions.find((s) => s.id === shiftId)
+        if (found) return found
+      }
+    }
+    if (activeShifts && activeShifts.length > 0) {
+      const idx = assignedPersonIds.indexOf(personId)
+      if (idx >= 0 && idx < activeShifts.length) {
+        return activeShifts[idx]
+      }
+      return activeShifts[0]
+    }
+    return shiftDefinitions[0]
+  }
 
   // Background styling when a person's availability is being highlighted
   const isTargetOfHighlight = highlightedPerson && isHighlightedPersonAvailable && isCurrentMonth
@@ -174,6 +195,7 @@ export function DayCell({
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
+                            data-testid={`shift-badge-${dateStr}-${shift.code}`}
                             className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
                             style={{
                               backgroundColor: shift.color || 'rgba(0,0,0,0.3)',
@@ -217,14 +239,29 @@ export function DayCell({
                   .map((pId) => {
                     const p = personMap.get(pId)
                     if (!p) return null
+                    const pShift = getPersonShift(pId)
                     return (
                       <div
                         key={pId}
                         style={{ backgroundColor: p.color }}
-                        className="text-white text-xs font-semibold px-2 py-1 rounded-lg shadow-2xs flex items-center justify-between truncate"
-                        title={p.name}
+                        className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                        title={pShift ? `${pShift.name}: ${p.name}` : p.name}
                       >
-                        <span className="truncate">{p.name}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {pShift && (
+                            <span
+                              data-testid={`shift-badge-${dateStr}-${pShift.code}`}
+                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                              style={{
+                                backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              {pShift.code}
+                            </span>
+                          )}
+                          <span className="truncate">{p.name}</span>
+                        </div>
                       </div>
                     )
                   })}
@@ -239,15 +276,30 @@ export function DayCell({
               assignedPersonIds.map((personId) => {
                 const person = personMap.get(personId)
                 if (!person) return null
+                const pShift = getPersonShift(personId)
 
                 return (
                   <div
                     key={personId}
                     style={{ backgroundColor: person.color }}
-                    className="text-white text-xs font-semibold px-2 py-1 rounded-lg shadow-2xs flex items-center justify-between truncate"
-                    title={person.name}
+                    className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                    title={pShift ? `${pShift.name}: ${person.name}` : person.name}
                   >
-                    <span className="truncate">{person.name}</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {pShift && (
+                        <span
+                          data-testid={`shift-badge-${dateStr}-${pShift.code}`}
+                          className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                          style={{
+                            backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
+                            color: '#FFFFFF',
+                          }}
+                        >
+                          {pShift.code}
+                        </span>
+                      )}
+                      <span className="truncate">{person.name}</span>
+                    </div>
                   </div>
                 )
               })
@@ -287,6 +339,7 @@ export function DayCell({
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
+                            data-testid={`shift-badge-${dateStr}-${shift.code}`}
                             className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
                             style={{
                               backgroundColor: shift.color || 'rgba(0,0,0,0.3)',
@@ -322,14 +375,29 @@ export function DayCell({
                   .map((pId) => {
                     const p = personMap.get(pId)
                     if (!p) return null
+                    const pShift = getPersonShift(pId)
                     return (
                       <div
                         key={pId}
                         style={{ backgroundColor: p.color }}
-                        className="group inline-flex items-center gap-1 text-white text-[11px] font-semibold pl-2 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
-                        title={p.name}
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        title={pShift ? `${pShift.name}: ${p.name}` : p.name}
                       >
-                        <span className="truncate">{p.name}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {pShift && (
+                            <span
+                              data-testid={`shift-badge-${dateStr}-${pShift.code}`}
+                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                              style={{
+                                backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              {pShift.code}
+                            </span>
+                          )}
+                          <span className="truncate">{p.name}</span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => onRemovePerson(pId)}
@@ -359,19 +427,34 @@ export function DayCell({
             ) : (
               <>
                 {/* Fallback candidate tags when only 1 active shift or none */}
-                <div className="flex flex-wrap gap-1">
+                <div className="space-y-1">
                   {assignedPersonIds.map((personId) => {
                     const person = personMap.get(personId)
                     if (!person) return null
+                    const pShift = getPersonShift(personId)
 
                     return (
                       <div
                         key={personId}
                         style={{ backgroundColor: person.color }}
-                        className="group inline-flex items-center gap-1 text-white text-[11px] font-semibold pl-2 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
-                        title={person.name}
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        title={pShift ? `${pShift.name}: ${person.name}` : person.name}
                       >
-                        <span className="truncate">{person.name}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {pShift && (
+                            <span
+                              data-testid={`shift-badge-${dateStr}-${pShift.code}`}
+                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                              style={{
+                                backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
+                                color: '#FFFFFF',
+                              }}
+                            >
+                              {pShift.code}
+                            </span>
+                          )}
+                          <span className="truncate">{person.name}</span>
+                        </div>
                         <button
                           type="button"
                           onClick={() => onRemovePerson(personId)}
@@ -452,17 +535,6 @@ export function DayCell({
               onAddPerson(personId, shiftId)
             }
           }}
-        />
-      )}
-      {violations && violations.length > 0 && (
-        <DayViolationsModal
-          isOpen={isViolationsModalOpen}
-          onClose={() => setIsViolationsModalOpen(false)}
-          dateStr={dateStr}
-          formattedDate={formatDisplayDate(dateStr)}
-          violations={violations}
-          allPersons={allPersons}
-          shiftRules={shiftRules}
         />
       )}
     </div>

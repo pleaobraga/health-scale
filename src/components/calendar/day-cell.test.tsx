@@ -370,5 +370,70 @@ describe('DayCell Component', () => {
     expect(screen.getByText(/Escalar pessoa/i)).toBeInTheDocument()
     expect(screen.queryByText(/1\. Selecione o Plantão \/ Escala/i)).not.toBeInTheDocument()
   })
+
+  it('deve exibir sempre a sigla da escala na visualização normal (DayCell), tanto em modo leitura quanto edição', () => {
+    const singleShift = [
+      {
+        id: 'shift_d12',
+        name: 'Plantão Diurno 12h',
+        code: 'D12',
+        startTime: '07:00',
+        durationHours: 12,
+        color: '#3b82f6',
+        enabledByDefault: true,
+        createdAt: '2026-01-01',
+        updatedAt: '2026-01-01',
+      },
+    ]
+
+    // Read mode
+    const { unmount } = render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={['p1']}
+        dayShiftMap={{ shift_d12: 'p1' }}
+        activeShifts={singleShift}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
+    unmount()
+
+    // Edit mode
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={true}
+        assignedPersonIds={['p1']}
+        dayShiftMap={{ shift_d12: 'p1' }}
+        activeShifts={singleShift}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
+  })
 })
 

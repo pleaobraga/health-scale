@@ -13,6 +13,8 @@
   "nav": {
     "calendar": "Calendário de Escalas",
     "people": "Gerenciar Pessoas",
+    "shifts": "Turnos de Trabalho",
+    "rules": "Regras de Validação",
     "addresses": "Gerenciar Endereços",
     "import": "Importar Dados",
     "settings": "Configurações",

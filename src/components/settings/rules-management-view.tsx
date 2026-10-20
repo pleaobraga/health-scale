@@ -3,6 +3,7 @@ import {
   ShieldAlert,
   AlertTriangle,
   Plus,
+  Search,
   Edit2,
   Copy,
   Trash2,
@@ -15,10 +16,15 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { SettingsNavTabs } from './settings-nav-tabs'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
-import type { PeriodScope, RuleType, ShiftRule } from '../../types'
+import type {
+  PeriodScope,
+  RuleType,
+  ShiftRule,
+  DayFilterType,
+  DailyHoursComparison,
+} from '../../types'
 
 export function RulesManagementView() {
   const { t } = useTranslation(['settings', 'common'])
@@ -33,6 +39,7 @@ export function RulesManagementView() {
     duplicateShiftRule,
   } = useScheduleStore()
 
+  const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingRule, setEditingRule] = useState<ShiftRule | null>(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
@@ -47,8 +54,22 @@ export function RulesManagementView() {
   const [maxHours, setMaxHours] = useState(24)
   const [minRestHours, setMinRestHours] = useState(24)
   const [consecutiveDaysLimit, setConsecutiveDaysLimit] = useState(1)
+  const [maxPeople, setMaxPeople] = useState(1)
+  const [targetDailyHours, setTargetDailyHours] = useState(24)
+  const [dailyHoursComparison, setDailyHoursComparison] = useState<DailyHoursComparison>('EXACT')
+  const [dayFilterType, setDayFilterType] = useState<DayFilterType>('ALL')
+  const [specificDaysOfWeek, setSpecificDaysOfWeek] = useState<number[]>([1, 2, 3, 4, 5])
   const [targetShiftIds, setTargetShiftIds] = useState<string[]>([])
   const [enabledByDefault, setEnabledByDefault] = useState(true)
+
+  const filteredRules = shiftRules.filter((rule) => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return true
+    return (
+      rule.name.toLowerCase().includes(q) ||
+      (rule.description && rule.description.toLowerCase().includes(q))
+    )
+  })
 
   const handleOpenCreateModal = () => {
     setEditingRule(null)
@@ -61,6 +82,11 @@ export function RulesManagementView() {
     setMaxHours(24)
     setMinRestHours(24)
     setConsecutiveDaysLimit(1)
+    setMaxPeople(1)
+    setTargetDailyHours(24)
+    setDailyHoursComparison('EXACT')
+    setDayFilterType('ALL')
+    setSpecificDaysOfWeek([1, 2, 3, 4, 5])
     setTargetShiftIds([])
     setEnabledByDefault(true)
     setIsModalOpen(true)
@@ -77,6 +103,11 @@ export function RulesManagementView() {
     setMaxHours(rule.parameters.maxHours ?? 24)
     setMinRestHours(rule.parameters.minRestHours ?? 24)
     setConsecutiveDaysLimit(rule.parameters.consecutiveDaysLimit ?? 1)
+    setMaxPeople(rule.parameters.maxPeople ?? rule.parameters.maxOccurrences ?? 1)
+    setTargetDailyHours(rule.parameters.targetDailyHours ?? 24)
+    setDailyHoursComparison(rule.parameters.dailyHoursComparison ?? 'EXACT')
+    setDayFilterType(rule.parameters.dayFilterType ?? 'ALL')
+    setSpecificDaysOfWeek(rule.parameters.specificDaysOfWeek ?? [1, 2, 3, 4, 5])
     setTargetShiftIds(rule.parameters.targetShiftIds || [])
     setEnabledByDefault(rule.enabledByDefault)
     setIsModalOpen(true)
@@ -104,6 +135,15 @@ export function RulesManagementView() {
       parameters.minRestHours = Number(minRestHours) || 24
     } else if (type === 'CONSECUTIVE_DAYS_LIMIT') {
       parameters.consecutiveDaysLimit = Number(consecutiveDaysLimit) || 1
+    } else if (type === 'MAX_PEOPLE_PER_SHIFT') {
+      parameters.maxPeople = Number(maxPeople) || 1
+    } else if (type === 'DAILY_SHIFT_HOURS') {
+      parameters.targetDailyHours = Number(targetDailyHours) || 24
+      parameters.dailyHoursComparison = dailyHoursComparison
+      parameters.dayFilterType = dayFilterType
+      if (dayFilterType === 'SPECIFIC_DAYS') {
+        parameters.specificDaysOfWeek = specificDaysOfWeek
+      }
     }
 
     if (targetShiftIds.length > 0) {
@@ -169,6 +209,31 @@ export function RulesManagementView() {
         const days = rule.parameters.consecutiveDaysLimit ?? 1
         return t('settings:rules.logicExplanation.consecutiveDays', { days })
       }
+      case 'MAX_PEOPLE_PER_SHIFT': {
+        const count = rule.parameters.maxPeople ?? rule.parameters.maxOccurrences ?? 1
+        return t('settings:rules.logicExplanation.maxPeoplePerShift', { count })
+      }
+      case 'DAILY_SHIFT_HOURS': {
+        const hours = rule.parameters.targetDailyHours ?? 24
+        const comparison = rule.parameters.dailyHoursComparison ?? 'EXACT'
+        const filter = rule.parameters.dayFilterType ?? 'ALL'
+        if (comparison === 'MAX') {
+          return t('settings:rules.logicExplanation.dailyShiftHoursMax', {
+            hours,
+            filter: t(`settings:rules.dayFiltersShort.${filter}`),
+          })
+        }
+        if (comparison === 'MIN') {
+          return t('settings:rules.logicExplanation.dailyShiftHoursMin', {
+            hours,
+            filter: t(`settings:rules.dayFiltersShort.${filter}`),
+          })
+        }
+        return t('settings:rules.logicExplanation.dailyShiftHoursExact', {
+          hours,
+          filter: t(`settings:rules.dayFiltersShort.${filter}`),
+        })
+      }
       default:
         return ''
     }
@@ -177,82 +242,97 @@ export function RulesManagementView() {
   return (
     <div
       data-testid="rules-management-view"
-      className="flex-1 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 md:p-8 flex flex-col items-center custom-scrollbar"
+      className="flex-1 h-full overflow-y-auto p-4 sm:p-6 md:p-8 flex flex-col gap-6 max-w-[1500px] w-full mx-auto custom-scrollbar"
     >
-      <div className="w-full max-w-5xl space-y-6 pb-12">
-        {/* Navigation Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
-          <SettingsNavTabs />
-
-          <button
-            type="button"
-            onClick={handleOpenCreateModal}
-            className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-xs transition shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t('settings:rules.newRule')}</span>
-          </button>
-        </div>
-
-        {/* View Header */}
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
-            <ShieldCheck className="w-5 h-5" />
+      {/* Header Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-xs">
+            <ShieldCheck className="w-6 h-6 stroke-[2.2]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               {t('settings:rules.title')}
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
               {t('settings:rules.subtitle')}
             </p>
           </div>
         </div>
 
-        {/* Educational Banner Explaining Severity vs Rules */}
-        <div className="bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/60 rounded-2xl p-4 flex items-start gap-3.5 shadow-2xs">
-          <div className="p-2 rounded-xl bg-indigo-600 text-white shrink-0 mt-0.5">
-            <Info className="w-4 h-4" />
-          </div>
-          <div className="space-y-1 text-xs">
-            <h4 className="font-bold text-indigo-950 dark:text-indigo-200">
-              {t('settings:rules.banner.title')}
-            </h4>
-            <p className="text-indigo-900/80 dark:text-indigo-300/80 leading-relaxed">
-              {t('settings:rules.banner.description')}
-            </p>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenCreateModal}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs md:text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>{t('settings:rules.newRule')}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Educational Banner Explaining Severity vs Rules */}
+      <div className="bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-900/60 rounded-2xl p-4 flex items-start gap-3.5 shadow-2xs">
+        <div className="p-2 rounded-xl bg-indigo-600 text-white shrink-0 mt-0.5">
+          <Info className="w-4 h-4" />
+        </div>
+        <div className="space-y-1 text-xs">
+          <h4 className="font-bold text-indigo-950 dark:text-indigo-200">
+            {t('settings:rules.banner.title')}
+          </h4>
+          <p className="text-indigo-900/80 dark:text-indigo-300/80 leading-relaxed">
+            {t('settings:rules.banner.description')}
+          </p>
+        </div>
+      </div>
+
+      {/* Search and Stats */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder={t('settings:rules.searchPlaceholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
+          />
         </div>
 
-        {/* Total Summary */}
-        <div className="flex items-center justify-between px-1 text-xs text-slate-500 dark:text-slate-400 font-semibold">
-          <span>{t('settings:rules.totalRegistered', { count: shiftRules.length })}</span>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 self-end sm:self-center">
+          <span className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
+            {t('settings:rules.totalRegistered', { count: shiftRules.length })}
+          </span>
         </div>
+      </div>
 
-        {/* Rules List / Cards */}
-        {shiftRules.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-              {t('settings:rules.emptyTitle')}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-              {t('settings:rules.emptyDesc')}
-            </p>
+      {/* Rules List / Cards */}
+      {filteredRules.length === 0 ? (
+        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+          <ShieldCheck className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <h3 className="text-sm md:text-base font-bold text-slate-700 dark:text-slate-300">
+            {searchQuery
+              ? t('settings:rules.noSearchResults')
+              : t('settings:rules.emptyTitle')}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+            {!searchQuery && t('settings:rules.emptyDesc')}
+          </p>
+          {!searchQuery && (
             <button
               type="button"
               onClick={handleOpenCreateModal}
-              className="mt-4 flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition"
             >
               <Plus className="w-4 h-4" />
               <span>{t('settings:rules.newRule')}</span>
             </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {shiftRules.map((rule) => {
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredRules.map((rule) => {
               const isError = rule.severity === 'ERROR'
               return (
                 <div
@@ -385,6 +465,17 @@ export function RulesManagementView() {
                         </div>
                       )}
 
+                      {rule.parameters.maxPeople !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400 font-medium">
+                            {t('settings:rules.maxPeoplePerShift')}:
+                          </span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-200">
+                            {rule.parameters.maxPeople}
+                          </span>
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
                         <span className="text-slate-400 font-medium">
                           {t('settings:rules.targetShifts')}:
@@ -479,32 +570,52 @@ export function RulesManagementView() {
             })}
           </div>
         )}
-      </div>
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 max-w-md w-full shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              {t('settings:rules.delete')}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              {t('settings:rules.deleteConfirm')}
-            </p>
-            <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 shadow-2xs">
+                  <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {t('settings:rules.delete')}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {t('settings:rules.deleteConfirm')}
+                  </p>
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                title={t('common:actions.close')}
+                aria-label={t('common:actions.close')}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
               >
                 {t('settings:rules.cancel')}
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(deleteConfirmId)}
-                className="px-3.5 py-1.5 text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 transition"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition shadow-xs"
               >
-                {t('settings:rules.delete')}
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{t('settings:rules.delete')}</span>
               </button>
             </div>
           </div>
@@ -586,6 +697,12 @@ export function RulesManagementView() {
                     </option>
                     <option value="CONSECUTIVE_DAYS_LIMIT">
                       {t('settings:rules.types.CONSECUTIVE_DAYS_LIMIT')}
+                    </option>
+                    <option value="MAX_PEOPLE_PER_SHIFT">
+                      {t('settings:rules.types.MAX_PEOPLE_PER_SHIFT')}
+                    </option>
+                    <option value="DAILY_SHIFT_HOURS">
+                      {t('settings:rules.types.DAILY_SHIFT_HOURS')}
                     </option>
                   </select>
                 </div>
@@ -695,6 +812,114 @@ export function RulesManagementView() {
                       onChange={(e) => setConsecutiveDaysLimit(Number(e.target.value))}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
+                  </div>
+                )}
+
+                {type === 'MAX_PEOPLE_PER_SHIFT' && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      {t('settings:rules.maxPeoplePerShift')}
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={maxPeople}
+                      onChange={(e) => setMaxPeople(Number(e.target.value))}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                )}
+
+                {type === 'DAILY_SHIFT_HOURS' && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          {t('settings:rules.targetDailyHours')}
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={72}
+                          value={targetDailyHours}
+                          onChange={(e) => setTargetDailyHours(Number(e.target.value))}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          {t('settings:rules.dailyHoursComparison')}
+                        </label>
+                        <select
+                          value={dailyHoursComparison}
+                          onChange={(e) => setDailyHoursComparison(e.target.value as DailyHoursComparison)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="EXACT">{t('settings:rules.comparisons.EXACT')}</option>
+                          <option value="MAX">{t('settings:rules.comparisons.MAX')}</option>
+                          <option value="MIN">{t('settings:rules.comparisons.MIN')}</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {t('settings:rules.dayFilterType')}
+                      </label>
+                      <select
+                        value={dayFilterType}
+                        onChange={(e) => setDayFilterType(e.target.value as DayFilterType)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="ALL">{t('settings:rules.dayFilters.ALL')}</option>
+                        <option value="WEEKDAYS">{t('settings:rules.dayFilters.WEEKDAYS')}</option>
+                        <option value="WEEKENDS">{t('settings:rules.dayFilters.WEEKENDS')}</option>
+                        <option value="SPECIFIC_DAYS">{t('settings:rules.dayFilters.SPECIFIC_DAYS')}</option>
+                      </select>
+                    </div>
+
+                    {dayFilterType === 'SPECIFIC_DAYS' && (
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                          {t('settings:rules.daysOfWeekTitle', { defaultValue: 'Selecione os dias aplicáveis:' })}
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { idx: 0, label: t('settings:rules.daysOfWeek.0') },
+                            { idx: 1, label: t('settings:rules.daysOfWeek.1') },
+                            { idx: 2, label: t('settings:rules.daysOfWeek.2') },
+                            { idx: 3, label: t('settings:rules.daysOfWeek.3') },
+                            { idx: 4, label: t('settings:rules.daysOfWeek.4') },
+                            { idx: 5, label: t('settings:rules.daysOfWeek.5') },
+                            { idx: 6, label: t('settings:rules.daysOfWeek.6') },
+                          ].map(({ idx, label }) => {
+                            const isSelected = specificDaysOfWeek.includes(idx)
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setSpecificDaysOfWeek((prev) =>
+                                    prev.includes(idx)
+                                      ? prev.filter((d) => d !== idx)
+                                      : [...prev, idx]
+                                  )
+                                }}
+                                className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

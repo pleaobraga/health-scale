@@ -93,5 +93,17 @@ describe('ShiftsManagementView Component', () => {
 
     expect(screen.queryByText('Plantão Diurno 12h')).not.toBeInTheDocument()
   })
+
+  it('deve filtrar os turnos de acordo com a busca', () => {
+    renderShiftsView()
+
+    expect(screen.getByText('Plantão Diurno 12h')).toBeInTheDocument()
+
+    const searchInput = screen.getByPlaceholderText(/buscar turnos/i)
+    fireEvent.change(searchInput, { target: { value: 'Inexistente' } })
+
+    expect(screen.queryByText('Plantão Diurno 12h')).not.toBeInTheDocument()
+    expect(screen.getByText(/nenhum turno encontrado/i)).toBeInTheDocument()
+  })
 })
 

@@ -36,14 +36,18 @@ export function AppRoutes() {
           <Route path="calendario" element={<CalendarView />} />
           {/* Global People Management Route */}
           <Route path="pessoas" element={<PeopleManagementView />} />
+          {/* Work Shifts Management Route */}
+          <Route path="turnos" element={<ShiftsManagementView />} />
+          {/* Validation Rules Management Route */}
+          <Route path="regras" element={<RulesManagementView />} />
           {/* Address Management Route */}
           <Route path="enderecos" element={<AddressManagementView />} />
           {/* Data Import Route */}
           <Route path="importar" element={<ImportView />} />
-          {/* Extensible Route: General Settings */}
+          {/* General Settings */}
           <Route path="configuracoes" element={<SettingsView />} />
-          <Route path="configuracoes/turnos" element={<ShiftsManagementView />} />
-          <Route path="configuracoes/regras" element={<RulesManagementView />} />
+          <Route path="configuracoes/turnos" element={<Navigate to="/turnos" replace />} />
+          <Route path="configuracoes/regras" element={<Navigate to="/regras" replace />} />
 
           {/* Admin-Exclusive Route: User Management */}
           <Route element={<AdminRoute />}>

@@ -6,7 +6,7 @@ import {
   Printer,
   X,
 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -16,6 +16,8 @@ import {
   formatMonthYear,
   getMonthCalendarGrid,
 } from '../../utils/date-utils'
+
+import type { ShiftDefinition } from '../../types'
 
 export function FullScreenCalendarModal() {
   const { t, i18n } = useTranslation(['calendar', 'common'])
@@ -27,7 +29,11 @@ export function FullScreenCalendarModal() {
     goToNextMonth,
     persons,
     assignments,
+    dayShiftAssignments = {},
+    shiftDefinitions = [],
+    monthActiveShifts = {},
     events,
+    getDayActiveShifts,
   } = useScheduleStore()
 
   const weekdays = [
@@ -70,6 +76,24 @@ export function FullScreenCalendarModal() {
 
   const daysGrid = getMonthCalendarGrid(currentMonth)
   const personMap = new Map(persons.map((p) => [p.id, p]))
+
+  const activeShiftIds = useMemo(() => {
+    return (
+      monthActiveShifts[currentMonth] ??
+      shiftDefinitions.filter((s) => s.enabledByDefault).map((s) => s.id)
+    )
+  }, [monthActiveShifts, currentMonth, shiftDefinitions])
+
+  const activeShifts = useMemo(() => {
+    const map = new Map(shiftDefinitions.map((s) => [s.id, s]))
+    return activeShiftIds
+      .map((id) => map.get(id))
+      .filter((s): s is ShiftDefinition => Boolean(s))
+  }, [shiftDefinitions, activeShiftIds])
+
+  const shiftMap = useMemo(() => {
+    return new Map(shiftDefinitions.map((s) => [s.id, s]))
+  }, [shiftDefinitions])
 
   // Events of the current month sorted chronologically by date and time
   const monthEvents = events
@@ -191,8 +215,39 @@ export function FullScreenCalendarModal() {
           <div className="flex-1 grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 auto-rows-fr overflow-y-auto print:overflow-visible print:border-l-2 print:border-slate-400 print:h-auto">
             {daysGrid.map((dayInfo) => {
               const assigned = assignments[dayInfo.dateStr] || []
+              const dayShiftMap = dayShiftAssignments[dayInfo.dateStr] || {}
               const dayEvents = events.filter((e) => e.date === dayInfo.dateStr)
               const hasEvents = dayEvents.length > 0
+              const hasMultiplePersons = assigned.length > 1
+
+              const getPersonShift = (personId: string): ShiftDefinition | undefined => {
+                const entry = Object.entries(dayShiftMap).find(([, pId]) => pId === personId)
+                if (entry) {
+                  return shiftMap.get(entry[0])
+                }
+                const dayShifts = getDayActiveShifts(dayInfo.dateStr)
+                if (dayShifts.length > 0) {
+                  const personIndex = assigned.indexOf(personId)
+                  if (personIndex >= 0 && personIndex < dayShifts.length) {
+                    return dayShifts[personIndex]
+                  }
+                  return dayShifts[0]
+                }
+                return shiftDefinitions[0]
+              }
+
+              const sortedAssigned = hasMultiplePersons
+                ? [...assigned].sort((aId, bId) => {
+                    const shiftA = getPersonShift(aId)
+                    const shiftB = getPersonShift(bId)
+                    if (shiftA && shiftB) {
+                      return shiftA.startTime.localeCompare(shiftB.startTime)
+                    }
+                    if (shiftA) return -1
+                    if (shiftB) return 1
+                    return 0
+                  })
+                : assigned
 
               return (
                 <div
@@ -235,16 +290,17 @@ export function FullScreenCalendarModal() {
 
                   {/* Cell Body with Assigned Persons */}
                   <div className="flex-1 flex flex-col justify-center space-y-1">
-                    {assigned.length === 0 ? (
+                    {sortedAssigned.length === 0 ? (
                       <div className="text-center py-1">
                         <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400">
                           {t('calendar:dayCell.vacant')}
                         </span>
                       </div>
                     ) : (
-                      assigned.map((personId) => {
+                      sortedAssigned.map((personId) => {
                         const person = personMap.get(personId)
                         if (!person) return null
+                        const personShift = getPersonShift(personId)
 
                         return (
                           <div
@@ -256,22 +312,46 @@ export function FullScreenCalendarModal() {
                               WebkitPrintColorAdjust: 'exact',
                               printColorAdjust: 'exact',
                             }}
-                            className="text-white text-xs md:text-sm font-semibold px-2 py-1 rounded-lg shadow-2xs flex items-center justify-between truncate print:text-white print:font-bold print:border-2 print:rounded-md print:px-2 print:py-1 print:shadow-none print-person-chip"
-                            title={person.name}
+                            className="text-white text-xs md:text-sm font-semibold px-2 py-1 rounded-lg shadow-2xs flex items-center justify-between truncate print:text-white print:font-bold print:border-2 print:rounded-md print:px-2 print:py-0.5 print:shadow-none print-person-chip"
+                            title={
+                              personShift
+                                ? `${personShift.name}: ${person.name}`
+                                : person.name
+                            }
                           >
-                            <span className="truncate">{person.name}</span>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              {personShift && (
+                                <span
+                                  data-testid={`shift-badge-${dayInfo.dateStr}-${personShift.code}`}
+                                  style={{
+                                    backgroundColor: personShift.color || 'rgba(0,0,0,0.3)',
+                                    color: '#ffffff',
+                                    WebkitPrintColorAdjust: 'exact',
+                                    printColorAdjust: 'exact',
+                                  }}
+                                  className="text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded shrink-0 shadow-xs print:text-[8px] print:px-1"
+                                >
+                                  {personShift.code}
+                                </span>
+                              )}
+                              <span className="truncate">{person.name}</span>
+                            </div>
                           </div>
                         )
                       })
                     )}
 
-                    {assigned.length > 1 && (
-                      <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 print:text-rose-800 print:border-rose-300">
-                        {t('calendar:dayCell.conflict', {
-                          count: assigned.length,
-                        })}
-                      </span>
-                    )}
+                    {hasMultiplePersons &&
+                      (!activeShifts ||
+                        activeShifts.length <= 1 ||
+                        !dayShiftMap ||
+                        Object.keys(dayShiftMap).length <= 1) && (
+                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 print:text-rose-800 print:border-rose-300">
+                          {t('calendar:dayCell.conflict', {
+                            count: assigned.length,
+                          })}
+                        </span>
+                      )}
                   </div>
                 </div>
               )

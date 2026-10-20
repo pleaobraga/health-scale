@@ -49,6 +49,46 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(useScheduleStore.getState().currentView).toBe('import')
   })
 
+  it('deve renderizar a tela de Turnos de Trabalho na rota "/turnos"', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+
+    render(<TestAppRouter initialEntries={['/turnos']} />)
+
+    expect(screen.getByTestId('shifts-management-view')).toBeInTheDocument()
+    expect(screen.getByText(/Gestão Global de Turnos/i)).toBeInTheDocument()
+    expect(useScheduleStore.getState().currentView).toBe('shifts')
+  })
+
+  it('deve renderizar a tela de Regras de Validação na rota "/regras"', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+
+    render(<TestAppRouter initialEntries={['/regras']} />)
+
+    expect(screen.getByTestId('rules-management-view')).toBeInTheDocument()
+    expect(screen.getByText(/Gestão Global de Regras/i)).toBeInTheDocument()
+    expect(useScheduleStore.getState().currentView).toBe('rules')
+  })
+
+  it('deve redirecionar rotas legadas "/configuracoes/turnos" para "/turnos"', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+
+    render(<TestAppRouter initialEntries={['/configuracoes/turnos']} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('shifts-management-view')).toBeInTheDocument()
+    })
+  })
+
+  it('deve redirecionar rotas legadas "/configuracoes/regras" para "/regras"', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+
+    render(<TestAppRouter initialEntries={['/configuracoes/regras']} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('rules-management-view')).toBeInTheDocument()
+    })
+  })
+
   it('deve renderizar a rota extensível de configurações na rota "/configuracoes"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 

@@ -92,7 +92,9 @@
     "deleteConfirm": "Deseja realmente excluir este turno? A ação é irreversível.",
     "codeBadge": "Código:",
     "hoursBadge": "{{hours}}h",
-    "totalRegistered": "Total Cadastrado: {{count}}"
+    "totalRegistered": "Total Cadastrado: {{count}}",
+    "searchPlaceholder": "Buscar turnos por nome, código ou horário...",
+    "noSearchResults": "Nenhum turno encontrado para a busca"
   },
   "rules": {
     "title": "Gestão Global de Regras",
@@ -111,7 +113,9 @@
       "MAX_SHIFTS_PER_PERIOD": "Limite de Turnos por Período",
       "MAX_HOURS_PER_PERIOD": "Limite de Horas por Período",
       "MIN_REST_HOURS": "Descanso Mínimo entre Plantões",
-      "CONSECUTIVE_DAYS_LIMIT": "Limite de Dias Consecutivos"
+      "CONSECUTIVE_DAYS_LIMIT": "Limite de Dias Consecutivos",
+      "MAX_PEOPLE_PER_SHIFT": "Máximo de Pessoas no Mesmo Turno",
+      "DAILY_SHIFT_HOURS": "Horas de Plantão por Dia"
     },
     "severity": "Severidade da Violação",
     "severities": {
@@ -139,7 +143,11 @@
       "maxHoursWeek": "Dispara quando a soma das horas trabalhadas na semana ultrapassar {{hours}}h.",
       "maxHoursMonth": "Dispara quando a soma das horas trabalhadas no mês ultrapassar {{hours}}h.",
       "minRest": "Dispara quando o descanso entre o término de um plantão e o início do próximo for menor que {{hours}}h (ex: sair às 19h e entrar às 7h no dia seguinte gera apenas 12h de descanso).",
-      "consecutiveDays": "Dispara quando o profissional trabalhar em mais de {{days}} dia(s) seguidos sem descanso intermediário."
+      "consecutiveDays": "Dispara quando o profissional trabalhar em mais de {{days}} dia(s) seguidos sem descanso intermediário.",
+      "maxPeoplePerShift": "Dispara quando houver mais de {{count}} profissional(is) trabalhando simultaneamente no mesmo turno ou com horários sobrepostos no dia.",
+      "dailyShiftHoursExact": "Dispara quando a carga horária de plantão do dia for diferente de exatamente {{hours}}h em {{filter}}.",
+      "dailyShiftHoursMax": "Dispara quando a carga horária de plantão do dia ultrapassar {{hours}}h em {{filter}}.",
+      "dailyShiftHoursMin": "Dispara quando a carga horária de plantão do dia for menor que {{hours}}h em {{filter}}."
     },
     "activeMonthStatus": {
       "title": "Impacto na Escala Atual ({{month}}):",
@@ -158,6 +166,36 @@
     "maxHours": "Carga Horária Máxima Permitida (Horas)",
     "minRestHours": "Intervalo Mínimo de Descanso (Horas)",
     "consecutiveDaysLimit": "Limite de Dias Contínuos",
+    "maxPeoplePerShift": "Quantidade Máxima de Pessoas no Turno",
+    "targetDailyHours": "Carga Horária de Plantão no Dia (Horas)",
+    "dailyHoursComparison": "Critério de Validação",
+    "comparisons": {
+      "EXACT": "Exatamente X horas de plantão",
+      "MAX": "No máximo X horas de plantão",
+      "MIN": "No mínimo X horas de plantão"
+    },
+    "dayFilterType": "Aplicar aos Dias",
+    "dayFilters": {
+      "ALL": "Todos os dias do mês",
+      "WEEKDAYS": "Apenas dias de semana (Segunda a Sexta)",
+      "WEEKENDS": "Apenas finais de semana (Sábado e Domingo)",
+      "SPECIFIC_DAYS": "Dias específicos da semana"
+    },
+    "dayFiltersShort": {
+      "ALL": "todos os dias",
+      "WEEKDAYS": "dias de semana (seg a sex)",
+      "WEEKENDS": "finais de semana (sáb e dom)",
+      "SPECIFIC_DAYS": "dias específicos selecionados"
+    },
+    "daysOfWeek": {
+      "0": "Dom",
+      "1": "Seg",
+      "2": "Ter",
+      "3": "Qua",
+      "4": "Qui",
+      "5": "Sex",
+      "6": "Sáb"
+    },
     "targetShifts": "Turnos Alvo (Filtro)",
     "allShiftsOption": "Aplicar a todos os turnos cadastrados",
     "enabledByDefault": "Ativa por padrão para novos meses",
@@ -168,7 +206,9 @@
     "emptyTitle": "Nenhuma regra cadastrada",
     "emptyDesc": "Configure as regras para o motor de auditoria validar automaticamente as escalas.",
     "deleteConfirm": "Deseja realmente excluir esta regra? A ação é irreversível.",
-    "totalRegistered": "Total Cadastrado: {{count}}"
+    "totalRegistered": "Total Cadastrado: {{count}}",
+    "searchPlaceholder": "Buscar regras por nome ou descrição...",
+    "noSearchResults": "Nenhuma regra encontrada para a busca"
   }
 }
 

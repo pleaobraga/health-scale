@@ -92,7 +92,9 @@
     "deleteConfirm": "Do you really want to delete this shift? This action is irreversible.",
     "codeBadge": "Code:",
     "hoursBadge": "{{hours}}h",
-    "totalRegistered": "Total Registered: {{count}}"
+    "totalRegistered": "Total Registered: {{count}}",
+    "searchPlaceholder": "Search shifts by name, code, or time...",
+    "noSearchResults": "No shifts found for this search"
   },
   "rules": {
     "title": "Global Rules Management",
@@ -111,7 +113,9 @@
       "MAX_SHIFTS_PER_PERIOD": "Shift Limit per Period",
       "MAX_HOURS_PER_PERIOD": "Hours Limit per Period",
       "MIN_REST_HOURS": "Minimum Rest between Shifts",
-      "CONSECUTIVE_DAYS_LIMIT": "Consecutive Days Limit"
+      "CONSECUTIVE_DAYS_LIMIT": "Consecutive Days Limit",
+      "MAX_PEOPLE_PER_SHIFT": "Maximum People in Same Shift",
+      "DAILY_SHIFT_HOURS": "Daily Shift Hours Requirement"
     },
     "severity": "Violation Severity",
     "severities": {
@@ -139,7 +143,11 @@
       "maxHoursWeek": "Triggers when total working hours in the week exceed {{hours}}h.",
       "maxHoursMonth": "Triggers when total working hours in the month exceed {{hours}}h.",
       "minRest": "Triggers when rest time between the end of a shift and the start of the next is under {{hours}}h (e.g., leaving at 19:00 and entering at 07:00 next day yields only 12h of rest).",
-      "consecutiveDays": "Triggers when staff works more than {{days}} consecutive day(s) without intermediate rest."
+      "consecutiveDays": "Triggers when staff works more than {{days}} consecutive day(s) without intermediate rest.",
+      "maxPeoplePerShift": "Triggers when more than {{count}} staff member(s) work simultaneously in the same shift or with overlapping hours on that day.",
+      "dailyShiftHoursExact": "Triggers when total shift hours for the day differ from exactly {{hours}}h on {{filter}}.",
+      "dailyShiftHoursMax": "Triggers when total shift hours for the day exceed {{hours}}h on {{filter}}.",
+      "dailyShiftHoursMin": "Triggers when total shift hours for the day are under {{hours}}h on {{filter}}."
     },
     "activeMonthStatus": {
       "title": "Impact on Current Schedule ({{month}}):",
@@ -158,6 +166,36 @@
     "maxHours": "Maximum Allowed Working Hours",
     "minRestHours": "Minimum Rest Interval (Hours)",
     "consecutiveDaysLimit": "Continuous Days Limit",
+    "maxPeoplePerShift": "Maximum People in Shift",
+    "targetDailyHours": "Daily Shift Hours Requirement (Hours)",
+    "dailyHoursComparison": "Validation Criterion",
+    "comparisons": {
+      "EXACT": "Exactly X shift hours",
+      "MAX": "At most X shift hours",
+      "MIN": "At least X shift hours"
+    },
+    "dayFilterType": "Apply to Days",
+    "dayFilters": {
+      "ALL": "All days of the month",
+      "WEEKDAYS": "Weekdays only (Monday to Friday)",
+      "WEEKENDS": "Weekends only (Saturday and Sunday)",
+      "SPECIFIC_DAYS": "Specific days of the week"
+    },
+    "dayFiltersShort": {
+      "ALL": "all days",
+      "WEEKDAYS": "weekdays (Mon to Fri)",
+      "WEEKENDS": "weekends (Sat & Sun)",
+      "SPECIFIC_DAYS": "specific days of the week"
+    },
+    "daysOfWeek": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
     "targetShifts": "Target Shifts (Filter)",
     "allShiftsOption": "Apply to all registered shifts",
     "enabledByDefault": "Active by default for new months",
@@ -168,7 +206,9 @@
     "emptyTitle": "No rules registered",
     "emptyDesc": "Configure rules for the audit engine to automatically validate schedule rosters.",
     "deleteConfirm": "Do you really want to delete this rule? This action is irreversible.",
-    "totalRegistered": "Total Registered: {{count}}"
+    "totalRegistered": "Total Registered: {{count}}",
+    "searchPlaceholder": "Search rules by name or description...",
+    "noSearchResults": "No rules found for this search"
   }
 }
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import { validateSchedule } from './validate-schedule'
 
-import type { Person, MonthlyAvailability } from '../types'
+import type { Person, MonthlyAvailability, ShiftRule } from '../types'
 
 describe('validateSchedule - Motor de Regras e Auditoria', () => {
   const mockPersons: Person[] = [
@@ -193,6 +193,108 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
 
     const multiAssignedError = errors.find((e) => e.rule === 'multi_assigned')
     expect(multiAssignedError).toBeUndefined()
+  })
+
+  it('valida regra dinâmica MAX_PEOPLE_PER_SHIFT acusando erro quando limite de pessoas no mesmo turno é ultrapassado', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p2'],
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_d12: 'p1',
+      },
+    }
+
+    const maxOnePersonRule: ShiftRule = {
+      id: 'rule_max_1_person_shift',
+      name: 'Máx 1 pessoa por plantão',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // Both p1 and p2 end up assigned to default shift if dayShiftAssignments isn't distinguishing, or if both are on shift_d12
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      allRules: [maxOnePersonRule],
+      activeRuleIds: ['rule_max_1_person_shift'],
+    })
+
+    const ruleError = errors.find((e) => e.rule === 'rule_max_1_person_shift')
+    expect(ruleError).toBeDefined()
+    expect(ruleError?.severity).toBe('error')
+  })
+
+  it('valida regra dinâmica MAX_PEOPLE_PER_SHIFT acusando erro quando 2 turnos diferentes no mesmo dia se sobrepõem no horário (ex: 24h e 12h noite)', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p2'],
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_p24: 'p1', // Plantão 24h (07:00-07:00)
+        shift_n12: 'p2', // Plantão Noturno 12h (19:00-07:00)
+      },
+    }
+
+    const maxOnePersonRule: ShiftRule = {
+      id: 'rule_max_1_person_shift',
+      name: 'Máx 1 pessoa por plantão',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      allRules: [maxOnePersonRule],
+      activeRuleIds: ['rule_max_1_person_shift'],
+    })
+
+    const ruleErrors = errors.filter((e) => e.rule === 'rule_max_1_person_shift')
+    expect(ruleErrors.length).toBe(2)
+    expect(ruleErrors[0].message).toContain('trabalhando simultaneamente')
+  })
+
+  it('acusa conflito de alocação se 2 turnos diferentes no mesmo dia se sobrepõem quando não há regra dinâmica configurada', () => {
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p2'],
+    }
+
+    const dayShiftAssignments = {
+      '2026-10-01': {
+        shift_p24: 'p1', // Plantão 24h (07:00-07:00)
+        shift_n12: 'p2', // Plantão Noturno 12h (19:00-07:00) - sobrepõem-se das 19h às 07h
+      },
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      dayShiftAssignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+      activeRuleIds: ['rule_max_shifts_day'], // MAX_PEOPLE_PER_SHIFT não ativo
+    })
+
+    const multiError = errors.find((e) => e.rule === 'multi_assigned')
+    expect(multiError).toBeDefined()
+    expect(multiError?.severity).toBe('error')
   })
 })
 

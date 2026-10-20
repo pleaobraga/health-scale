@@ -60,12 +60,19 @@ interface ScheduleStore {
   shiftRules: ShiftRule[];
   monthActiveShifts: Record<string, string[]>;
   monthActiveRules: Record<string, string[]>;
+  monthDailyShifts: Record<string, Record<string, number[]>>;
 
   // Dynamic Shift & Rule Actions
   getActiveShiftIds: (month?: string) => string[];
   getActiveRuleIds: (month?: string) => string[];
+  getDayActiveShifts: (dateStr: string) => ShiftDefinition[];
+  setMonthDailyShifts: (month: string, dailyShifts: Record<string, number[]>) => void;
   toggleMonthShift: (shiftId: string, month: string) => void;
   toggleMonthRule: (ruleId: string, month: string) => void;
+  addShiftsToMonth: (shiftIds: string[], month: string) => void;
+  removeShiftFromMonth: (shiftId: string, month: string) => void;
+  addRulesToMonth: (ruleIds: string[], month: string) => void;
+  removeRuleFromMonth: (ruleId: string, month: string) => void;
   resetMonthDefaults: (month: string) => void;
   addShiftDefinition: (shift: Omit<ShiftDefinition, 'id' | 'createdAt' | 'updatedAt'>) => ShiftDefinition;
   updateShiftDefinition: (id: string, shift: Partial<ShiftDefinition>) => void;
@@ -134,7 +141,7 @@ interface ScheduleStore {
   // Schedule Assignments
   populateMonthWithAvailableCandidates: (month: string) => void;
   clearMonthAssignments: (month: string) => void;
-  insertAllPersonDaysToMonth: (personId: string, month: string) => void;
+  insertAllPersonDaysToMonth: (personId: string, month: string, shiftId?: string) => void;
   removePersonFromDay: (dateStr: string, personId: string) => void;
   addPersonToDay: (dateStr: string, personId: string, shiftId?: string) => void;
   setDayAssignments: (dateStr: string, personIds: string[]) => void;
@@ -207,6 +214,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   shiftRules: StorageService.getShiftRules(),
   monthActiveShifts: StorageService.getMonthActiveShiftsMap(),
   monthActiveRules: StorageService.getMonthActiveRulesMap(),
+  monthDailyShifts: StorageService.getMonthDailyShiftsMap(),
 
   validationErrors: [],
   hasValidated: false,
@@ -601,30 +609,81 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
   },
 
-  insertAllPersonDaysToMonth: (personId, month) => {
+  insertAllPersonDaysToMonth: (personId, month, shiftId) => {
     const avail = get().availabilities.find(
       (a) => a.personId === personId && a.month === month
     )
     const totalMonthDays = getMonthDaysArray(month)
-    const daysToAssign =
-      avail && avail.availableDays.length > 0 ? avail.availableDays : totalMonthDays
 
     const currentAssignments = { ...get().assignments }
+    const currentDayShiftAssignments = { ...get().dayShiftAssignments }
     let hasChanges = false
 
-    daysToAssign.forEach((dayNum) => {
-      const dayStr = dayNum.toString().padStart(2, '0')
-      const dateStr = `${month}-${dayStr}`
-      const dayList = currentAssignments[dateStr] || []
-      if (!dayList.includes(personId)) {
-        currentAssignments[dateStr] = [...dayList, personId]
-        hasChanges = true
+    if (shiftId) {
+      // Specific shift selected: assign those specific shift days and link shift
+      const shiftDays = avail?.shiftAvailability?.[shiftId]
+      const daysToAssign =
+        shiftDays && shiftDays.length > 0
+          ? shiftDays
+          : avail && avail.availableDays.length > 0
+          ? avail.availableDays
+          : totalMonthDays
+
+      daysToAssign.forEach((dayNum) => {
+        const dayStr = dayNum.toString().padStart(2, '0')
+        const dateStr = `${month}-${dayStr}`
+        const dayList = currentAssignments[dateStr] || []
+        if (!dayList.includes(personId)) {
+          currentAssignments[dateStr] = [...dayList, personId]
+          hasChanges = true
+        }
+        const dayShifts = { ...(currentDayShiftAssignments[dateStr] || {}) }
+        if (dayShifts[shiftId] !== personId) {
+          dayShifts[shiftId] = personId
+          currentDayShiftAssignments[dateStr] = dayShifts
+          hasChanges = true
+        }
+      })
+    } else {
+      // All shifts or generic availability
+      if (avail?.shiftAvailability && Object.keys(avail.shiftAvailability).length > 0) {
+        for (const [sId, days] of Object.entries(avail.shiftAvailability)) {
+          days.forEach((dayNum) => {
+            const dayStr = dayNum.toString().padStart(2, '0')
+            const dateStr = `${month}-${dayStr}`
+            const dayList = currentAssignments[dateStr] || []
+            if (!dayList.includes(personId)) {
+              currentAssignments[dateStr] = [...dayList, personId]
+              hasChanges = true
+            }
+            const dayShifts = { ...(currentDayShiftAssignments[dateStr] || {}) }
+            if (dayShifts[sId] !== personId) {
+              dayShifts[sId] = personId
+              currentDayShiftAssignments[dateStr] = dayShifts
+              hasChanges = true
+            }
+          })
+        }
+      } else {
+        const daysToAssign =
+          avail && avail.availableDays.length > 0 ? avail.availableDays : totalMonthDays
+
+        daysToAssign.forEach((dayNum) => {
+          const dayStr = dayNum.toString().padStart(2, '0')
+          const dateStr = `${month}-${dayStr}`
+          const dayList = currentAssignments[dateStr] || []
+          if (!dayList.includes(personId)) {
+            currentAssignments[dateStr] = [...dayList, personId]
+            hasChanges = true
+          }
+        })
       }
-    })
+    }
 
     if (hasChanges) {
       set({
         assignments: currentAssignments,
+        dayShiftAssignments: currentDayShiftAssignments,
         hasUnsavedChanges: true,
         hasValidated: false,
         validationErrors: [],
@@ -737,8 +796,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       return
     }
 
-    const month = dateStr.substring(0, 7)
-    const activeShiftIds = get().getActiveShiftIds(month)
+    const activeShiftsForDay = get().getDayActiveShifts(dateStr)
+    const activeShiftIds = activeShiftsForDay.map((s) => s.id)
     if (activeShiftIds.length > 0) {
       const dayShifts = get().dayShiftAssignments[dateStr] || {}
       const vacantShiftId = activeShiftIds.find((sId) => !dayShifts[sId])
@@ -967,6 +1026,55 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       .map((r) => r.id)
   },
 
+  getDayActiveShifts: (dateStr) => {
+    const month = dateStr.slice(0, 7)
+    const dayNumber = Number.parseInt(dateStr.slice(8, 10), 10)
+    const monthDailyConfig = get().monthDailyShifts[month]
+
+    const hasAnyConfigured =
+      monthDailyConfig &&
+      Object.values(monthDailyConfig).some((days) => Array.isArray(days) && days.length > 0)
+
+    if (hasAnyConfigured) {
+      const dayShifts = get().shiftDefinitions.filter((s) =>
+        monthDailyConfig[s.id]?.includes(dayNumber)
+      )
+      return dayShifts
+    }
+
+    // Fallback: active shifts of the month
+    const activeIds = get().getActiveShiftIds(month)
+    return get().shiftDefinitions.filter((s) => activeIds.includes(s.id))
+  },
+
+  setMonthDailyShifts: (month, dailyShifts) => {
+    const updated = {
+      ...get().monthDailyShifts,
+      [month]: dailyShifts,
+    }
+    StorageService.saveMonthDailyShiftsMap(updated)
+
+    // Also update monthActiveShifts to include any shift that has at least 1 day assigned
+    const activeShiftIdsForMonth = Object.entries(dailyShifts)
+      .filter(([, days]) => days && days.length > 0)
+      .map(([sId]) => sId)
+
+    const updatedActiveShifts = {
+      ...get().monthActiveShifts,
+      [month]: activeShiftIdsForMonth,
+    }
+    StorageService.saveMonthActiveShiftsMap(updatedActiveShifts)
+
+    set({
+      monthDailyShifts: updated,
+      monthActiveShifts: updatedActiveShifts,
+    })
+
+    if (get().hasValidated) {
+      get().validateCurrentSchedule()
+    }
+  },
+
   toggleMonthShift: (shiftId, month) => {
     const currentActive = get().getActiveShiftIds(month)
     const nextActive = currentActive.includes(shiftId)
@@ -995,6 +1103,72 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updatedMap = {
       ...get().monthActiveRules,
       [month]: nextActive,
+    }
+
+    StorageService.saveMonthActiveRulesMap(updatedMap)
+    set({ monthActiveRules: updatedMap })
+
+    if (get().hasValidated) {
+      get().validateCurrentSchedule()
+    }
+  },
+
+  addShiftsToMonth: (shiftIds, month) => {
+    const currentActive = get().getActiveShiftIds(month)
+    const newIds = shiftIds.filter((id) => !currentActive.includes(id))
+    if (newIds.length === 0) return
+
+    const updatedMap = {
+      ...get().monthActiveShifts,
+      [month]: [...currentActive, ...newIds],
+    }
+
+    StorageService.saveMonthActiveShiftsMap(updatedMap)
+    set({ monthActiveShifts: updatedMap })
+
+    if (get().hasValidated) {
+      get().validateCurrentSchedule()
+    }
+  },
+
+  removeShiftFromMonth: (shiftId, month) => {
+    const currentActive = get().getActiveShiftIds(month)
+    const updatedMap = {
+      ...get().monthActiveShifts,
+      [month]: currentActive.filter((id) => id !== shiftId),
+    }
+
+    StorageService.saveMonthActiveShiftsMap(updatedMap)
+    set({ monthActiveShifts: updatedMap })
+
+    if (get().hasValidated) {
+      get().validateCurrentSchedule()
+    }
+  },
+
+  addRulesToMonth: (ruleIds, month) => {
+    const currentActive = get().getActiveRuleIds(month)
+    const newIds = ruleIds.filter((id) => !currentActive.includes(id))
+    if (newIds.length === 0) return
+
+    const updatedMap = {
+      ...get().monthActiveRules,
+      [month]: [...currentActive, ...newIds],
+    }
+
+    StorageService.saveMonthActiveRulesMap(updatedMap)
+    set({ monthActiveRules: updatedMap })
+
+    if (get().hasValidated) {
+      get().validateCurrentSchedule()
+    }
+  },
+
+  removeRuleFromMonth: (ruleId, month) => {
+    const currentActive = get().getActiveRuleIds(month)
+    const updatedMap = {
+      ...get().monthActiveRules,
+      [month]: currentActive.filter((id) => id !== ruleId),
     }
 
     StorageService.saveMonthActiveRulesMap(updatedMap)
@@ -1333,6 +1507,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const shiftRules = StorageService.getShiftRules()
     const monthActiveShifts = StorageService.getMonthActiveShiftsMap()
     const monthActiveRules = StorageService.getMonthActiveRulesMap()
+    const monthDailyShifts = StorageService.getMonthDailyShiftsMap()
 
     set({
       persons,
@@ -1348,6 +1523,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       shiftRules,
       monthActiveShifts,
       monthActiveRules,
+      monthDailyShifts,
       validationErrors: [],
       hasValidated: false,
       hasUnsavedChanges: false,
@@ -1370,6 +1546,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       shiftRules: StorageService.getShiftRules(),
       monthActiveShifts: {},
       monthActiveRules: {},
+      monthDailyShifts: {},
       validationErrors: [],
       hasValidated: false,
       hasUnsavedChanges: false,

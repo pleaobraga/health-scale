@@ -346,5 +346,324 @@ describe('RuleEngine', () => {
 
     expect(violations).toHaveLength(0)
   })
+
+  it('detects MAX_PEOPLE_PER_SHIFT violation when multiple persons are in the same shift on the same day', () => {
+    const maxPeopleRule: ShiftRule = {
+      id: 'rule_max_1_person',
+      name: 'Máximo 1 pessoa por turno',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // 2 people assigned to the SAME shift (shift_d12) on 2026-10-01
+    const schedule: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+        '2026-10-01_shift_d12_p2': { personId: 'p2', shiftDefinitionId: 'shift_d12' },
+      },
+    }
+
+    const violations = validateSchedule(
+      schedule,
+      [maxPeopleRule],
+      allShifts,
+      ['rule_max_1_person'],
+      mockPeople
+    )
+
+    expect(violations.length).toBeGreaterThanOrEqual(2)
+    expect(violations[0].ruleId).toBe('rule_max_1_person')
+    expect(violations[0].severity).toBe('ERROR')
+    expect(violations[0].message).toContain('possui 2 profissionais no dia 2026-10-01')
+  })
+
+  it('does NOT detect MAX_PEOPLE_PER_SHIFT when persons are on DIFFERENT shifts of the same day', () => {
+    const maxPeopleRule: ShiftRule = {
+      id: 'rule_max_1_person',
+      name: 'Máximo 1 pessoa por turno',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // 2 people on DIFFERENT shifts (shift_d12 and shift_n12)
+    const schedule: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+        '2026-10-01_shift_n12_p2': { personId: 'p2', shiftDefinitionId: 'shift_n12' },
+      },
+    }
+
+    const violations = validateSchedule(
+      schedule,
+      [maxPeopleRule],
+      allShifts,
+      ['rule_max_1_person'],
+      mockPeople
+    )
+
+    expect(violations).toHaveLength(0)
+  })
+
+  it('permits up to maxPeople when maxPeople is set to 2', () => {
+    const maxTwoPeopleRule: ShiftRule = {
+      id: 'rule_max_2_people',
+      name: 'Máximo 2 pessoas por turno',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'WARNING',
+      enabledByDefault: true,
+      parameters: { maxPeople: 2 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // 2 people in shift_d12 -> allowed!
+    const scheduleAllowed: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+        '2026-10-01_shift_d12_p2': { personId: 'p2', shiftDefinitionId: 'shift_d12' },
+      },
+    }
+
+    const violationsAllowed = validateSchedule(
+      scheduleAllowed,
+      [maxTwoPeopleRule],
+      allShifts,
+      ['rule_max_2_people'],
+      mockPeople
+    )
+    expect(violationsAllowed).toHaveLength(0)
+
+    // 3 people in shift_d12 -> exceeds maxPeople: 2!
+    const scheduleExceeded: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+        '2026-10-01_shift_d12_p2': { personId: 'p2', shiftDefinitionId: 'shift_d12' },
+        '2026-10-01_shift_d12_p3': { personId: 'p3', shiftDefinitionId: 'shift_d12' },
+      },
+    }
+
+    const violationsExceeded = validateSchedule(
+      scheduleExceeded,
+      [maxTwoPeopleRule],
+      allShifts,
+      ['rule_max_2_people'],
+      mockPeople
+    )
+    expect(violationsExceeded.length).toBe(3)
+    expect(violationsExceeded[0].severity).toBe('WARNING')
+    expect(violationsExceeded[0].message).toContain('máximo permitido: 2')
+  })
+
+  it('detecta violação de MAX_PEOPLE_PER_SHIFT quando 2 pessoas estão em turnos DIFERENTES porém com horários sobrepostos (ex: 24h e 12h noite)', () => {
+    const maxOnePersonRule: ShiftRule = {
+      id: 'rule_max_1_person',
+      name: 'Máximo 1 pessoa por turno',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // p1 no Plantão 24h (07:00 às 07:00 do dia seguinte)
+    // p2 no Plantão Noturno 12h (19:00 às 07:00 do dia seguinte)
+    // Ambos trabalham simultaneamente a partir das 19:00!
+    const schedule: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_p24_p1': { personId: 'p1', shiftDefinitionId: 'shift_p24' },
+        '2026-10-01_shift_n12_p2': { personId: 'p2', shiftDefinitionId: 'shift_n12' },
+      },
+    }
+
+    const violations = validateSchedule(
+      schedule,
+      [maxOnePersonRule],
+      allShifts,
+      ['rule_max_1_person'],
+      mockPeople
+    )
+
+    expect(violations.length).toBe(2)
+    expect(violations[0].ruleId).toBe('rule_max_1_person')
+    expect(violations[0].severity).toBe('ERROR')
+    expect(violations[0].date).toBe('2026-10-01')
+    expect(violations[0].message).toContain('trabalhando simultaneamente')
+    expect(violations[0].message).toContain('máximo permitido: 1')
+    expect(violations[0].message).toContain('Dr. Roberto Alves')
+    expect(violations[0].message).toContain('Dra. Ana Paula')
+
+    // Se o limite for de 2 pessoas, a alocação é permitida
+    const maxTwoPeopleRule: ShiftRule = {
+      ...maxOnePersonRule,
+      parameters: { maxPeople: 2 },
+    }
+    const violationsTwo = validateSchedule(
+      schedule,
+      [maxTwoPeopleRule],
+      allShifts,
+      ['rule_max_1_person'],
+      mockPeople
+    )
+    expect(violationsTwo).toHaveLength(0)
+  })
+
+  it('detecta violação de MAX_PEOPLE_PER_SHIFT para Plantão 24h e Plantão Diurno 12h sobrepostos', () => {
+    const maxOnePersonRule: ShiftRule = {
+      id: 'rule_max_1_person',
+      name: 'Máximo 1 pessoa por turno',
+      type: 'MAX_PEOPLE_PER_SHIFT',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: { maxPeople: 1 },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // p1 no Plantão 24h (07:00 às 07:00)
+    // p3 no Plantão Diurno 12h (07:00 às 19:00)
+    const schedule: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_p24_p1': { personId: 'p1', shiftDefinitionId: 'shift_p24' },
+        '2026-10-01_shift_d12_p3': { personId: 'p3', shiftDefinitionId: 'shift_d12' },
+      },
+    }
+
+    const violations = validateSchedule(
+      schedule,
+      [maxOnePersonRule],
+      allShifts,
+      ['rule_max_1_person'],
+      mockPeople
+    )
+
+    expect(violations.length).toBe(2)
+    expect(violations[0].message).toContain('trabalhando simultaneamente')
+  })
+
+  it('valida DAILY_SHIFT_HOURS exigindo exatamente 24h nos dias de semana e detecta infração com apenas 12h', () => {
+    const weekday24hRule: ShiftRule = {
+      id: 'rule_weekday_24h',
+      name: 'Plantão 24h dias de semana',
+      type: 'DAILY_SHIFT_HOURS',
+      severity: 'ERROR',
+      enabledByDefault: true,
+      parameters: {
+        targetDailyHours: 24,
+        dailyHoursComparison: 'EXACT',
+        dayFilterType: 'WEEKDAYS',
+      },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // 2026-10-01 é quinta-feira (dia de semana) com apenas 12h escaladas
+    const scheduleIncomplete: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+      },
+    }
+
+    const violationsIncomplete = validateSchedule(
+      scheduleIncomplete,
+      [weekday24hRule],
+      allShifts,
+      ['rule_weekday_24h'],
+      mockPeople
+    )
+
+    expect(violationsIncomplete.length).toBe(1)
+    expect(violationsIncomplete[0].ruleId).toBe('rule_weekday_24h')
+    expect(violationsIncomplete[0].message).toContain('possui 12h de plantão (esperado: exatamente 24h)')
+
+    // Com cobertura completa de 24h (D12 + N12 ou P24), não deve gerar violação
+    const scheduleComplete: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-01_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+        '2026-10-01_shift_n12_p2': { personId: 'p2', shiftDefinitionId: 'shift_n12' },
+      },
+    }
+
+    const violationsComplete = validateSchedule(
+      scheduleComplete,
+      [weekday24hRule],
+      allShifts,
+      ['rule_weekday_24h'],
+      mockPeople
+    )
+
+    expect(violationsComplete).toHaveLength(0)
+  })
+
+  it('valida DAILY_SHIFT_HOURS limitando a 12h nos finais de semana e acusa erro se houver 24h', () => {
+    const weekend12hRule: ShiftRule = {
+      id: 'rule_weekend_12h',
+      name: 'Plantão fim de semana 12h',
+      type: 'DAILY_SHIFT_HOURS',
+      severity: 'WARNING',
+      enabledByDefault: true,
+      parameters: {
+        targetDailyHours: 12,
+        dailyHoursComparison: 'MAX',
+        dayFilterType: 'WEEKENDS',
+      },
+      createdAt: '',
+      updatedAt: '',
+    }
+
+    // 2026-10-03 é sábado (fim de semana) com 24h escaladas
+    const scheduleWeekend24h: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-03_shift_p24_p1': { personId: 'p1', shiftDefinitionId: 'shift_p24' },
+      },
+    }
+
+    const violationsWeekend = validateSchedule(
+      scheduleWeekend24h,
+      [weekend12hRule],
+      allShifts,
+      ['rule_weekend_12h'],
+      mockPeople
+    )
+
+    expect(violationsWeekend.length).toBe(1)
+    expect(violationsWeekend[0].severity).toBe('WARNING')
+    expect(violationsWeekend[0].message).toContain('possui 24h de plantão (máximo permitido: 12h)')
+
+    // 2026-10-03 com apenas 12h não deve gerar violação
+    const scheduleWeekend12h: MonthScheduleDocument = {
+      month: '2026-10',
+      shifts: {
+        '2026-10-03_shift_d12_p1': { personId: 'p1', shiftDefinitionId: 'shift_d12' },
+      },
+    }
+
+    const violationsAllowed = validateSchedule(
+      scheduleWeekend12h,
+      [weekend12hRule],
+      allShifts,
+      ['rule_weekend_12h'],
+      mockPeople
+    )
+
+    expect(violationsAllowed).toHaveLength(0)
+  })
 })
 

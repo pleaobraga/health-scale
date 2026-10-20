@@ -11,6 +11,7 @@ import {
   validateSchedule as ruleEngineValidate,
   DEFAULT_SHIFTS,
   DEFAULT_RULES,
+  doShiftDefinitionsOverlap,
 } from '../services/validation/rule-engine'
 
 import type {
@@ -85,12 +86,34 @@ export function validateSchedule({
     }
 
     // Check: Multiple people assigned (unresolved conflict)
-    // If the day has distinct shift slots (e.g. 2 different 12h shifts: D12 and N12),
+    // If the day has distinct shift slots that do not overlap (e.g. 2 different 12h shifts: D12 and N12),
     // having 2 people on different shifts covering the day is normal and NOT a conflict!
     const dayShifts = dayShiftAssignments ? dayShiftAssignments[dateStr] : undefined
-    const isMultiShiftDay = Boolean(dayShifts && Object.keys(dayShifts).length > 1)
+    let isMultiShiftDay = Boolean(dayShifts && Object.keys(dayShifts).length > 1)
 
-    if (assignedIds.length > 1 && !isMultiShiftDay) {
+    // If day has multiple shifts, verify they do not overlap in working hours
+    if (isMultiShiftDay && dayShifts) {
+      const assignedShiftDefs = Object.keys(dayShifts)
+        .map((sId) => (allShifts || DEFAULT_SHIFTS).find((s) => s.id === sId))
+        .filter((s): s is ShiftDefinition => Boolean(s))
+
+      for (let i = 0; i < assignedShiftDefs.length; i++) {
+        for (let j = i + 1; j < assignedShiftDefs.length; j++) {
+          if (doShiftDefinitionsOverlap(assignedShiftDefs[i], assignedShiftDefs[j], dateStr)) {
+            isMultiShiftDay = false
+            break
+          }
+        }
+        if (!isMultiShiftDay) break
+      }
+    }
+
+    // Check if MAX_PEOPLE_PER_SHIFT rule is active; if active, ruleEngine handles it dynamically
+    const hasActiveMaxPeopleRule = (allRules || DEFAULT_RULES).some(
+      (r) => (activeRuleIds?.includes(r.id) ?? r.enabledByDefault) && r.type === 'MAX_PEOPLE_PER_SHIFT'
+    )
+
+    if (assignedIds.length > 1 && !isMultiShiftDay && !hasActiveMaxPeopleRule) {
       const names = assignedIds.map(getPersonName).join(', ')
       errors.push({
         id: `multi_${dateStr}`,
@@ -238,7 +261,7 @@ export function validateSchedule({
       for (const [dStr, shiftMap] of Object.entries(dayShiftAssignments)) {
         if (dStr.startsWith(currentMonth)) {
           for (const [sId, pId] of Object.entries(shiftMap)) {
-            monthShifts[`${dStr}_${sId}`] = {
+            monthShifts[`${dStr}_${sId}_${pId}`] = {
               personId: pId,
               shiftDefinitionId: sId,
             }

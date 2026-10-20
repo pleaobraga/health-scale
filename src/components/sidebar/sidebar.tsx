@@ -6,24 +6,24 @@ import {
   ChevronDown,
   ChevronUp,
   ShieldCheck,
-  Clock,
-  RotateCcw,
   Settings,
-  Moon,
-  Sun,
+  CalendarDays,
+  X,
+  Plus,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { AddMonthParticipantsModal } from './add-month-participants-modal'
+import { AddMonthRulesModal } from './add-month-rules-modal'
 import { MonthAvailabilityModal } from './month-availability-modal'
 import { PersonCard } from './person-card'
 import { useScheduleStore } from '../../store/use-schedule-store'
-import { formatMonthYear, formatDisplayDate } from '../../utils/date-utils'
-import { LanguageSelector } from '../common/language-selector'
+import { formatMonthYear } from '../../utils/date-utils'
+import { MonthShiftConfigModal } from '../modals/month-shift-config-modal'
 
-import type { Person, ShiftDefinition, ShiftRule } from '../../types'
+import type { Person, ShiftRule } from '../../types'
 
 export function Sidebar() {
   const { t, i18n } = useTranslation(['people', 'settings', 'calendar', 'common'])
@@ -44,43 +44,34 @@ export function Sidebar() {
     setCurrentView,
     shiftDefinitions,
     shiftRules,
+    monthDailyShifts,
     getActiveShiftIds,
     getActiveRuleIds,
-    toggleMonthShift,
-    toggleMonthRule,
-    resetMonthDefaults,
-    isDarkMode,
-    toggleDarkMode,
-    validationErrors,
+    addRulesToMonth,
+    removeRuleFromMonth,
   } = useScheduleStore()
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isAddRulesModalOpen, setIsAddRulesModalOpen] = useState(false)
+  const [isShiftConfigModalOpen, setIsShiftConfigModalOpen] = useState(false)
   const [personForAvailability, setPersonForAvailability] = useState<Person | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [expandedRuleViolations, setExpandedRuleViolations] = useState<Record<string, boolean>>({})
 
-  const toggleExpandRuleViolations = (ruleId: string) => {
-    setExpandedRuleViolations((prev) => ({
-      ...prev,
-      [ruleId]: !prev[ruleId],
-    }))
-  }
-
-  // Accordion state: Pessoas, Regras, Turnos
+  // Accordion state: Pessoas, Plantões Diários, Regras
   const [openSections, setOpenSections] = useState<{
     people: boolean
+    dailyShifts: boolean
     rules: boolean
-    shifts: boolean
   }>({
     people: true,
+    dailyShifts: false,
     rules: false,
-    shifts: false,
   })
 
   // Global mobile minimize/expand state for screens < 1024px
   const [isMobileCollapsed, setIsMobileCollapsed] = useState(false)
 
-  const toggleSection = (section: 'people' | 'rules' | 'shifts') => {
+  const toggleSection = (section: 'people' | 'dailyShifts' | 'rules') => {
     setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section],
@@ -93,9 +84,13 @@ export function Sidebar() {
   const activeShiftIds = getActiveShiftIds(currentMonth)
   const activeShifts = shiftDefinitions.filter((s) => activeShiftIds.includes(s.id))
   const activeRuleIds = getActiveRuleIds(currentMonth)
-  const rulesWithViolationsCount = shiftRules.filter((r) =>
-    validationErrors.some((v) => v.rule === r.id)
-  ).length
+  const activeRules = shiftRules.filter((r) => activeRuleIds.includes(r.id))
+
+  // Configured daily shifts for current month
+  const currentMonthDailyConfig = monthDailyShifts[currentMonth] || {}
+  const configuredDailyShiftEntries = Object.entries(currentMonthDailyConfig).filter(
+    ([, days]) => Array.isArray(days) && days.length > 0
+  )
 
   const filteredPersons = monthPersons.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
@@ -136,11 +131,6 @@ export function Sidebar() {
     navigate('/configuracoes/regras')
   }
 
-  const handleGoToShiftsManagement = () => {
-    setCurrentView('settings')
-    navigate('/configuracoes/turnos')
-  }
-
   return (
     <aside className="w-full h-full max-h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col shadow-xs overflow-hidden transition-all duration-300 select-none">
       {/* Mobile Header Toggle on screens < 1024px */}
@@ -177,14 +167,14 @@ export function Sidebar() {
       <div
         className={`${
           isMobileCollapsed ? 'hidden lg:flex' : 'flex'
-        } flex-col flex-1 min-h-0 divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden`}
+        } flex-col flex-1 min-h-0 p-3 space-y-3.5 overflow-y-auto custom-scrollbar`}
       >
         {/* =================================================================== */}
         {/* SECTION 1: PESSOAS DO MÊS */}
         {/* =================================================================== */}
         <section
-          className={`flex flex-col min-h-0 transition-all ${
-            openSections.people ? 'flex-1 overflow-hidden' : 'shrink-0'
+          className={`flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden transition-all ${
+            openSections.people ? 'flex-1 min-h-0' : 'shrink-0'
           }`}
         >
           {/* Section Header */}
@@ -216,6 +206,7 @@ export function Sidebar() {
                 type="button"
                 onClick={() => setIsAddModalOpen(true)}
                 title={t('people:sidebar.linkButtonTooltip')}
+                aria-label={t('people:sidebar.linkButtonTooltip')}
                 className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-2xs transition"
               >
                 <UserPlus className="w-3 h-3" />
@@ -297,17 +288,30 @@ export function Sidebar() {
                   filteredPersons.map((person) => {
                     const availDays = getPersonAvailableDays(person.id)
                     const workingDays = getPersonWorkingDaysCount(person.id)
+                    const personAvail = availabilities.find(
+                      (a) => a.personId === person.id && a.month === currentMonth
+                    )
+                    const availableShifts = activeShifts
+                      .filter((s) => (personAvail?.shiftAvailability?.[s.id]?.length || 0) > 0)
+                      .map((s) => ({
+                        shift: s,
+                        daysCount: personAvail!.shiftAvailability![s.id].length,
+                      }))
+
                     return (
                       <PersonCard
                         key={person.id}
                         person={person}
                         availableDaysCount={availDays.length}
                         workingDaysCount={workingDays}
+                        availableShifts={availableShifts}
                         isHighlighted={highlightedPersonId === person.id}
                         isEditMode={isEditMode}
                         onToggleHighlight={() => setHighlightedPersonId(person.id)}
                         onEdit={() => setPersonForAvailability(person)}
-                        onInsertAllDays={() => insertAllPersonDaysToMonth(person.id, currentMonth)}
+                        onInsertAllDays={(shiftId) =>
+                          insertAllPersonDaysToMonth(person.id, currentMonth, shiftId)
+                        }
                         onRemoveFromMonth={() => removePersonFromMonth(person.id, currentMonth)}
                       />
                     )
@@ -327,11 +331,144 @@ export function Sidebar() {
         </section>
 
         {/* =================================================================== */}
+        {/* SECTION: PLANTÕES DO MÊS */}
+        {/* =================================================================== */}
+        <section
+          className={`flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden transition-all ${
+            openSections.dailyShifts ? 'flex-1 min-h-0' : 'shrink-0'
+          }`}
+        >
+          {/* Section Header */}
+          <div
+            onClick={() => toggleSection('dailyShifts')}
+            className="p-3 sm:px-4 py-2.5 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 cursor-pointer flex items-center justify-between shrink-0 transition"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-950/60 border border-violet-100 dark:border-violet-800/60 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                <CalendarDays className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
+                  <span>{t('people:sidebar.dailyShiftsTitle')}</span>
+                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    ({configuredDailyShiftEntries.length})
+                  </span>
+                </h2>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                  {t('people:sidebar.dailyShiftsCount', {
+                    configured: configuredDailyShiftEntries.length,
+                  })}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setIsShiftConfigModalOpen(true)}
+                title={t('people:sidebar.configureDailyShiftsTooltip')}
+                aria-label={t('people:sidebar.configureDailyShifts')}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-white bg-violet-600 hover:bg-violet-700 active:bg-violet-800 rounded-lg shadow-2xs transition"
+              >
+                <CalendarDays className="w-3 h-3" />
+                <span className="hidden xs:inline">{t('people:sidebar.configureDailyShifts')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleSection('dailyShifts')}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+                aria-label={openSections.dailyShifts ? t('people:sidebar.collapse') : t('people:sidebar.expand')}
+              >
+                {openSections.dailyShifts ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Section Body */}
+          {openSections.dailyShifts && (
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-slate-900">
+              <div className="flex-1 overflow-y-auto p-2.5 space-y-2 min-h-0 custom-scrollbar">
+                {configuredDailyShiftEntries.length === 0 ? (
+                  <div className="text-center py-5 px-3">
+                    <Clock className="w-6 h-6 mx-auto text-slate-300 dark:text-slate-600 mb-1.5" />
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {t('people:sidebar.noDailyShifts')}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 mb-2.5">
+                      {t('people:sidebar.noDailyShiftsDesc')}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsShiftConfigModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-lg shadow-2xs transition"
+                    >
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      <span>{t('people:sidebar.configureDailyShifts')}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {configuredDailyShiftEntries.map(([shiftId, days]) => {
+                      const shift = shiftDefinitions.find((s) => s.id === shiftId)
+                      if (!shift) return null
+                      return (
+                        <div
+                          key={shiftId}
+                          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 flex items-center justify-between gap-2.5"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              style={{ backgroundColor: shift.color }}
+                              className="px-2 py-0.5 rounded-md text-white font-extrabold text-[10px] shrink-0 shadow-2xs"
+                            >
+                              {shift.code}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                                {shift.name}
+                              </p>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                                {t('people:sidebar.shiftSummary', {
+                                  startTime: shift.startTime,
+                                  hours: shift.durationHours,
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shrink-0">
+                            {days.length}{' '}
+                            {days.length === 1
+                              ? t('people:card.dayLabel')
+                              : t('people:card.dayLabelPlural')}
+                          </span>
+                        </div>
+                      )
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setIsShiftConfigModalOpen(true)}
+                      className="w-full mt-1.5 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/40 rounded-lg border border-dashed border-violet-200 dark:border-violet-800 transition flex items-center justify-center gap-1.5"
+                    >
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      <span>{t('people:sidebar.configureDailyShifts')}</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* =================================================================== */}
         {/* SECTION 2: REGRAS DE VALIDAÇÃO DO MÊS */}
         {/* =================================================================== */}
         <section
-          className={`flex flex-col min-h-0 transition-all ${
-            openSections.rules ? 'flex-1 overflow-hidden' : 'shrink-0'
+          className={`flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs overflow-hidden transition-all ${
+            openSections.rules ? 'flex-1 min-h-0' : 'shrink-0'
           }`}
         >
           {/* Section Header */}
@@ -347,19 +484,12 @@ export function Sidebar() {
                 <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5 flex-wrap">
                   <span>{t('people:sidebar.rulesTitle')}</span>
                   <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    ({activeRuleIds.length}/{shiftRules.length})
+                    ({activeRules.length}/{shiftRules.length})
                   </span>
-                  {rulesWithViolationsCount > 0 && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                      {rulesWithViolationsCount === 1
-                        ? t('people:sidebar.rulesViolationsBadge', { count: rulesWithViolationsCount })
-                        : t('people:sidebar.rulesViolationsBadgePlural', { count: rulesWithViolationsCount })}
-                    </span>
-                  )}
                 </h2>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
                   {t('people:sidebar.rulesCount', {
-                    active: activeRuleIds.length,
+                    active: activeRules.length,
                     total: shiftRules.length,
                   })}
                 </p>
@@ -367,6 +497,16 @@ export function Sidebar() {
             </div>
 
             <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setIsAddRulesModalOpen(true)}
+                title={t('people:sidebar.linkRulesButtonTooltip')}
+                aria-label={t('people:sidebar.linkRulesButtonTooltip')}
+                className="flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-2xs transition"
+              >
+                <ShieldCheck className="w-3 h-3" />
+                <span className="hidden xs:inline">{t('people:sidebar.linkButton')}</span>
+              </button>
               <button
                 type="button"
                 onClick={handleGoToRulesManagement}
@@ -395,18 +535,30 @@ export function Sidebar() {
           {openSections.rules && (
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-slate-900">
               <div className="flex-1 overflow-y-auto p-2.5 space-y-2 min-h-0 custom-scrollbar">
-                {shiftRules.length === 0 ? (
-                  <div className="text-center py-6 px-3">
-                    <ShieldCheck className="w-6 h-6 mx-auto text-slate-300 dark:text-slate-600 mb-1" />
-                    <p className="text-xs text-slate-500">{t('people:sidebar.noRules')}</p>
+                {activeRules.length === 0 ? (
+                  <div className="text-center py-6 px-3 flex flex-col items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-2">
+                      <ShieldCheck className="w-5 h-5" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {t('people:sidebar.emptyRules')}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[200px] mt-0.5 mb-3 leading-tight">
+                      {t('people:sidebar.emptyRulesDesc')}{' '}
+                      <strong className="capitalize">{formatMonthYear(currentMonth, i18n.language)}</strong>.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddRulesModalOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{t('people:sidebar.addRulesToMonth')}</span>
+                    </button>
                   </div>
                 ) : (
-                  shiftRules.map((rule: ShiftRule) => {
-                    const isActive = activeRuleIds.includes(rule.id)
+                  activeRules.map((rule: ShiftRule) => {
                     const isError = rule.severity === 'ERROR'
-                    const ruleViolations = validationErrors.filter((v) => v.rule === rule.id)
-                    const hasViolations = ruleViolations.length > 0
-                    const isViolationsExpanded = expandedRuleViolations[rule.id]
 
                     const getParamSummary = () => {
                       if (rule.type === 'MAX_SHIFTS_PER_PERIOD') {
@@ -441,6 +593,15 @@ export function Sidebar() {
                           days: rule.parameters.consecutiveDaysLimit || 1,
                         })
                       }
+                      if (rule.type === 'MAX_PEOPLE_PER_SHIFT') {
+                        return t('people:sidebar.paramMaxPeople', {
+                          count: rule.parameters.maxPeople ?? rule.parameters.maxOccurrences ?? 1,
+                        })
+                      }
+                      if (rule.type === 'DAILY_SHIFT_HOURS') {
+                        const hours = rule.parameters.targetDailyHours || 24
+                        return `${hours}h/dia`
+                      }
                       return undefined
                     }
 
@@ -449,13 +610,7 @@ export function Sidebar() {
                     return (
                       <div
                         key={rule.id}
-                        className={`p-2.5 rounded-xl border transition-all ${
-                          hasViolations
-                            ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60'
-                            : isActive
-                            ? 'bg-slate-50/70 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
-                            : 'bg-slate-100/40 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/50 opacity-60'
-                        }`}
+                        className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 transition-all"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
@@ -474,19 +629,6 @@ export function Sidebar() {
                                   ? t('people:sidebar.errorSeverity')
                                   : t('people:sidebar.warningSeverity')}
                               </span>
-
-                              {/* Violation Status Badge */}
-                              {hasViolations ? (
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                                  {ruleViolations.length === 1
-                                    ? t('people:sidebar.ruleViolationsCount', { count: 1 })
-                                    : t('people:sidebar.ruleViolationsCountPlural', { count: ruleViolations.length })}
-                                </span>
-                              ) : isActive ? (
-                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                  {t('people:sidebar.ruleCompliant')}
-                                </span>
-                              ) : null}
                             </div>
 
                             {/* Parameters summary */}
@@ -501,61 +643,17 @@ export function Sidebar() {
                                 {rule.description}
                               </p>
                             )}
-
-                            {/* Toggle View Violations Button */}
-                            {hasViolations && (
-                              <button
-                                type="button"
-                                onClick={() => toggleExpandRuleViolations(rule.id)}
-                                className="mt-1.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
-                              >
-                                <span>
-                                  {isViolationsExpanded
-                                    ? t('people:sidebar.hideViolations')
-                                    : t('people:sidebar.viewViolations', { count: ruleViolations.length })}
-                                </span>
-                                <ChevronDown
-                                  className={`w-3 h-3 transition-transform ${
-                                    isViolationsExpanded ? 'rotate-180' : ''
-                                  }`}
-                                />
-                              </button>
-                            )}
-
-                            {/* Inline Violations List */}
-                            {hasViolations && isViolationsExpanded && (
-                              <div className="mt-2 pt-2 border-t border-rose-100 dark:border-rose-900/40 space-y-1">
-                                {ruleViolations.map((v) => (
-                                  <div
-                                    key={v.id}
-                                    className="text-[10px] text-slate-700 dark:text-slate-300 flex items-start gap-1.5"
-                                  >
-                                    <span className="font-bold text-slate-500 shrink-0">
-                                      {formatDisplayDate(v.date)}:
-                                    </span>
-                                    <span className="line-clamp-2">{v.message}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
                           </div>
 
-                          {/* Toggle Switch */}
+                          {/* Remove rule from month button */}
                           <button
                             type="button"
-                            role="switch"
-                            aria-checked={isActive}
-                            onClick={() => toggleMonthRule(rule.id, currentMonth)}
-                            title={isActive ? t('common:actions.deactivate') : t('common:actions.activate')}
-                            className={`w-9 h-5 rounded-full transition-colors relative shrink-0 focus:outline-hidden ${
-                              isActive ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
-                            }`}
+                            onClick={() => removeRuleFromMonth(rule.id, currentMonth)}
+                            title={t('people:sidebar.removeRuleTooltip', { name: rule.name })}
+                            aria-label={t('people:sidebar.removeRuleTooltip', { name: rule.name })}
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
                           >
-                            <span
-                              className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-transform ${
-                                isActive ? 'left-5' : 'left-1'
-                              }`}
-                            />
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -566,165 +664,6 @@ export function Sidebar() {
             </div>
           )}
         </section>
-
-        {/* =================================================================== */}
-        {/* SECTION 3: TURNOS VIGENTES DO MÊS */}
-        {/* =================================================================== */}
-        <section
-          className={`flex flex-col min-h-0 transition-all ${
-            openSections.shifts ? 'flex-1 overflow-hidden' : 'shrink-0'
-          }`}
-        >
-          {/* Section Header */}
-          <div
-            onClick={() => toggleSection('shifts')}
-            className="p-3 sm:px-4 py-2.5 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 cursor-pointer flex items-center justify-between shrink-0 transition"
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-violet-50 dark:bg-violet-950/60 border border-violet-100 dark:border-violet-800/60 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
-                <Clock className="w-3.5 h-3.5" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate flex items-center gap-1.5">
-                  <span>{t('people:sidebar.shiftsTitle')}</span>
-                  <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    ({activeShiftIds.length}/{shiftDefinitions.length})
-                  </span>
-                </h2>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                  {t('people:sidebar.shiftsCount', {
-                    active: activeShiftIds.length,
-                    total: shiftDefinitions.length,
-                  })}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-              <button
-                type="button"
-                onClick={handleGoToShiftsManagement}
-                title={t('people:sidebar.manageShifts')}
-                aria-label={t('people:sidebar.manageShifts')}
-                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-              >
-                <Settings className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleSection('shifts')}
-                className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-                aria-label={openSections.shifts ? t('people:sidebar.collapse') : t('people:sidebar.expand')}
-              >
-                {openSections.shifts ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Section Body */}
-          {openSections.shifts && (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white dark:bg-slate-900">
-              <div className="flex-1 overflow-y-auto p-2.5 space-y-2 min-h-0 custom-scrollbar">
-                {shiftDefinitions.length === 0 ? (
-                  <div className="text-center py-6 px-3">
-                    <Clock className="w-6 h-6 mx-auto text-slate-300 dark:text-slate-600 mb-1" />
-                    <p className="text-xs text-slate-500">{t('people:sidebar.noShifts')}</p>
-                  </div>
-                ) : (
-                  shiftDefinitions.map((shift: ShiftDefinition) => {
-                    const isActive = activeShiftIds.includes(shift.id)
-
-                    return (
-                      <div
-                        key={shift.id}
-                        className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all ${
-                          isActive
-                            ? 'bg-slate-50/70 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700'
-                            : 'bg-slate-100/40 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/50 opacity-60'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          {/* Code Badge */}
-                          <span
-                            style={{ backgroundColor: shift.color }}
-                            className="px-2 py-0.5 rounded-md text-white font-extrabold text-[10px] shrink-0 shadow-2xs"
-                          >
-                            {shift.code}
-                          </span>
-                          <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
-                              {shift.name}
-                            </p>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                              {t('people:sidebar.shiftSummary', {
-                                startTime: shift.startTime,
-                                hours: shift.durationHours,
-                              })}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Toggle Switch */}
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={isActive}
-                          onClick={() => toggleMonthShift(shift.id, currentMonth)}
-                          title={isActive ? t('common:actions.deactivate') : t('common:actions.activate')}
-                          className={`w-9 h-5 rounded-full transition-colors relative shrink-0 focus:outline-hidden ${
-                            isActive ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
-                          }`}
-                        >
-                          <span
-                            className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-transform ${
-                              isActive ? 'left-5' : 'left-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* =================================================================== */}
-      {/* FIXED SIDEBAR FOOTER */}
-      {/* =================================================================== */}
-      <div className="p-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/90 shrink-0 flex items-center justify-between gap-2">
-        {/* Restore Defaults */}
-        <button
-          type="button"
-          onClick={() => resetMonthDefaults(currentMonth)}
-          title={t('people:sidebar.restoreDefaultsTooltip')}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 rounded-lg transition"
-        >
-          <RotateCcw className="w-3 h-3 text-slate-500" />
-          <span>{t('people:sidebar.restoreDefaults')}</span>
-        </button>
-
-        <div className="flex items-center gap-1 shrink-0">
-          {/* Language Selector */}
-          <LanguageSelector variant="compact" align="top" />
-
-          {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleDarkMode}
-            title={isDarkMode ? t('common:theme.light') : t('common:theme.dark')}
-            aria-label={isDarkMode ? t('common:theme.light') : t('common:theme.dark')}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition"
-          >
-            {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
-          </button>
-        </div>
       </div>
 
       {/* Modals */}
@@ -736,6 +675,16 @@ export function Sidebar() {
         currentParticipantIds={currentParticipantIds}
         onAddParticipants={(ids) => addPersonsToMonth(ids, currentMonth)}
         onGoToGlobalManagement={handleGoToGlobalManagement}
+      />
+
+      <AddMonthRulesModal
+        isOpen={isAddRulesModalOpen}
+        onClose={() => setIsAddRulesModalOpen(false)}
+        currentMonth={currentMonth}
+        allRules={shiftRules}
+        currentRuleIds={activeRuleIds}
+        onAddRules={(ids) => addRulesToMonth(ids, currentMonth)}
+        onGoToGlobalManagement={handleGoToRulesManagement}
       />
 
       <MonthAvailabilityModal
@@ -755,6 +704,12 @@ export function Sidebar() {
             : undefined
         }
         onSave={handleSaveAvailability}
+      />
+
+      <MonthShiftConfigModal
+        isOpen={isShiftConfigModalOpen}
+        onClose={() => setIsShiftConfigModalOpen(false)}
+        currentMonth={currentMonth}
       />
     </aside>
   )
