@@ -1,5 +1,5 @@
-import { X, Check, User, Palette } from 'lucide-react'
-import React, { useState, useEffect } from 'react'
+import { X, Check, User, Palette, Pipette } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -143,13 +143,66 @@ export function GlobalPersonModal({
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                   {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === selectedColor.toLowerCase())?.name || t('people:globalModal.customColor')}
                 </span>
-                <span className="text-[11px] font-mono font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                  {selectedColor.toUpperCase()}
-                </span>
+                <label
+                  title={t('people:globalModal.customColor')}
+                  className="relative flex items-center gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 transition"
+                >
+                  <span
+                    className="w-3 h-3 rounded-full border border-black/10 shrink-0"
+                    style={{ backgroundColor: selectedColor }}
+                  />
+                  <span className="text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300">
+                    {selectedColor.toUpperCase()}
+                  </span>
+                  <Pipette className="w-3 h-3 text-slate-400" />
+                  <input
+                    type="color"
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                    aria-label={t('people:globalModal.customColor')}
+                  />
+                </label>
               </div>
             </div>
 
             <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 max-h-56 overflow-y-auto">
+              {/* Native Colorpicker Tile */}
+              {(() => {
+                const isCustom = !TAILWIND_PALETTE.some(
+                  (c) => c.hex.toLowerCase() === selectedColor.toLowerCase(),
+                )
+                return (
+                  <label
+                    title={t('people:globalModal.customColor')}
+                    aria-label={t('people:globalModal.customColor')}
+                    className={`relative w-full aspect-square rounded-xl flex items-center justify-center transition-all cursor-pointer group shadow-xs ${
+                      isCustom
+                        ? 'ring-3 ring-indigo-500 dark:ring-indigo-400 scale-105 shadow-md'
+                        : 'hover:scale-105 hover:shadow-xs'
+                    }`}
+                    style={{
+                      background: isCustom
+                        ? selectedColor
+                        : 'linear-gradient(135deg, #f43f5e 0%, #eab308 50%, #3b82f6 100%)',
+                    }}
+                  >
+                    <input
+                      type="color"
+                      value={selectedColor}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                      aria-label={t('people:globalModal.customColor')}
+                    />
+                    {isCustom ? (
+                      <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-sm" />
+                    ) : (
+                      <Pipette className="w-4 h-4 text-white drop-shadow-md group-hover:scale-110 transition-transform" />
+                    )}
+                  </label>
+                )
+              })()}
+
               {TAILWIND_PALETTE.map((color) => {
                 const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase()
                 return (

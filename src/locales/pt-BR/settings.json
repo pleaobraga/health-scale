@@ -82,6 +82,7 @@
     "startTime": "Horário de Início",
     "durationHours": "Duração (Horas)",
     "color": "Cor de Identificação",
+    "customColor": "Cor Personalizada",
     "enabledByDefault": "Ativo por padrão para novos meses",
     "enabledByDefaultDesc": "Quando ativado, este turno é vinculado automaticamente a qualquer novo mês criado.",
     "cancel": "Cancelar",

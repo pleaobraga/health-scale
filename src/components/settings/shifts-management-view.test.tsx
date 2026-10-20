@@ -105,5 +105,28 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.queryByText('Plantão Diurno 12h')).not.toBeInTheDocument()
     expect(screen.getByText(/nenhum turno encontrado/i)).toBeInTheDocument()
   })
+
+  it('deve permitir selecionar uma cor customizada via colorpicker no cadastro de turno', () => {
+    renderShiftsView()
+
+    fireEvent.click(screen.getByRole('button', { name: /novo turno/i }))
+
+    fireEvent.change(screen.getByPlaceholderText(/Ex: Plantão Diurno 12h/i), {
+      target: { value: 'Turno Personalizado' },
+    })
+    fireEvent.change(screen.getByPlaceholderText(/Ex: D12/i), {
+      target: { value: 'TP1' },
+    })
+
+    const colorPickers = screen.getAllByLabelText(/cor personalizada/i)
+    expect(colorPickers.length).toBeGreaterThanOrEqual(1)
+    fireEvent.change(colorPickers[0], { target: { value: '#123456' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /criar turno/i }))
+
+    const created = useScheduleStore.getState().shiftDefinitions.find((s) => s.name === 'Turno Personalizado')
+    expect(created).toBeDefined()
+    expect(created?.color.toLowerCase()).toBe('#123456')
+  })
 })
 

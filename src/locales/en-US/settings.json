@@ -82,6 +82,7 @@
     "startTime": "Start Time",
     "durationHours": "Duration (Hours)",
     "color": "Identification Color",
+    "customColor": "Custom Color",
     "enabledByDefault": "Active by default for new months",
     "enabledByDefaultDesc": "When active, this shift is linked automatically to any new month created.",
     "cancel": "Cancel",

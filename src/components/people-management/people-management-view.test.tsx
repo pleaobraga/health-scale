@@ -59,6 +59,27 @@ describe('PeopleManagementView Component', () => {
     expect(created?.active).toBe(true)
   })
 
+  it('deve permitir escolher uma cor customizada via colorpicker no cadastro de funcionário', () => {
+    render(<PeopleManagementView />)
+
+    const newBtn = screen.getByRole('button', { name: /novo funcionário/i })
+    fireEvent.click(newBtn)
+
+    const nameInput = screen.getByPlaceholderText(/Ex: Dra\. Mariana Costa/i)
+    fireEvent.change(nameInput, { target: { value: 'Dr. Custom Color' } })
+
+    const colorPickers = screen.getAllByLabelText(/cor personalizada/i)
+    expect(colorPickers.length).toBeGreaterThanOrEqual(1)
+    fireEvent.change(colorPickers[0], { target: { value: '#ff00aa' } })
+
+    const submitBtn = screen.getByRole('button', { name: /cadastrar funcionário/i })
+    fireEvent.click(submitBtn)
+
+    const created = useScheduleStore.getState().persons.find((p) => p.name === 'Dr. Custom Color')
+    expect(created).toBeDefined()
+    expect(created?.color.toLowerCase()).toBe('#ff00aa')
+  })
+
   it('deve permitir editar um funcionário existente', () => {
     render(<PeopleManagementView />)
 
