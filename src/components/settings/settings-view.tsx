@@ -2,12 +2,14 @@ import {
   AlertCircle,
   Calendar,
   Check,
+  Clock,
   Cloud,
   CloudOff,
   Download,
   Globe,
   HardDrive,
   Info,
+  MapPin,
   Moon,
   RefreshCw,
   Settings,
@@ -37,6 +39,8 @@ export function SettingsView() {
     persons,
     assignments,
     events,
+    shiftDefinitions,
+    addresses,
     pullCloudData,
     clearAllLocalData,
   } = useScheduleStore()
@@ -413,43 +417,117 @@ export function SettingsView() {
               {t('settings:storageSection.title')}
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
-                <Users className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('settings:storageSection.staff')}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex flex-col justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 min-w-0">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2 min-w-0">
+                <Users className="w-4 h-4 shrink-0" />
+                <span
+                  className="text-xs font-medium whitespace-nowrap truncate"
+                  title={t('settings:storageSection.staff')}
+                >
+                  {t('settings:storageSection.staff')}
+                </span>
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">
+              <p className="text-2xl font-black leading-none text-slate-900 dark:text-white my-1">
                 {persons.length}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p
+                className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1"
+                title={t('settings:storageSection.activeStaff', {
+                  count: persons.filter((p) => p.active !== false).length,
+                })}
+              >
                 {t('settings:storageSection.activeStaff', { count: persons.filter((p) => p.active !== false).length })}
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
-                <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('settings:storageSection.assignedDays')}</span>
+            <div className="flex flex-col justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 min-w-0">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2 min-w-0">
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span
+                  className="text-xs font-medium whitespace-nowrap truncate"
+                  title={t('settings:storageSection.assignedDays')}
+                >
+                  {t('settings:storageSection.assignedDays')}
+                </span>
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">
+              <p className="text-2xl font-black leading-none text-slate-900 dark:text-white my-1">
                 {totalAssignedDays}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p
+                className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1"
+                title={t('settings:storageSection.assignedDaysDesc')}
+              >
                 {t('settings:storageSection.assignedDaysDesc')}
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-1">
-                <Calendar className="w-4 h-4" />
-                <span className="text-xs font-medium">{t('settings:storageSection.events')}</span>
+            <div className="flex flex-col justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 min-w-0">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2 min-w-0">
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span
+                  className="text-xs font-medium whitespace-nowrap truncate"
+                  title={t('settings:storageSection.events')}
+                >
+                  {t('settings:storageSection.events')}
+                </span>
               </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-white">
+              <p className="text-2xl font-black leading-none text-slate-900 dark:text-white my-1">
                 {events.length}
               </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p
+                className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1"
+                title={t('settings:storageSection.eventsDesc')}
+              >
                 {t('settings:storageSection.eventsDesc')}
+              </p>
+            </div>
+
+            <div
+              data-testid="storage-summary-shifts"
+              className="flex flex-col justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 min-w-0"
+            >
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2 min-w-0">
+                <Clock className="w-4 h-4 shrink-0" />
+                <span
+                  className="text-xs font-medium whitespace-nowrap truncate"
+                  title={t('settings:storageSection.shifts')}
+                >
+                  {t('settings:storageSection.shifts')}
+                </span>
+              </div>
+              <p className="text-2xl font-black leading-none text-slate-900 dark:text-white my-1">
+                {shiftDefinitions.length}
+              </p>
+              <p
+                className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1"
+                title={t('settings:storageSection.shiftsDesc')}
+              >
+                {t('settings:storageSection.shiftsDesc')}
+              </p>
+            </div>
+
+            <div
+              data-testid="storage-summary-addresses"
+              className="flex flex-col justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 min-w-0"
+            >
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2 min-w-0">
+                <MapPin className="w-4 h-4 shrink-0" />
+                <span
+                  className="text-xs font-medium whitespace-nowrap truncate"
+                  title={t('settings:storageSection.addresses')}
+                >
+                  {t('settings:storageSection.addresses')}
+                </span>
+              </div>
+              <p className="text-2xl font-black leading-none text-slate-900 dark:text-white my-1">
+                {addresses.length}
+              </p>
+              <p
+                className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1"
+                title={t('settings:storageSection.addressesDesc')}
+              >
+                {t('settings:storageSection.addressesDesc')}
               </p>
             </div>
           </div>

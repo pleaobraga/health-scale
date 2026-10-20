@@ -27,8 +27,8 @@ describe('PersonCard Component', () => {
     )
 
     expect(screen.getByText('Dra. Camila Santos')).toBeInTheDocument()
-    expect(screen.getByText('3 dias trab.')).toBeInTheDocument()
-    expect(screen.getByText('12 dias disp.')).toBeInTheDocument()
+    expect(screen.getByText('3 trab.')).toBeInTheDocument()
+    expect(screen.getByText('12 disp.')).toBeInTheDocument()
   })
 
   it('deve chamar onToggleHighlight ao clicar no botão de visibilidade', () => {
@@ -240,5 +240,28 @@ describe('PersonCard Component', () => {
     fireEvent.click(screen.getByText(/Todas as escalas/i))
     expect(handleInsert).toHaveBeenCalledWith(undefined)
     expect(screen.queryByTestId('shift-selection-balloon')).not.toBeInTheDocument()
+  })
+
+  it('deve desabilitar o botão de olho e exibir mensagem de indisponibilidade quando a pessoa não tiver disponibilidade no mês', () => {
+    const handleToggle = vi.fn()
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={0}
+        isHighlighted={false}
+        isEditMode={false}
+        onToggleHighlight={handleToggle}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    )
+
+    const toggleBtn = screen.getByTitle('Esta pessoa não tem disponibilidade cadastrada neste mês')
+    expect(toggleBtn).toBeInTheDocument()
+    expect(toggleBtn).toBeDisabled()
+    expect(toggleBtn).toHaveClass('opacity-40', 'cursor-not-allowed')
+
+    fireEvent.click(toggleBtn)
+    expect(handleToggle).not.toHaveBeenCalled()
   })
 })

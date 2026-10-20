@@ -128,16 +128,16 @@ export function FullScreenCalendarModal() {
       id="fullscreen-calendar-modal-container"
       className="fixed inset-0 z-[110] flex items-center justify-center p-0 m-0 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn print:p-0 print:m-0 print:static print:bg-transparent print:backdrop-blur-none print:z-auto"
     >
-      <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none sm:rounded-2xl md:rounded-3xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors print:rounded-none print:border-none print:shadow-none print:bg-white print:text-slate-900 print:h-auto print:overflow-visible">
+      <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none sm:rounded-2xl md:rounded-3xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors print:rounded-none print:border-none print:shadow-none print:bg-white print:text-slate-900 print:h-auto print:overflow-visible dark:print:bg-white dark:print:text-slate-900">
         {/* Fullscreen Header */}
-        <div className="px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-2 sm:gap-3 shrink-0 print:px-2 print:py-2 print:border-b-2 print:border-slate-800 print:bg-white">
+        <div className="px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-2 sm:gap-3 shrink-0 print:px-2 print:py-2 print:border-b-2 print:border-slate-800 print:bg-white dark:print:bg-white dark:print:border-slate-800">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0 print:hidden">
               <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <h2 className="text-sm sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-white print:text-slate-950 print:text-2xl tracking-tight truncate">
+                <h2 className="text-sm sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-white print:text-slate-950 dark:print:text-slate-950 print:text-2xl tracking-tight truncate">
                   {formatMonthYear(currentMonth, i18n.language)}
                 </h2>
 
@@ -161,7 +161,7 @@ export function FullScreenCalendarModal() {
                   </button>
                 </div>
               </div>
-              <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 print:block print:text-slate-600">
+              <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 print:block print:text-slate-600 dark:print:text-slate-600">
                 {t('calendar:fullscreenSubtitle')}
               </p>
             </div>
@@ -193,15 +193,15 @@ export function FullScreenCalendarModal() {
         </div>
 
         {/* Calendar Grid Container */}
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-slate-50/50 dark:bg-slate-950 print:overflow-visible print:bg-white print:h-auto">
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-slate-50/50 dark:bg-slate-950 print:overflow-visible print:bg-white dark:print:bg-white print:h-auto">
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-200 shrink-0 print:bg-slate-100 print:text-slate-900 print:border-b-2 print:border-slate-400">
+          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-200 shrink-0 print:bg-slate-100 dark:print:bg-slate-100 print:text-slate-900 dark:print:text-slate-900 print:border-b-2 print:border-slate-400 dark:print:border-slate-400">
             {weekdays.map((day) => (
               <div
                 key={day.full}
-                className={`py-2 text-center border-r border-slate-200 dark:border-slate-800 last:border-r-0 print:border-r print:border-slate-300 ${
+                className={`py-2 text-center border-r border-slate-200 dark:border-slate-800 last:border-r-0 print:border-r print:border-slate-300 dark:print:border-slate-300 ${
                   day.isWeekend
-                    ? 'text-indigo-950/70 dark:text-indigo-300 bg-slate-200/40 dark:bg-slate-700/40 print:bg-slate-200/60'
+                    ? 'text-indigo-950/70 dark:text-indigo-300 bg-slate-200/40 dark:bg-slate-700/40 print:bg-slate-200/60 dark:print:bg-slate-200/60 dark:print:text-indigo-950'
                     : ''
                 }`}
               >
@@ -212,7 +212,7 @@ export function FullScreenCalendarModal() {
           </div>
 
           {/* Grid Cells */}
-          <div className="flex-1 grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 auto-rows-fr overflow-y-auto print:overflow-visible print:border-l-2 print:border-slate-400 print:h-auto">
+          <div className="flex-1 grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 auto-rows-fr overflow-y-auto print:overflow-visible print:border-l-2 print:border-slate-400 dark:print:border-slate-400 print:h-auto">
             {daysGrid.map((dayInfo) => {
               const assigned = assignments[dayInfo.dateStr] || []
               const dayShiftMap = dayShiftAssignments[dayInfo.dateStr] || {}
@@ -252,12 +252,12 @@ export function FullScreenCalendarModal() {
               return (
                 <div
                   key={dayInfo.dateStr}
-                  className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 print:bg-white ${
+                  className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 dark:print:border-slate-300 print:bg-white dark:print:bg-white ${
                     !dayInfo.isCurrentMonth
-                      ? 'bg-slate-100/60 dark:bg-slate-950/50 text-slate-400 dark:text-slate-600 print:bg-slate-100/70 print:text-slate-400'
+                      ? 'bg-slate-100/60 dark:bg-slate-950/50 text-slate-400 dark:text-slate-600 print:bg-slate-100/70 dark:print:bg-slate-100/70 print:text-slate-400 dark:print:text-slate-400'
                       : dayInfo.isToday
-                        ? 'bg-indigo-50/70 dark:bg-indigo-950/40 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/60 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 print:bg-white'
-                        : 'bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 print:bg-white'
+                        ? 'bg-indigo-50/70 dark:bg-indigo-950/40 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/60 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/40 print:bg-white dark:print:bg-white'
+                        : 'bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 print:bg-white dark:print:bg-white'
                   }`}
                 >
                   {/* Cell Top Header */}
@@ -265,12 +265,12 @@ export function FullScreenCalendarModal() {
                     <span
                       className={`text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
                         hasEvents
-                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full print:w-6 print:h-6 print:bg-red-100 print:text-red-700'
+                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full print:w-6 print:h-6 print:bg-red-100 dark:print:bg-red-100 print:text-red-700 dark:print:text-red-700'
                           : dayInfo.isToday
-                            ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1 print:text-slate-900'
+                            ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1 print:text-slate-900 dark:print:text-slate-900'
                             : dayInfo.isCurrentMonth
-                              ? 'text-slate-800 dark:text-slate-200 print:text-slate-900 font-bold'
-                              : 'text-slate-400 dark:text-slate-600 print:text-slate-400'
+                              ? 'text-slate-800 dark:text-slate-200 print:text-slate-900 dark:print:text-slate-900 font-bold'
+                              : 'text-slate-400 dark:text-slate-600 print:text-slate-400 dark:print:text-slate-400'
                       }`}
                     >
                       {dayInfo.dayNumber}
@@ -279,7 +279,7 @@ export function FullScreenCalendarModal() {
                     {/* Events Count Tag */}
                     {hasEvents && (
                       <span
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded-md print:bg-red-50 print:border print:border-red-300 print:text-red-700"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded-md print:bg-red-50 dark:print:bg-red-50 print:border print:border-red-300 dark:print:border-red-300 print:text-red-700 dark:print:text-red-700"
                         title={dayEvents.map((e) => e.title).join(' | ')}
                       >
                         <CalendarIcon className="w-3 h-3" />
@@ -293,7 +293,7 @@ export function FullScreenCalendarModal() {
                     {sortedAssigned.length === 0 ? (
                       dayShifts.length > 0 ? (
                         <div className="text-center py-1">
-                          <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400">
+                          <span className="text-xs text-slate-300 dark:text-slate-600 italic print:text-slate-400 dark:print:text-slate-400">
                             {t('calendar:dayCell.vacant')}
                           </span>
                         </div>
@@ -348,7 +348,7 @@ export function FullScreenCalendarModal() {
                         activeShifts.length <= 1 ||
                         !dayShiftMap ||
                         Object.keys(dayShiftMap).length <= 1) && (
-                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 print:text-rose-800 print:border-rose-300">
+                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 dark:print:bg-rose-100 print:text-rose-800 dark:print:text-rose-800 print:border-rose-300 dark:print:border-rose-300">
                           {t('calendar:dayCell.conflict', {
                             count: assigned.length,
                           })}

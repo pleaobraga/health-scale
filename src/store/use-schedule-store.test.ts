@@ -507,5 +507,43 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     // Dia 10: nenhum turno alocado
     expect(store.getDayActiveShifts('2026-12-10')).toEqual([])
   })
+
+  it('deve remover a disponibilidade do calendário caso ela esteja vinculada e o usuário modifique a disponibilidade do mês', () => {
+    const store = useScheduleStore.getState()
+    const month = '2026-10'
+    const personId = 'p1'
+
+    // Define disponibilidade inicial e vincula no calendário (com turno e alocação diária)
+    store.setPersonAvailability(personId, month, [5, 12], {
+      shift_d12: [5, 12],
+    })
+    store.insertAllPersonDaysToMonth(personId, month, 'shift_d12')
+    // Adiciona outra pessoa no mesmo dia e o mesmo profissional em outro mês para garantir isolamento
+    store.assignPersonToShift('2026-10-05', 'shift_n12', 'p2')
+    store.addPersonToDay('2026-11-05', personId)
+
+    let state = useScheduleStore.getState()
+    expect(state.assignments['2026-10-05']).toContain(personId)
+    expect(state.assignments['2026-10-12']).toContain(personId)
+    expect(state.dayShiftAssignments['2026-10-05']?.shift_d12).toBe(personId)
+    expect(state.dayShiftAssignments['2026-10-12']?.shift_d12).toBe(personId)
+
+    // Modifica a disponibilidade do mês de p1 removendo o dia 12 e adicionando o dia 18
+    store.setPersonAvailability(personId, month, [5, 18], {
+      shift_d12: [5, 18],
+    })
+
+    state = useScheduleStore.getState()
+    // O dia 5 (mantido na disponibilidade) permanece no calendário, enquanto o dia 12 (removido) é desvinculado
+    expect(state.assignments['2026-10-05']).toContain(personId)
+    expect(state.dayShiftAssignments['2026-10-05']?.shift_d12).toBe(personId)
+    expect(state.assignments['2026-10-12']).not.toContain(personId)
+    expect(state.dayShiftAssignments['2026-10-12']?.shift_d12).toBeUndefined()
+
+    // Outra pessoa (p2) no mesmo dia e o mesmo profissional em outro mês (2026-11) permanecem intactos
+    expect(state.assignments['2026-10-05']).toContain('p2')
+    expect(state.dayShiftAssignments['2026-10-05']?.shift_n12).toBe('p2')
+    expect(state.assignments['2026-11-05']).toContain(personId)
+  })
 })
 

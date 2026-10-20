@@ -40,7 +40,10 @@
     "teamIncluded": "Equipe incluída ({{count}}):",
     "othersCount": "+{{count}} outros",
     "cancel": "Cancelar",
-    "restore": "Restaurar Backup"
+    "restore": "Restaurar Backup",
+    "overwriteRestore": "Apagar Tudo e Restaurar Backup",
+    "mergeUpdate": "Atualizar Dados com Arquivo",
+    "existingDataNotice": "Você já possui dados salvos localmente. Escolha se deseja apagar tudo e usar apenas o arquivo carregado ou atualizar seus dados atuais mantendo o que não tiver conflito."
   },
   "overwriteModal": {
     "title": "Atenção: Sobrescrita de Dados",

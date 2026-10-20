@@ -1,10 +1,17 @@
 import { create } from 'zustand'
 
+import { i18n } from '../i18n'
 import { CloudSyncService } from '../services/cloud-sync-service'
 import { PersonService } from '../services/person-service'
 import { StorageService } from '../services/storage-service'
 import { formatAddress } from '../utils/address-utils'
-import { getPreviousMonth, getNextMonth, getMonthDaysArray, isEventInPast } from '../utils/date-utils'
+import {
+  getPreviousMonth,
+  getNextMonth,
+  getMonthDaysArray,
+  isEventInPast,
+  getCurrentMonth,
+} from '../utils/date-utils'
 import { validateSchedule } from '../utils/validate-schedule'
 
 import type {
@@ -194,7 +201,7 @@ if (typeof document !== 'undefined' && initialDarkMode) {
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   currentView: 'calendar',
   setCurrentView: (view) => set({ currentView: view }),
-  currentMonth: '2026-10',
+  currentMonth: getCurrentMonth(),
   isEditMode: false,
   highlightedPersonId: null,
   selectedDateForEvents: null,
@@ -501,7 +508,89 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       updated = [...get().availabilities, newRecord]
     }
     StorageService.saveAvailabilities(updated)
-    set({ availabilities: updated })
+
+    const currentAssignments = { ...get().assignments }
+    const currentDayShiftAssignments = { ...get().dayShiftAssignments }
+    let hasAssignmentChanges = false
+    let hasDayShiftChanges = false
+
+    const hasShiftAvailMap =
+      Boolean(finalShiftAvailability) && Object.keys(finalShiftAvailability!).length > 0
+
+    const allMonthDates = new Set([
+      ...Object.keys(currentAssignments).filter((d) => d.startsWith(`${month}-`)),
+      ...Object.keys(currentDayShiftAssignments).filter((d) => d.startsWith(`${month}-`)),
+    ])
+
+    allMonthDates.forEach((dateStr) => {
+      const dayNum = Number.parseInt(dateStr.slice(8, 10), 10)
+      const existingDayShifts = currentDayShiftAssignments[dateStr]
+      const hadShiftOnDay = existingDayShifts
+        ? Object.values(existingDayShifts).includes(personId)
+        : false
+      let stillHasShiftOnDay = hadShiftOnDay
+
+      if (existingDayShifts && hadShiftOnDay) {
+        const nextDayShifts = { ...existingDayShifts }
+        let dayChanged = false
+        Object.entries(nextDayShifts).forEach(([sId, pId]) => {
+          if (pId === personId) {
+            const isStillAvailableForShift = hasShiftAvailMap
+              ? Boolean(finalShiftAvailability![sId]?.includes(dayNum))
+              : availableDays.includes(dayNum)
+            if (!isStillAvailableForShift) {
+              delete nextDayShifts[sId]
+              dayChanged = true
+              hasDayShiftChanges = true
+            }
+          }
+        })
+        if (dayChanged) {
+          currentDayShiftAssignments[dateStr] = nextDayShifts
+        }
+        stillHasShiftOnDay = Object.values(nextDayShifts).includes(personId)
+      }
+
+      if (currentAssignments[dateStr]?.includes(personId)) {
+        const shouldRemoveFromDay =
+          !availableDays.includes(dayNum) || (hadShiftOnDay && !stillHasShiftOnDay)
+        if (shouldRemoveFromDay) {
+          currentAssignments[dateStr] = currentAssignments[dateStr].filter(
+            (id) => id !== personId
+          )
+          hasAssignmentChanges = true
+        }
+      }
+    })
+
+    if (hasAssignmentChanges) {
+      StorageService.saveAssignments(currentAssignments)
+    }
+    if (hasDayShiftChanges) {
+      StorageService.saveDayShiftAssignments(currentDayShiftAssignments)
+    }
+
+    const isEditing = get().isEditMode
+    set({
+      availabilities: updated,
+      ...(hasAssignmentChanges
+        ? {
+            assignments: currentAssignments,
+            ...(!isEditing ? { savedAssignments: { ...currentAssignments } } : {}),
+          }
+        : {}),
+      ...(hasDayShiftChanges
+        ? {
+            dayShiftAssignments: currentDayShiftAssignments,
+            ...(!isEditing
+              ? { savedDayShiftAssignments: { ...currentDayShiftAssignments } }
+              : {}),
+          }
+        : {}),
+      ...(isEditing && (hasAssignmentChanges || hasDayShiftChanges)
+        ? { hasUnsavedChanges: true }
+        : {}),
+    })
 
     if (get().hasValidated) {
       get().validateCurrentSchedule()
@@ -1589,8 +1678,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       savedDayShiftAssignments: {},
       events: [],
       addresses: [],
-      shiftDefinitions: StorageService.getShiftDefinitions(),
-      shiftRules: StorageService.getShiftRules(),
+      shiftDefinitions: [],
+      shiftRules: [],
       monthActiveShifts: {},
       monthActiveRules: {},
       monthDailyShifts: {},
@@ -1614,4 +1703,12 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     set({ isDarkMode: nextDark })
   },
 }))
+
+i18n.on('languageChanged', () => {
+  const state = useScheduleStore.getState()
+  if (state.hasValidated) {
+    state.validateCurrentSchedule()
+  }
+})
+
 

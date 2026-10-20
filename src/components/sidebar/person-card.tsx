@@ -1,7 +1,9 @@
 import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+
+import { computePopoverPosition } from '../../utils/popover-position'
 
 import type { Person, ShiftDefinition } from '../../types'
 
@@ -44,31 +46,30 @@ export function PersonCard({
 
   const canInsertAllDays = isEditMode && availableDaysCount > 0
   const hasMultipleShifts = isEditMode && availableShifts && availableShifts.length > 1
+  const hasAvailability = availableDaysCount > 0
 
-  const updatePosition = () => {
+  const highlightTooltip = !hasAvailability
+    ? t('people:card.noAvailabilityTooltip')
+    : isHighlighted
+      ? t('people:card.hideHighlightTooltip')
+      : t('people:card.showHighlightTooltip')
+
+  const updatePosition = useCallback(() => {
     if (!buttonRef.current) return
     const rect = buttonRef.current.getBoundingClientRect()
-    const balloonWidth = 260
-    const balloonHeight = 220
+    const balloonWidth = balloonRef.current?.offsetWidth || 256
+    const balloonHeight = balloonRef.current?.offsetHeight || 220
 
-    // Horizontal: align with the button's right edge, but clamp so it never goes off-screen to the left (min 12px)
-    // or off-screen to the right (max window.innerWidth - balloonWidth - 12)
-    let left = rect.right - balloonWidth
-    if (left < 12) {
-      left = 12
-    }
-    if (left + balloonWidth > window.innerWidth - 12) {
-      left = window.innerWidth - balloonWidth - 12
-    }
-
-    // Vertical: place below the button, or flip above if near the bottom of viewport
-    let top = rect.bottom + 6
-    if (top + balloonHeight > window.innerHeight - 12) {
-      top = Math.max(12, rect.top - balloonHeight - 6)
-    }
-
-    setBalloonPosition({ top, left })
-  }
+    setBalloonPosition(
+      computePopoverPosition({
+        triggerRect: rect,
+        menuWidth: balloonWidth,
+        menuHeight: balloonHeight,
+        align: 'right',
+        preferPlacement: 'bottom',
+      })
+    )
+  }, [])
 
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -93,6 +94,12 @@ export function PersonCard({
     setJustInserted(true)
     setTimeout(() => setJustInserted(false), 1500)
   }
+
+  useLayoutEffect(() => {
+    if (isBalloonOpen) {
+      updatePosition()
+    }
+  }, [isBalloonOpen, availableShifts.length, updatePosition])
 
   // Click outside, scroll, resize and Escape key to handle balloon
   useEffect(() => {
@@ -130,7 +137,7 @@ export function PersonCard({
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isBalloonOpen])
+  }, [isBalloonOpen, updatePosition])
 
   const workingDayLabel = workingDaysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')
   const availableDayLabel = availableDaysCount === 1 ? t('people:card.dayLabel') : t('people:card.dayLabelPlural')
@@ -218,9 +225,10 @@ export function PersonCard({
                     position: 'fixed',
                     top: `${balloonPosition.top}px`,
                     left: `${balloonPosition.left}px`,
+                    maxHeight: 'calc(100vh - 24px)',
                     zIndex: 9999,
                   }}
-                  className="w-64 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl animate-fadeIn"
+                  className="w-64 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl animate-fadeIn flex flex-col overflow-hidden"
                 >
                   <div className="px-2 py-1 mb-1 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200">
@@ -278,12 +286,16 @@ export function PersonCard({
         {/* Toggle View Availability */}
         <button
           type="button"
+          disabled={!hasAvailability}
           onClick={onToggleHighlight}
-          title={isHighlighted ? t('people:card.hideHighlightTooltip') : t('people:card.showHighlightTooltip')}
+          title={highlightTooltip}
+          aria-label={highlightTooltip}
           className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
-            isHighlighted
-              ? 'bg-indigo-600 text-white shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60'
+            !hasAvailability
+              ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
+              : isHighlighted
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60'
           }`}
         >
           {isHighlighted ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}

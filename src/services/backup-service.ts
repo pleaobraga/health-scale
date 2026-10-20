@@ -249,21 +249,10 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
     StorageService.saveShiftRules(data.shiftRules)
   }
 
-  if (data.monthActiveShifts) {
-    StorageService.saveMonthActiveShiftsMap(data.monthActiveShifts)
-  }
-
-  if (data.monthActiveRules) {
-    StorageService.saveMonthActiveRulesMap(data.monthActiveRules)
-  }
-
-  if (data.monthDailyShifts) {
-    StorageService.saveMonthDailyShiftsMap(data.monthDailyShifts)
-  }
-
-  if (data.dayShiftAssignments) {
-    StorageService.saveDayShiftAssignments(data.dayShiftAssignments)
-  }
+  StorageService.saveMonthActiveShiftsMap(data.monthActiveShifts || {})
+  StorageService.saveMonthActiveRulesMap(data.monthActiveRules || {})
+  StorageService.saveMonthDailyShiftsMap(data.monthDailyShifts || {})
+  StorageService.saveDayShiftAssignments(data.dayShiftAssignments || {})
 
   if (data.theme === 'dark' || data.theme === 'light') {
     localStorage.setItem('theme', data.theme)
@@ -278,10 +267,10 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
 
   const restoredShiftDefinitions = data.shiftDefinitions || StorageService.getShiftDefinitions()
   const restoredShiftRules = data.shiftRules || StorageService.getShiftRules()
-  const restoredMonthActiveShifts = data.monthActiveShifts || StorageService.getMonthActiveShiftsMap()
-  const restoredMonthActiveRules = data.monthActiveRules || StorageService.getMonthActiveRulesMap()
-  const restoredMonthDailyShifts = data.monthDailyShifts || StorageService.getMonthDailyShiftsMap()
-  const restoredDayShiftAssignments = data.dayShiftAssignments || StorageService.getDayShiftAssignments()
+  const restoredMonthActiveShifts = data.monthActiveShifts || {}
+  const restoredMonthActiveRules = data.monthActiveRules || {}
+  const restoredMonthDailyShifts = data.monthDailyShifts || {}
+  const restoredDayShiftAssignments = data.dayShiftAssignments || {}
 
   // Update zustand store
   useScheduleStore.setState({
@@ -308,10 +297,222 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
   })
 }
 
+/**
+ * Merges incoming AppDataSnapshot with current local data:
+ * records present in the backup update existing ones on conflict,
+ * while non-conflicting existing local data is preserved.
+ */
+export async function mergeAppData(data: AppDataSnapshot): Promise<void> {
+  // 1. Merge people by id
+  const currentPersons = StorageService.getPersons()
+  const incomingPersons = (data.people || []).map((p) => ({
+    ...p,
+    id: p.id,
+    name: p.name,
+    color: p.color || '#3b82f6',
+  }))
+  const personMap = new Map(currentPersons.map((p) => [p.id, p]))
+  for (const p of incomingPersons) {
+    const existing = personMap.get(p.id)
+    personMap.set(p.id, existing ? { ...existing, ...p } : p)
+  }
+  const mergedPeople = Array.from(personMap.values())
+  StorageService.savePersons(mergedPeople)
+
+  // 2. Merge monthParticipants per month (union of participant IDs)
+  const currentMonthParticipants = StorageService.getMonthParticipants()
+  const incomingMonthParticipants = data.monthParticipants || {}
+  const mergedMonthParticipants: Record<string, string[]> = { ...currentMonthParticipants }
+  for (const [month, ids] of Object.entries(incomingMonthParticipants)) {
+    if (Array.isArray(ids)) {
+      const existingIds = mergedMonthParticipants[month] || []
+      mergedMonthParticipants[month] = Array.from(new Set([...existingIds, ...ids]))
+    }
+  }
+  StorageService.saveMonthParticipants(mergedMonthParticipants)
+
+  // 3. Merge availabilities by (personId + month)
+  const currentAvailabilities = StorageService.getAvailabilities()
+  let incomingAvailabilities: MonthlyAvailability[] = []
+  if (Array.isArray(data.availabilities)) {
+    incomingAvailabilities = data.availabilities as MonthlyAvailability[]
+  } else if (data.availabilities && typeof data.availabilities === 'object') {
+    incomingAvailabilities = Object.values(data.availabilities) as MonthlyAvailability[]
+  }
+  const availMap = new Map<string, MonthlyAvailability>(
+    currentAvailabilities.map((a) => [`${a.personId}_${a.month}`, a])
+  )
+  for (const incoming of incomingAvailabilities) {
+    const key = `${incoming.personId}_${incoming.month}`
+    const existing = availMap.get(key)
+    if (existing) {
+      availMap.set(key, {
+        ...existing,
+        ...incoming,
+        shiftAvailability: {
+          ...(existing.shiftAvailability || {}),
+          ...(incoming.shiftAvailability || {}),
+        },
+        shiftRates: {
+          ...(existing.shiftRates || {}),
+          ...(incoming.shiftRates || {}),
+        },
+      })
+    } else {
+      availMap.set(key, incoming)
+    }
+  }
+  const mergedAvailabilities = Array.from(availMap.values())
+  StorageService.saveAvailabilities(mergedAvailabilities)
+
+  // 4. Merge assignments by date (incoming date overrides conflicting date, non-conflicting dates remain)
+  const currentAssignments = StorageService.getAssignments()
+  const incomingAssignments = (data.assignments || {}) as Record<string, string[]>
+  const mergedAssignments: Record<string, string[]> = { ...currentAssignments }
+  for (const [dateStr, personIds] of Object.entries(incomingAssignments)) {
+    if (Array.isArray(personIds)) {
+      mergedAssignments[dateStr] = [...personIds]
+    }
+  }
+  StorageService.saveAssignments(mergedAssignments)
+
+  // 5. Merge events by id
+  const currentEvents = StorageService.getEvents()
+  const incomingEvents = Array.isArray(data.events) ? data.events : []
+  const eventMap = new Map(currentEvents.map((e) => [e.id, e]))
+  for (const ev of incomingEvents) {
+    const existing = eventMap.get(ev.id)
+    eventMap.set(ev.id, existing ? { ...existing, ...ev } : ev)
+  }
+  const mergedEvents = Array.from(eventMap.values())
+  StorageService.saveEvents(mergedEvents)
+
+  // 6. Merge addresses by id
+  const currentAddresses = StorageService.getAddresses()
+  const incomingAddresses = Array.isArray(data.addresses) ? data.addresses : []
+  const addressMap = new Map(currentAddresses.map((a) => [a.id, a]))
+  for (const addr of incomingAddresses) {
+    const existing = addressMap.get(addr.id)
+    addressMap.set(addr.id, existing ? { ...existing, ...addr } : addr)
+  }
+  const mergedAddresses = Array.from(addressMap.values())
+  StorageService.saveAddresses(mergedAddresses)
+
+  // 7. Merge shiftDefinitions by id
+  const currentShifts = StorageService.getShiftDefinitions()
+  let mergedShiftDefinitions = currentShifts
+  if (data.shiftDefinitions && Array.isArray(data.shiftDefinitions)) {
+    const shiftMap = new Map(currentShifts.map((s) => [s.id, s]))
+    for (const s of data.shiftDefinitions) {
+      const existing = shiftMap.get(s.id)
+      shiftMap.set(s.id, existing ? { ...existing, ...s } : s)
+    }
+    mergedShiftDefinitions = Array.from(shiftMap.values())
+    StorageService.saveShiftDefinitions(mergedShiftDefinitions)
+  }
+
+  // 8. Merge shiftRules by id
+  const currentRules = StorageService.getShiftRules()
+  let mergedShiftRules = currentRules
+  if (data.shiftRules && Array.isArray(data.shiftRules)) {
+    const ruleMap = new Map(currentRules.map((r) => [r.id, r]))
+    for (const r of data.shiftRules) {
+      const existing = ruleMap.get(r.id)
+      ruleMap.set(r.id, existing ? { ...existing, ...r } : r)
+    }
+    mergedShiftRules = Array.from(ruleMap.values())
+    StorageService.saveShiftRules(mergedShiftRules)
+  }
+
+  // 9. Merge monthActiveShifts
+  const currentMonthActiveShifts = StorageService.getMonthActiveShiftsMap()
+  const mergedMonthActiveShifts: Record<string, string[]> = { ...currentMonthActiveShifts }
+  if (data.monthActiveShifts) {
+    for (const [month, sIds] of Object.entries(data.monthActiveShifts)) {
+      if (Array.isArray(sIds)) {
+        const existingIds = mergedMonthActiveShifts[month] || []
+        mergedMonthActiveShifts[month] = Array.from(new Set([...existingIds, ...sIds]))
+      }
+    }
+    StorageService.saveMonthActiveShiftsMap(mergedMonthActiveShifts)
+  }
+
+  // 10. Merge monthActiveRules
+  const currentMonthActiveRules = StorageService.getMonthActiveRulesMap()
+  const mergedMonthActiveRules: Record<string, string[]> = { ...currentMonthActiveRules }
+  if (data.monthActiveRules) {
+    for (const [month, rIds] of Object.entries(data.monthActiveRules)) {
+      if (Array.isArray(rIds)) {
+        const existingIds = mergedMonthActiveRules[month] || []
+        mergedMonthActiveRules[month] = Array.from(new Set([...existingIds, ...rIds]))
+      }
+    }
+    StorageService.saveMonthActiveRulesMap(mergedMonthActiveRules)
+  }
+
+  // 11. Merge monthDailyShifts
+  const currentMonthDailyShifts = StorageService.getMonthDailyShiftsMap()
+  const mergedMonthDailyShifts: Record<string, Record<string, number[]>> = {
+    ...currentMonthDailyShifts,
+  }
+  if (data.monthDailyShifts) {
+    for (const [month, shiftsObj] of Object.entries(data.monthDailyShifts)) {
+      if (shiftsObj && typeof shiftsObj === 'object') {
+        mergedMonthDailyShifts[month] = {
+          ...(mergedMonthDailyShifts[month] || {}),
+          ...shiftsObj,
+        }
+      }
+    }
+    StorageService.saveMonthDailyShiftsMap(mergedMonthDailyShifts)
+  }
+
+  // 12. Merge dayShiftAssignments
+  const currentDayShiftAssignments = StorageService.getDayShiftAssignments()
+  const mergedDayShiftAssignments: Record<string, Record<string, string>> = {
+    ...currentDayShiftAssignments,
+  }
+  if (data.dayShiftAssignments) {
+    for (const [dateStr, shiftsObj] of Object.entries(data.dayShiftAssignments)) {
+      if (shiftsObj && typeof shiftsObj === 'object') {
+        mergedDayShiftAssignments[dateStr] = {
+          ...(mergedDayShiftAssignments[dateStr] || {}),
+          ...shiftsObj,
+        }
+      }
+    }
+    StorageService.saveDayShiftAssignments(mergedDayShiftAssignments)
+  }
+
+  // Update zustand store
+  useScheduleStore.setState({
+    persons: mergedPeople,
+    monthParticipants: mergedMonthParticipants,
+    availabilities: mergedAvailabilities,
+    assignments: mergedAssignments,
+    savedAssignments: { ...mergedAssignments },
+    events: mergedEvents,
+    addresses: mergedAddresses,
+    shiftDefinitions: mergedShiftDefinitions,
+    shiftRules: mergedShiftRules,
+    monthActiveShifts: mergedMonthActiveShifts,
+    monthActiveRules: mergedMonthActiveRules,
+    monthDailyShifts: mergedMonthDailyShifts,
+    dayShiftAssignments: mergedDayShiftAssignments,
+    savedDayShiftAssignments: { ...mergedDayShiftAssignments },
+    hasUnsavedChanges: false,
+    isEditMode: false,
+    validationErrors: [],
+    hasValidated: false,
+    currentView: 'calendar',
+  })
+}
+
 export const BackupService = {
   exportAppData,
   validateAndParseBackup,
   restoreAppData,
+  mergeAppData,
   hasExistingLocalData,
   getBackupFilename,
 }

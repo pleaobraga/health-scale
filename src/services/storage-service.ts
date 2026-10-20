@@ -1,3 +1,4 @@
+import { auth } from './firebase'
 import { DEFAULT_SHIFTS, DEFAULT_RULES } from './validation/rule-engine'
 
 import type {
@@ -27,6 +28,8 @@ const STORAGE_KEYS = {
   GUEST_PROFILES: 'scale_manager_guest_profiles_v1',
   ACTIVE_GUEST_ID: 'scale_manager_active_guest_id_v1',
   GUEST_DATA_PREFIX: 'scale_manager_guest_data_v1_',
+  ACTIVE_USER_ID: 'scale_manager_active_user_id_v1',
+  USER_DATA_PREFIX: 'scale_manager_user_data_v1_',
   ONBOARDING_CHECKED: 'health-schedule:onboarding-checked',
 }
 
@@ -57,7 +60,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save persons to localStorage:', err)
@@ -84,7 +87,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.AVAILABILITIES, JSON.stringify(availabilities))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save availabilities to localStorage:', err)
@@ -111,7 +114,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.ASSIGNMENTS, JSON.stringify(assignments))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save assignments to localStorage:', err)
@@ -138,7 +141,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save events to localStorage:', err)
@@ -165,7 +168,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.MONTH_PARTICIPANTS, JSON.stringify(data))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save month participants to localStorage:', err)
@@ -192,7 +195,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.ADDRESSES, JSON.stringify(addresses))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save addresses to localStorage:', err)
@@ -219,7 +222,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.SHIFT_DEFINITIONS, JSON.stringify(shifts))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save shift definitions to localStorage:', err)
@@ -246,7 +249,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.SHIFT_RULES, JSON.stringify(rules))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save shift rules to localStorage:', err)
@@ -271,7 +274,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.MONTH_ACTIVE_SHIFTS, JSON.stringify(map))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save month active shifts to localStorage:', err)
@@ -296,7 +299,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.MONTH_ACTIVE_RULES, JSON.stringify(map))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save month active rules to localStorage:', err)
@@ -321,7 +324,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.MONTH_DAILY_SHIFTS, JSON.stringify(map))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save month daily shifts to localStorage:', err)
@@ -346,7 +349,7 @@ export class StorageService {
     try {
       localStorage.setItem(STORAGE_KEYS.DAY_SHIFT_ASSIGNMENTS, JSON.stringify(map))
       if (!isRestoringDataset) {
-        StorageService.snapshotActiveGuest()
+        StorageService.snapshotActiveSession()
       }
     } catch (err) {
       console.error('Failed to save day shift assignments to localStorage:', err)
@@ -380,7 +383,13 @@ export class StorageService {
     if (activeGuestId) {
       StorageService.deleteGuestDataset(activeGuestId)
     }
+    const activeUserId = StorageService.getActiveUserId()
+    if (activeUserId) {
+      StorageService.deleteUserDataset(activeUserId)
+    }
     StorageService.resetToDefault()
+    localStorage.setItem(STORAGE_KEYS.SHIFT_DEFINITIONS, JSON.stringify([]))
+    localStorage.setItem(STORAGE_KEYS.SHIFT_RULES, JSON.stringify([]))
   }
 
   /**
@@ -502,7 +511,7 @@ export class StorageService {
       }
     } finally {
       isRestoringDataset = false
-      StorageService.snapshotActiveGuest()
+      StorageService.snapshotActiveSession()
     }
   }
 
@@ -511,6 +520,85 @@ export class StorageService {
     if (activeId) {
       const dataset = StorageService.getCurrentDataset()
       StorageService.saveGuestDataset(activeId, dataset)
+    }
+  }
+
+  /**
+   * Authenticated User Dataset Management
+   */
+  static getActiveUserId(): string | null {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.ACTIVE_USER_ID)
+      if (stored) return stored
+      return auth?.currentUser?.uid || null
+    } catch {
+      return auth?.currentUser?.uid || null
+    }
+  }
+
+  static setActiveUserId(id: string | null): void {
+    try {
+      if (id) {
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_USER_ID, id)
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_USER_ID)
+      }
+    } catch (err) {
+      console.error('Failed to set active user id in localStorage:', err)
+    }
+  }
+
+  static getUserDataset(userId: string): GuestDataset | null {
+    try {
+      const data = localStorage.getItem(`${STORAGE_KEYS.USER_DATA_PREFIX}${userId}`)
+      if (!data) {
+        return null
+      }
+      return JSON.parse(data)
+    } catch (err) {
+      console.error('Failed to load user dataset from localStorage:', err)
+      return null
+    }
+  }
+
+  static saveUserDataset(userId: string, dataset: GuestDataset): void {
+    try {
+      localStorage.setItem(`${STORAGE_KEYS.USER_DATA_PREFIX}${userId}`, JSON.stringify(dataset))
+    } catch (err) {
+      console.error('Failed to save user dataset to localStorage:', err)
+    }
+  }
+
+  static deleteUserDataset(userId: string): void {
+    try {
+      localStorage.removeItem(`${STORAGE_KEYS.USER_DATA_PREFIX}${userId}`)
+    } catch (err) {
+      console.error('Failed to delete user dataset from localStorage:', err)
+    }
+  }
+
+  static snapshotActiveUser(userId?: string): void {
+    const activeId = userId || StorageService.getActiveUserId()
+    if (activeId) {
+      const dataset = StorageService.getCurrentDataset()
+      StorageService.saveUserDataset(activeId, dataset)
+    }
+  }
+
+  /**
+   * Snapshots current working data to whichever profile/account is currently active:
+   * guest profile if activeGuestId is present, or authenticated user if activeUserId is present.
+   */
+  static snapshotActiveSession(): void {
+    const activeGuestId = StorageService.getActiveGuestId()
+    if (activeGuestId) {
+      StorageService.snapshotActiveGuest()
+      return
+    }
+
+    const activeUserId = StorageService.getActiveUserId()
+    if (activeUserId) {
+      StorageService.snapshotActiveUser(activeUserId)
     }
   }
 

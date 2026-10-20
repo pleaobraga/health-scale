@@ -22,6 +22,7 @@ import { AuthContext } from '../../context/auth-context'
 import {
   validateAndParseBackup,
   restoreAppData,
+  mergeAppData,
   hasExistingLocalData,
 } from '../../services/backup-service'
 import { StorageService } from '../../services/storage-service'
@@ -114,7 +115,11 @@ export function ImportView({ embedded = false }: ImportViewProps) {
     setParsedData(null)
 
     try {
-      const snapshot = await validateAndParseBackup(file)
+      const [snapshot, hasData] = await Promise.all([
+        validateAndParseBackup(file),
+        hasExistingLocalData(),
+      ])
+      setIsStorageEmpty(!hasData)
       setParsedData(snapshot)
     } catch (err: unknown) {
       const message =
@@ -163,27 +168,18 @@ export function ImportView({ embedded = false }: ImportViewProps) {
   }
 
   const handleStartZero = () => {
-    // Clear storage and store to start clean
-    StorageService.savePersons([])
-    StorageService.saveAssignments({})
-    StorageService.saveMonthParticipants({})
-    StorageService.saveAvailabilities([])
-    StorageService.saveEvents([])
-
+    // Clear storage and store to start clean, then redirect to calendar
+    useScheduleStore.getState().clearAllLocalData()
+    StorageService.setCheckedOnboarding(true)
     useScheduleStore.setState({
-      persons: [],
-      monthParticipants: {},
-      assignments: {},
-      savedAssignments: {},
-      availabilities: [],
-      events: [],
-      currentView: 'people',
+      currentView: 'calendar',
       hasUnsavedChanges: false,
       isEditMode: false,
     })
+    setIsStorageEmpty(true)
 
     if (navigate) {
-      navigate('/pessoas')
+      navigate('/calendario')
     }
   }
 
@@ -210,6 +206,22 @@ export function ImportView({ embedded = false }: ImportViewProps) {
       }
     } catch (err) {
       console.error('Falha ao restaurar dados:', err)
+      setErrorMessage(t('import:dropzone.restoreError'))
+      setIsRestoring(false)
+    }
+  }
+
+  const handleMergeClick = async () => {
+    if (!parsedData) return
+
+    try {
+      setIsRestoring(true)
+      await mergeAppData(parsedData)
+      if (navigate) {
+        navigate('/')
+      }
+    } catch (err) {
+      console.error('Falha ao atualizar dados:', err)
       setErrorMessage(t('import:dropzone.restoreError'))
       setIsRestoring(false)
     }
@@ -265,14 +277,17 @@ export function ImportView({ embedded = false }: ImportViewProps) {
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={handleStartZero}
-                className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow-md transition-all active:scale-98"
-              >
-                <span>{t('import:welcomeBanner.startZero')}</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              </button>
+              {isStorageEmpty !== false && (
+                <button
+                  type="button"
+                  onClick={handleStartZero}
+                  data-testid="start-zero-button"
+                  className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow-md transition-all active:scale-98"
+                >
+                  <span>{t('import:welcomeBanner.startZero')}</span>
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -530,8 +545,15 @@ export function ImportView({ embedded = false }: ImportViewProps) {
                 </div>
               )}
 
+              {isStorageEmpty === false && (
+                <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 flex items-start gap-2.5 text-amber-800 dark:text-amber-200 text-xs">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>{t('import:preview.existingDataNotice')}</span>
+                </div>
+              )}
+
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-3">
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={handleClear}
@@ -540,15 +562,41 @@ export function ImportView({ embedded = false }: ImportViewProps) {
                 >
                   {t('import:preview.cancel')}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleRestoreClick}
-                  disabled={isRestoring}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <span>{t('import:preview.restore')}</span>
-                  <ArrowRight className="w-4 h-4 stroke-[2.2]" />
-                </button>
+
+                {isStorageEmpty === false ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleRestoreClick}
+                      disabled={isRestoring}
+                      data-testid="overwrite-restore-button"
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4 stroke-[2.2]" />
+                      <span>{t('import:preview.overwriteRestore')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleMergeClick}
+                      disabled={isRestoring}
+                      data-testid="merge-restore-button"
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4 stroke-[2.2]" />
+                      <span>{t('import:preview.mergeUpdate')}</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleRestoreClick}
+                    disabled={isRestoring}
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>{t('import:preview.restore')}</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.2]" />
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import { validateSchedule } from './validate-schedule'
+import { i18n } from '../i18n'
 
 import type { Person, MonthlyAvailability, ShiftRule } from '../types'
 
@@ -346,6 +347,36 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     const emptyErrors = errors.filter((e) => e.rule === 'empty_day')
     expect(emptyErrors.length).toBe(1)
     expect(emptyErrors[0].date).toBe('2026-10-02')
+  })
+
+  it('deve utilizar os tokens do i18n em inglês quando o idioma ativo for en-US', async () => {
+    await i18n.changeLanguage('en-US')
+
+    const assignments: Record<string, string[]> = {
+      '2026-10-01': ['p1', 'p3'], // multi_assigned
+      '2026-10-02': ['p1'], // consecutive_days with 2026-10-01
+      '2026-10-05': ['p2'], // not_available
+    }
+
+    const errors = validateSchedule({
+      currentMonth: '2026-10',
+      allAssignments: assignments,
+      persons: mockPersons,
+      availabilities: mockAvailabilities,
+    })
+
+    const emptyError = errors.find((e) => e.rule === 'empty_day')
+    expect(emptyError?.message).toContain('Unassigned day:')
+
+    const multiError = errors.find((e) => e.rule === 'multi_assigned')
+    expect(multiError?.message).toContain('Allocation conflict:')
+    expect(multiError?.message).toContain('2 people assigned')
+
+    const unavailError = errors.find((e) => e.rule === 'not_available')
+    expect(unavailError?.message).toContain('Unavailability: Dr. Lucas was scheduled')
+
+    const consecError = errors.find((e) => e.rule === 'consecutive_days')
+    expect(consecError?.message).toContain('Rest violated: Dra. Camila was scheduled on consecutive days')
   })
 })
 

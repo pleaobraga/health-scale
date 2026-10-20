@@ -146,11 +146,11 @@
     "paramMaxPeople": "Máx: {{count}} pessoa(s) no turno"
   },
   "card": {
-    "workingDays": "{{count}} dia trab.",
-    "workingDaysPlural": "{{count}} dias trab.",
+    "workingDays": "{{count}} trab.",
+    "workingDaysPlural": "{{count}} trab.",
     "workingDaysTooltip": "Trabalhando em {{count}} {{dayLabel}} neste mês",
-    "availableDays": "{{count}} dia disp.",
-    "availableDaysPlural": "{{count}} dias disp.",
+    "availableDays": "{{count}} disp.",
+    "availableDaysPlural": "{{count}} disp.",
     "availableDaysTooltip": "Disponível em {{count}} {{dayLabel}} neste mês",
     "dayLabel": "dia",
     "dayLabelPlural": "dias",
@@ -159,6 +159,7 @@
     "insertAria": "Inserir todos os dias de {{name}} no calendário",
     "hideHighlightTooltip": "Ocultar destaque no calendário",
     "showHighlightTooltip": "Destacar disponibilidade no calendário",
+    "noAvailabilityTooltip": "Esta pessoa não tem disponibilidade cadastrada neste mês",
     "editAvailabilityTooltip": "Configurar disponibilidade do mês / Editar nome, cor ou disponibilidade",
     "editAvailabilityAria": "Configurar disponibilidade de {{name}}",
     "removeFromMonthTooltip": "Remover {{name}} deste mês",
@@ -261,7 +262,8 @@
     "rateGroupDays": "{{count}} dia(s): {{days}}",
     "rateGroupTotal": "Subtotal: {{total}}",
     "removeRateTooltip": "Remover valor deste grupo",
-    "currencySymbol": "R$"
+    "currencySymbol": "R$",
+    "calendarRemovalWarning": "Atenção: Se a disponibilidade já estiver vinculada ao calendário, ela será removida da escala ao salvar as alterações."
   },
   "personModal": {
     "editTitle": "Editar Pessoa",

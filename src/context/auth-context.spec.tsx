@@ -1,13 +1,56 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import React from 'react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AuthProvider, useAuth } from './auth-context'
+import demoJson from '../../public/demo/demo.json'
 import { StorageService } from '../services/storage-service'
+import { useScheduleStore } from '../store/use-schedule-store'
+
+import type * as firebaseAuth from 'firebase/auth'
+import type * as firestoreModule from 'firebase/firestore'
+
+const mockSignInWithEmailAndPassword = vi.fn()
+const mockSignOut = vi.fn().mockResolvedValue(undefined)
+const mockOnAuthStateChanged = vi.fn((...args: unknown[]) => {
+  const callback = args[1] as ((user: unknown) => void) | undefined
+  if (typeof callback === 'function') {
+    callback(null)
+  }
+  return vi.fn()
+})
+
+vi.mock('firebase/auth', async (importOriginal) => {
+  const actual = await importOriginal<typeof firebaseAuth>()
+  return {
+    ...actual,
+    signInWithEmailAndPassword: (...args: unknown[]) => mockSignInWithEmailAndPassword(...args),
+    signOut: (...args: unknown[]) => mockSignOut(...args),
+    onAuthStateChanged: (...args: unknown[]) => mockOnAuthStateChanged(...args),
+  }
+})
+
+vi.mock('firebase/firestore', async (importOriginal) => {
+  const actual = await importOriginal<typeof firestoreModule>()
+  return {
+    ...actual,
+    doc: vi.fn().mockReturnValue({}),
+    getDoc: vi.fn().mockResolvedValue({
+      exists: () => true,
+      data: () => ({ role: 'admin' }),
+    }),
+    setDoc: vi.fn().mockResolvedValue(undefined),
+  }
+})
 
 describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', () => {
   beforeEach(() => {
     localStorage.clear()
+    vi.clearAllMocks()
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => demoJson,
+    }) as unknown as typeof fetch
   })
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -119,5 +162,143 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(result.current.guestProfiles).toHaveLength(0)
     expect(StorageService.getGuestProfiles()).toHaveLength(0)
     expect(StorageService.getGuestDataset(guestId)).toBeNull()
+  })
+
+  it('deve preservar os dados de Admin ao deslogar, entrar como guest e logar novamente via login()', async () => {
+    const mockUser = {
+      uid: 'admin-uid-1',
+      email: 'admin@healthscale.com',
+      displayName: 'Administrador Geral',
+    }
+    mockSignInWithEmailAndPassword.mockResolvedValue({
+      user: mockUser,
+    })
+    mockSignOut.mockResolvedValue(undefined)
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    // 1. Admin faz login
+    await act(async () => {
+      await result.current.login('admin@healthscale.com', 'admin123')
+    })
+
+    expect(result.current.user?.uid).toBe('admin-uid-1')
+    expect(result.current.isGuest).toBe(false)
+
+    // 2. Admin cadastra pessoa, endereço e atribuição no calendário
+    act(() => {
+      useScheduleStore.getState().addPerson('Dra. Maria Plantonista', '#10b981')
+      useScheduleStore.getState().addAddress({
+        name: 'Hospital Central',
+        street: 'Av. Paulista',
+        number: '1500',
+        neighborhood: 'Bela Vista',
+        city: 'São Paulo',
+      })
+    })
+
+    const createdPerson = useScheduleStore.getState().persons[0]
+    expect(createdPerson).toBeDefined()
+    expect(createdPerson.name).toBe('Dra. Maria Plantonista')
+
+    act(() => {
+      useScheduleStore.getState().addPersonToDay('2026-10-15', createdPerson.id)
+    })
+
+    await act(async () => {
+      await useScheduleStore.getState().saveSchedule()
+    })
+
+    expect(useScheduleStore.getState().assignments['2026-10-15']).toEqual([createdPerson.id])
+    expect(useScheduleStore.getState().addresses).toHaveLength(1)
+
+    // Snapshot isolado do Admin no localStorage deve estar preenchido
+    const adminSnapshotBefore = StorageService.getUserDataset('admin-uid-1')
+    expect(adminSnapshotBefore?.persons).toHaveLength(1)
+    expect(adminSnapshotBefore?.addresses).toHaveLength(1)
+    expect(adminSnapshotBefore?.assignments['2026-10-15']).toEqual([createdPerson.id])
+
+    // 3. Admin faz logout
+    await act(async () => {
+      await result.current.logout()
+    })
+
+    expect(result.current.user).toBeNull()
+    expect(useScheduleStore.getState().persons).toEqual([])
+    expect(useScheduleStore.getState().addresses).toEqual([])
+    expect(useScheduleStore.getState().assignments).toEqual({})
+
+    // 4. Usuário acessa como Guest
+    await act(async () => {
+      await result.current.loginAsGuest('Visitante Clínico')
+    })
+
+    expect(result.current.isGuest).toBe(true)
+    expect(StorageService.getActiveGuestId()).not.toBeNull()
+
+    // 5. Guest faz logout
+    await act(async () => {
+      await result.current.logout()
+    })
+
+    expect(result.current.user).toBeNull()
+    expect(useScheduleStore.getState().persons).toEqual([])
+
+    // 6. Admin faz login novamente via login()
+    await act(async () => {
+      await result.current.login('admin@healthscale.com', 'admin123')
+    })
+
+    expect(result.current.user?.uid).toBe('admin-uid-1')
+    expect(result.current.isGuest).toBe(false)
+
+    // 7. Dados do Admin foram completamente restaurados na store e no localStorage!
+    const restoredPersons = useScheduleStore.getState().persons
+    const restoredAddresses = useScheduleStore.getState().addresses
+    const restoredAssignments = useScheduleStore.getState().assignments
+
+    expect(restoredPersons).toHaveLength(1)
+    expect(restoredPersons[0].name).toBe('Dra. Maria Plantonista')
+    expect(restoredAddresses).toHaveLength(1)
+    expect(restoredAddresses[0].name).toBe('Hospital Central')
+    expect(restoredAssignments['2026-10-15']).toEqual([createdPerson.id])
+
+    expect(StorageService.getPersons()).toHaveLength(1)
+    expect(StorageService.getAddresses()).toHaveLength(1)
+    expect(StorageService.getAssignments()['2026-10-15']).toEqual([createdPerson.id])
+  })
+
+  it('deve buscar dados da nuvem no login se o dataset local do usuário estiver vazio', async () => {
+    const mockUser = {
+      uid: 'admin-new-device',
+      email: 'novo-admin@healthscale.com',
+    }
+    mockSignInWithEmailAndPassword.mockResolvedValue({
+      user: mockUser,
+    })
+
+    const pullCloudDataSpy = vi.spyOn(useScheduleStore.getState(), 'pullCloudData').mockImplementation(async () => {
+      useScheduleStore.setState({
+        persons: [{ id: 'p-cloud', name: 'Dr. Da Nuvem', color: '#6366f1', active: true }],
+        addresses: [{ id: 'addr-cloud', name: 'Clínica Nuvem', street: 'Rua das Nuvens', number: '10' }],
+        assignments: { '2026-10-25': ['p-cloud'] },
+      })
+      StorageService.savePersons([{ id: 'p-cloud', name: 'Dr. Da Nuvem', color: '#6366f1', active: true }])
+      StorageService.saveAddresses([{ id: 'addr-cloud', name: 'Clínica Nuvem', street: 'Rua das Nuvens', number: '10' }])
+      StorageService.saveAssignments({ '2026-10-25': ['p-cloud'] })
+      return { success: true, code: 'success', message: 'Sincronizado' }
+    })
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await act(async () => {
+      await result.current.login('novo-admin@healthscale.com', 'pass123')
+    })
+
+    expect(pullCloudDataSpy).toHaveBeenCalled()
+    expect(useScheduleStore.getState().persons).toHaveLength(1)
+    expect(useScheduleStore.getState().persons[0].name).toBe('Dr. Da Nuvem')
+    expect(useScheduleStore.getState().addresses).toHaveLength(1)
+    expect(useScheduleStore.getState().assignments['2026-10-25']).toEqual(['p-cloud'])
   })
 })

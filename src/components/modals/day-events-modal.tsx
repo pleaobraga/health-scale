@@ -39,6 +39,7 @@ export function DayEventsModal() {
     currentMonth,
   } = useScheduleStore()
 
+  const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [time, setTime] = useState('')
@@ -46,7 +47,9 @@ export function DayEventsModal() {
   const [manualAddress, setManualAddress] = useState('')
   const [selectedPersonId, setSelectedPersonId] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [copiedEventAddressId, setCopiedEventAddressId] = useState<string | null>(null)
+  const [copiedEventAddressId, setCopiedEventAddressId] = useState<
+    string | null
+  >(null)
 
   const handleCopyAddress = async (id: string, text: string) => {
     const success = await copyToClipboard(text.trim())
@@ -60,6 +63,7 @@ export function DayEventsModal() {
 
   // Reset form when modal opens or date changes
   useEffect(() => {
+    setIsFormOpen(false)
     setEditingEventId(null)
     setTitle('')
     setTime('')
@@ -111,6 +115,19 @@ export function DayEventsModal() {
     ? personMap.get(selectedPersonId)
     : null
 
+  const handleOpenAdd = () => {
+    setEditingEventId(null)
+    setTitle('')
+    setTime('')
+    setAddressSelection('')
+    setManualAddress('')
+    const defaultPersonId =
+      (selectedDateForEvents && assignments[selectedDateForEvents]?.[0]) || ''
+    setSelectedPersonId(defaultPersonId)
+    setError(null)
+    setIsFormOpen(true)
+  }
+
   const handleStartEdit = (ev: CalendarEvent) => {
     setEditingEventId(ev.id)
     setTitle(ev.title)
@@ -138,9 +155,11 @@ export function DayEventsModal() {
 
     setSelectedPersonId(ev.personId ?? (assignments[ev.date]?.[0] || ''))
     setError(null)
+    setIsFormOpen(true)
   }
 
-  const handleCancelEdit = () => {
+  const handleCancelForm = () => {
+    setIsFormOpen(false)
     setEditingEventId(null)
     setTitle('')
     setTime('')
@@ -154,7 +173,7 @@ export function DayEventsModal() {
 
   const handleDeleteEvent = (eventId: string) => {
     if (editingEventId === eventId) {
-      handleCancelEdit()
+      handleCancelForm()
     }
     deleteEvent(eventId)
   }
@@ -191,7 +210,6 @@ export function DayEventsModal() {
         description: undefined,
         personId: finalPersonId,
       })
-      handleCancelEdit()
     } else {
       addEvent({
         date: selectedDateForEvents,
@@ -201,15 +219,9 @@ export function DayEventsModal() {
         addressId: finalAddressId,
         personId: finalPersonId,
       })
-      setTitle('')
-      setTime('')
-      setAddressSelection('')
-      setManualAddress('')
-      const defaultPersonId =
-        (selectedDateForEvents && assignments[selectedDateForEvents]?.[0]) || ''
-      setSelectedPersonId(defaultPersonId)
-      setError(null)
     }
+
+    handleCancelForm()
   }
 
   return createPortal(
@@ -244,18 +256,45 @@ export function DayEventsModal() {
         <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
           {/* List of existing events */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-2.5">
-              {t('calendar:eventsModal.eventsCount', { count: dayEvents.length })}
-            </h4>
+            <div className="flex items-center justify-between mb-2.5">
+              <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                {t('calendar:eventsModal.eventsCount', {
+                  count: dayEvents.length,
+                })}
+              </h4>
+
+              {!isFormOpen && (
+                <button
+                  type="button"
+                  onClick={handleOpenAdd}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-2xs transition"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>{t('calendar:eventsModal.submitEvent')}</span>
+                </button>
+              )}
+            </div>
 
             {dayEvents.length === 0 ? (
-              <div className="p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-center">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {t('calendar:eventsModal.noEvents')}
-                </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                  {t('calendar:eventsModal.noEventsSubtitle')}
-                </p>
+              <div className="p-6 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-center space-y-3">
+                <div>
+                  <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                    {t('calendar:eventsModal.noEvents')}
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                    {t('calendar:eventsModal.noEventsSubtitle')}
+                  </p>
+                </div>
+                {!isFormOpen && (
+                  <button
+                    type="button"
+                    onClick={handleOpenAdd}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs transition mx-auto"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>{t('calendar:eventsModal.submitEvent')}</span>
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-2">
@@ -293,7 +332,10 @@ export function DayEventsModal() {
                                 data-testid="event-caregiver-badge"
                                 style={{ backgroundColor: person.color }}
                                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-white px-2 py-0.5 rounded-md shadow-2xs shrink-0"
-                                title={t('calendar:eventsModal.responsibleBadge', { name: person.name })}
+                                title={t(
+                                  'calendar:eventsModal.responsibleBadge',
+                                  { name: person.name },
+                                )}
                               >
                                 <User className="w-3 h-3 text-white/90" />
                                 <span className="truncate max-w-[150px]">
@@ -317,20 +359,32 @@ export function DayEventsModal() {
                               </div>
                               <button
                                 type="button"
-                                onClick={() => handleCopyAddress(ev.id, displayAddr)}
-                                title={isCopied ? t('calendar:eventsModal.copiedAddress') : t('calendar:eventsModal.copyAddress')}
-                                aria-label={t('calendar:eventsModal.copyAddressAria')}
+                                onClick={() =>
+                                  handleCopyAddress(ev.id, displayAddr)
+                                }
+                                title={
+                                  isCopied
+                                    ? t('calendar:eventsModal.copiedAddress')
+                                    : t('calendar:eventsModal.copyAddress')
+                                }
+                                aria-label={t(
+                                  'calendar:eventsModal.copyAddressAria',
+                                )}
                                 className="shrink-0 flex items-center gap-1 px-1.5 py-1 rounded text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 transition shadow-2xs"
                               >
                                 {isCopied ? (
                                   <>
                                     <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                                    <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">{t('calendar:eventsModal.copied')}</span>
+                                    <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">
+                                      {t('calendar:eventsModal.copied')}
+                                    </span>
                                   </>
                                 ) : (
                                   <>
                                     <Copy className="w-3.5 h-3.5" />
-                                    <span className="text-[10px]">{t('calendar:eventsModal.copy')}</span>
+                                    <span className="text-[10px]">
+                                      {t('calendar:eventsModal.copy')}
+                                    </span>
                                   </>
                                 )}
                               </button>
@@ -345,7 +399,9 @@ export function DayEventsModal() {
                           type="button"
                           onClick={() => handleStartEdit(ev)}
                           title={t('calendar:eventsModal.edit')}
-                          aria-label={t('calendar:eventsModal.editAria', { title: ev.title })}
+                          aria-label={t('calendar:eventsModal.editAria', {
+                            title: ev.title,
+                          })}
                           className={`p-1.5 rounded-lg transition ${
                             isBeingEdited
                               ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/60'
@@ -358,7 +414,9 @@ export function DayEventsModal() {
                           type="button"
                           onClick={() => handleDeleteEvent(ev.id)}
                           title={t('calendar:eventsModal.delete')}
-                          aria-label={t('calendar:eventsModal.deleteAria', { title: ev.title })}
+                          aria-label={t('calendar:eventsModal.deleteAria', {
+                            title: ev.title,
+                          })}
                           className="p-1.5 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -371,268 +429,292 @@ export function DayEventsModal() {
             )}
           </div>
 
-          {/* Form to add or edit event */}
-          <form
-            onSubmit={handleSubmit}
-            className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3.5"
-          >
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                {editingEventId ? (
-                  <>
-                    <Pencil className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span>{t('calendar:eventsModal.editEvent')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span>{t('calendar:eventsModal.addEvent')}</span>
-                  </>
-                )}
-              </h4>
+          {/* Form to add or edit event (shown only when isFormOpen is true) */}
+          {isFormOpen && (
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3.5 animate-fadeIn"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                  {editingEventId ? (
+                    <>
+                      <Pencil className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span>{t('calendar:eventsModal.editEvent')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span>{t('calendar:eventsModal.addEvent')}</span>
+                    </>
+                  )}
+                </h4>
 
-              {editingEventId && (
                 <button
                   type="button"
-                  onClick={handleCancelEdit}
+                  onClick={handleCancelForm}
                   className="text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1 hover:underline"
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span>{t('calendar:eventsModal.cancelEdit')}</span>
+                  <span>
+                    {editingEventId
+                      ? t('calendar:eventsModal.cancelEdit')
+                      : t('common:actions.cancel')}
+                  </span>
                 </button>
-              )}
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {error}
               </div>
-            )}
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                {t('calendar:eventsModal.eventTitle')}
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value)
-                  if (error) setError(null)
-                }}
-                placeholder={t('calendar:eventsModal.eventTitlePlaceholder')}
-                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-
-            {/* Caregiver Selection */}
-            <div>
-              <label
-                htmlFor="event-person"
-                className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                <span className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                  <span>{t('calendar:eventsModal.responsibleStaff')}</span>
-                </span>
-                {dayAssignedPersonId &&
-                  selectedPersonId === dayAssignedPersonId && (
-                    <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400">
-                      {t('calendar:eventsModal.defaultStaff')}
-                    </span>
-                  )}
-              </label>
-              <div className="flex items-center gap-2">
-                {currentSelectedPerson && (
-                  <span
-                    className="w-4 h-4 rounded-full shrink-0 border border-black/10 dark:border-white/20 shadow-2xs"
-                    style={{ backgroundColor: currentSelectedPerson.color }}
-                    title={t('calendar:eventsModal.caregiverColorTitle', { name: currentSelectedPerson.name })}
-                    data-testid="selected-caregiver-color-preview"
-                  />
-                )}
-                <select
-                  id="event-person"
-                  aria-label={t('calendar:eventsModal.responsibleStaff')}
-                  value={selectedPersonId}
-                  onChange={(e) => setSelectedPersonId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 dark:[color-scheme:dark]"
-                >
-                  <option value="">{t('calendar:eventsModal.noCaregiverOption')}</option>
-                  {caregiverOptions.map((person) => {
-                    const isDayAssigned = person.id === dayAssignedPersonId
-                    return (
-                      <option
-                        key={person.id}
-                        value={person.id}
-                      >
-                        {person.name}
-                        {isDayAssigned ? t('calendar:eventsModal.assignedOnDay') : ''}
-                      </option>
-                    )
-                  })}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="event-time"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                <Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                <span>{t('calendar:eventsModal.time')}</span>
-              </label>
-              <input
-                id="event-time"
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 dark:[color-scheme:dark]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="event-address-select"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300"
-              >
-                <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                <span>{t('calendar:eventsModal.addressLabel')}</span>
-              </label>
-
-              <select
-                id="event-address-select"
-                aria-label={t('calendar:eventsModal.selectAddress')}
-                value={addressSelection}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setAddressSelection(val)
-                  if (val !== '__new__') {
-                    setManualAddress('')
-                  }
-                }}
-                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 dark:[color-scheme:dark]"
-              >
-                <option value="">{t('calendar:eventsModal.noAddressOption')}</option>
-                {addresses.map((addr) => (
-                  <option
-                    key={addr.id}
-                    value={addr.id}
-                  >
-                    {addr.name} — {addr.street}, {addr.number}
-                  </option>
-                ))}
-                <option value="__new__">
-                  {t('calendar:eventsModal.newAddressOption')}
-                </option>
-              </select>
-
-              {/* Preview of selected registered address */}
-              {(() => {
-                if (!addressSelection || addressSelection === '__new__')
-                  return null
-                const addr = addresses.find((a) => a.id === addressSelection)
-                if (!addr) return null
-                const isCopied = copiedEventAddressId === 'form-preview'
-                return (
-                  <div
-                    data-testid="selected-address-preview"
-                    className="p-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line flex items-start justify-between gap-2 animate-fadeIn"
-                  >
-                    <div className="flex items-start gap-2 flex-1 min-w-0">
-                      <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                          {addr.name}
-                        </div>
-                        <div>
-                          {addr.street}, {addr.number}
-                          {addr.complement ? ` (${addr.complement})` : ''}
-                        </div>
-                        {(addr.neighborhood || addr.city) && (
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                            {[addr.neighborhood, addr.city]
-                              .filter(Boolean)
-                              .join(' - ')}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyAddress('form-preview', formatAddress(addr))}
-                      title={isCopied ? t('calendar:eventsModal.copiedAddress') : t('calendar:eventsModal.copyAddress')}
-                      aria-label={t('calendar:eventsModal.copySelectedAddress')}
-                      className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 transition border border-slate-200/60 dark:border-slate-700/60 bg-white/70 dark:bg-slate-800 shadow-2xs"
-                    >
-                      {isCopied ? (
-                        <>
-                          <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                          <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">{t('calendar:eventsModal.copied')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" />
-                          <span className="text-[10px]">{t('calendar:eventsModal.copy')}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )
-              })()}
-
-              {/* Multi-line textarea displayed ONLY when 'Novo endereço' is selected */}
-              {addressSelection === '__new__' && (
-                <div className="space-y-1 pt-1 animate-fadeIn">
-                  <label
-                    htmlFor="event-address-manual"
-                    className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400"
-                  >
-                    {t('calendar:eventsModal.manualAddress')}
-                  </label>
-                  <textarea
-                    id="event-address-manual"
-                    rows={3}
-                    value={manualAddress}
-                    onChange={(e) => setManualAddress(e.target.value)}
-                    placeholder={t('calendar:eventsModal.manualAddressPlaceholder')}
-                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-y"
-                  />
+              {error && (
+                <div className="flex items-center gap-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {error}
                 </div>
               )}
-            </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="submit"
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-xs transition"
-              >
-                {editingEventId ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>{t('calendar:eventsModal.saveEvent')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>{t('calendar:eventsModal.submitEvent')}</span>
-                  </>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  {t('calendar:eventsModal.eventTitle')}
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value)
+                    if (error) setError(null)
+                  }}
+                  placeholder={t('calendar:eventsModal.eventTitlePlaceholder')}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
+
+              {/* Caregiver Selection */}
+              <div>
+                <label
+                  htmlFor="event-person"
+                  className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                    <span>{t('calendar:eventsModal.responsibleStaff')}</span>
+                  </span>
+                  {dayAssignedPersonId &&
+                    selectedPersonId === dayAssignedPersonId && (
+                      <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400">
+                        {t('calendar:eventsModal.defaultStaff')}
+                      </span>
+                    )}
+                </label>
+                <div className="flex items-center gap-2">
+                  {currentSelectedPerson && (
+                    <span
+                      className="w-4 h-4 rounded-full shrink-0 border border-black/10 dark:border-white/20 shadow-2xs"
+                      style={{ backgroundColor: currentSelectedPerson.color }}
+                      title={t('calendar:eventsModal.caregiverColorTitle', {
+                        name: currentSelectedPerson.name,
+                      })}
+                      data-testid="selected-caregiver-color-preview"
+                    />
+                  )}
+                  <select
+                    id="event-person"
+                    aria-label={t('calendar:eventsModal.responsibleStaff')}
+                    value={selectedPersonId}
+                    onChange={(e) => setSelectedPersonId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 dark:[color-scheme:dark]"
+                  >
+                    <option value="">
+                      {t('calendar:eventsModal.noCaregiverOption')}
+                    </option>
+                    {caregiverOptions.map((person) => {
+                      const isDayAssigned = person.id === dayAssignedPersonId
+                      return (
+                        <option
+                          key={person.id}
+                          value={person.id}
+                        >
+                          {person.name}
+                          {isDayAssigned
+                            ? t('calendar:eventsModal.assignedOnDay')
+                            : ''}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="event-time"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  <Clock className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                  <span>{t('calendar:eventsModal.time')}</span>
+                </label>
+                <input
+                  id="event-time"
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 dark:[color-scheme:dark]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="event-address-select"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
+                  <span>{t('calendar:eventsModal.addressLabel')}</span>
+                </label>
+
+                <select
+                  id="event-address-select"
+                  aria-label={t('calendar:eventsModal.selectAddress')}
+                  value={addressSelection}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setAddressSelection(val)
+                    if (val !== '__new__') {
+                      setManualAddress('')
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 dark:[color-scheme:dark]"
+                >
+                  <option value="">
+                    {t('calendar:eventsModal.noAddressOption')}
+                  </option>
+                  {addresses.map((addr) => (
+                    <option
+                      key={addr.id}
+                      value={addr.id}
+                    >
+                      {addr.name} — {addr.street}, {addr.number}
+                    </option>
+                  ))}
+                  <option value="__new__">
+                    {t('calendar:eventsModal.newAddressOption')}
+                  </option>
+                </select>
+
+                {/* Preview of selected registered address */}
+                {(() => {
+                  if (!addressSelection || addressSelection === '__new__')
+                    return null
+                  const addr = addresses.find((a) => a.id === addressSelection)
+                  if (!addr) return null
+                  const isCopied = copiedEventAddressId === 'form-preview'
+                  return (
+                    <div
+                      data-testid="selected-address-preview"
+                      className="p-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 whitespace-pre-line flex items-start justify-between gap-2 animate-fadeIn"
+                    >
+                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                        <MapPin className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                            {addr.name}
+                          </div>
+                          <div>
+                            {addr.street}, {addr.number}
+                            {addr.complement ? ` (${addr.complement})` : ''}
+                          </div>
+                          {(addr.neighborhood || addr.city) && (
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                              {[addr.neighborhood, addr.city]
+                                .filter(Boolean)
+                                .join(' - ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleCopyAddress('form-preview', formatAddress(addr))
+                        }
+                        title={
+                          isCopied
+                            ? t('calendar:eventsModal.copiedAddress')
+                            : t('calendar:eventsModal.copyAddress')
+                        }
+                        aria-label={t(
+                          'calendar:eventsModal.copySelectedAddress',
+                        )}
+                        className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white dark:hover:bg-slate-700 transition border border-slate-200/60 dark:border-slate-700/60 bg-white/70 dark:bg-slate-800 shadow-2xs"
+                      >
+                        {isCopied ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                            <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">
+                              {t('calendar:eventsModal.copied')}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span className="text-[10px]">
+                              {t('calendar:eventsModal.copy')}
+                            </span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )
+                })()}
+
+                {/* Multi-line textarea displayed ONLY when 'Novo endereço' is selected */}
+                {addressSelection === '__new__' && (
+                  <div className="space-y-1 pt-1 animate-fadeIn">
+                    <label
+                      htmlFor="event-address-manual"
+                      className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400"
+                    >
+                      {t('calendar:eventsModal.manualAddress')}
+                    </label>
+                    <textarea
+                      id="event-address-manual"
+                      rows={3}
+                      value={manualAddress}
+                      onChange={(e) => setManualAddress(e.target.value)}
+                      placeholder={t(
+                        'calendar:eventsModal.manualAddressPlaceholder',
+                      )}
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-y"
+                    />
+                  </div>
                 )}
-              </button>
+              </div>
 
-              {editingEventId && (
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="submit"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-xs transition"
+                >
+                  {editingEventId ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>{t('calendar:eventsModal.saveEvent')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{t('calendar:eventsModal.submitEvent')}</span>
+                    </>
+                  )}
+                </button>
+
                 <button
                   type="button"
-                  onClick={handleCancelEdit}
+                  onClick={handleCancelForm}
                   className="px-3.5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition"
                 >
                   {t('common:actions.cancel')}
                 </button>
-              )}
-            </div>
-          </form>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* Footer */}

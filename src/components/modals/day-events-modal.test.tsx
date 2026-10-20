@@ -17,13 +17,38 @@ describe('DayEventsModal', () => {
     expect(screen.queryByText('Eventos do Dia')).not.toBeInTheDocument()
   })
 
-  it('deve exibir mensagem de nenhum evento cadastrado quando a lista estiver vazia', () => {
+  it('deve iniciar com formulário fechado e exibir mensagem de nenhum evento quando a lista estiver vazia', () => {
     useScheduleStore.setState({ selectedDateForEvents: '2026-10-15' })
     render(<DayEventsModal />)
 
     expect(screen.getByText('Eventos do Dia')).toBeInTheDocument()
     expect(screen.getByText(/Nenhum evento registrado para este dia/i)).toBeInTheDocument()
+    // Formulário não deve estar aberto inicialmente
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Ex: Auditoria ou Reunião Clínica')).not.toBeInTheDocument()
+
+    // Deve conter botões para abrir o formulário
+    const addButtons = screen.getAllByRole('button', { name: /Adicionar Evento/i })
+    expect(addButtons.length).toBeGreaterThan(0)
+  })
+
+  it('deve abrir o formulário ao clicar em Adicionar Evento e fechar ao cancelar', () => {
+    useScheduleStore.setState({ selectedDateForEvents: '2026-10-15' })
+    render(<DayEventsModal />)
+
+    // Clica para abrir o formulário
+    const addBtn = screen.getAllByRole('button', { name: /Adicionar Evento/i })[0]
+    fireEvent.click(addBtn)
+
     expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')).toBeInTheDocument()
+
+    // Clica em Cancelar
+    const cancelBtn = screen.getAllByRole('button', { name: /^Cancelar$/i })[0]
+    fireEvent.click(cancelBtn)
+
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Ex: Auditoria ou Reunião Clínica')).not.toBeInTheDocument()
   })
 
   it('deve listar eventos existentes do dia com botão de editar e excluir', () => {
@@ -47,9 +72,11 @@ describe('DayEventsModal', () => {
     expect(screen.getByText('Equipe de UTI')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Editar evento Plantão Noturno/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Excluir evento Plantão Noturno/i })).toBeInTheDocument()
+    // Formulário deve estar fechado por padrão
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
   })
 
-  it('deve permitir adicionar um novo evento com horário e endereço na hora via opção + Novo endereço', () => {
+  it('deve permitir adicionar um novo evento com horário e endereço na hora via opção + Novo endereço e fechar o formulário após salvar', () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [],
@@ -57,24 +84,28 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
+    // Abre o formulário
+    const addBtn = screen.getAllByRole('button', { name: /Adicionar Evento/i })[0]
+    fireEvent.click(addBtn)
+
     const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
     fireEvent.change(titleInput, { target: { value: 'Reunião Geral' } })
 
     const timeInput = screen.getByLabelText(/Horário \(Opcional\)/i)
     fireEvent.change(timeInput, { target: { value: '14:30' } })
 
-    // By default, manual address textarea is hidden
+    // Por padrão textarea de endereço manual não está visível
     expect(screen.queryByPlaceholderText(/Digite o endereço completo na hora/i)).not.toBeInTheDocument()
 
-    // Select + Novo endereço
+    // Seleciona + Novo endereço
     const addressSelect = screen.getByLabelText('Selecionar endereço do evento')
     fireEvent.change(addressSelect, { target: { value: '__new__' } })
 
-    // Textarea now appears
+    // Textarea aparece
     const addressInput = screen.getByPlaceholderText(/Digite o endereço completo na hora/i)
     fireEvent.change(addressInput, { target: { value: 'Rua das Flores, 123\nBloco B' } })
 
-    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    const submitBtn = screen.getByRole('button', { name: /^Adicionar Evento$/i })
     fireEvent.click(submitBtn)
 
     const storeEvents = useScheduleStore.getState().events
@@ -85,6 +116,9 @@ describe('DayEventsModal', () => {
       time: '14:30',
       address: 'Rua das Flores, 123\nBloco B',
     })
+
+    // Formulário deve ter fechado automaticamente após salvar
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
   })
 
   it('deve permitir selecionar um endereço pré-cadastrado no dropdown de eventos', () => {
@@ -105,28 +139,34 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
+    // Abre o formulário
+    fireEvent.click(screen.getAllByRole('button', { name: /Adicionar Evento/i })[0])
+
     const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
     fireEvent.change(titleInput, { target: { value: 'Visita Domiciliar' } })
 
     const addressSelect = screen.getByLabelText('Selecionar endereço do evento')
     fireEvent.change(addressSelect, { target: { value: 'addr-1' } })
 
-    // Preview should appear with address details
+    // Preview do endereço selecionado
     expect(screen.getByTestId('selected-address-preview')).toBeInTheDocument()
     expect(screen.getByText('Clínica Paulista')).toBeInTheDocument()
 
-    // Manual textarea should not be visible when registered address is selected
+    // Textarea manual não deve aparecer
     expect(screen.queryByPlaceholderText(/Digite o endereço completo na hora/i)).not.toBeInTheDocument()
 
-    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    const submitBtn = screen.getByRole('button', { name: /^Adicionar Evento$/i })
     fireEvent.click(submitBtn)
 
     const storeEvents = useScheduleStore.getState().events
     expect(storeEvents).toHaveLength(1)
     expect(storeEvents[0].address).toBe('Clínica Paulista\nAv Paulista, 1000\nBela Vista - São Paulo')
+
+    // Formulário fecha após salvar
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
   })
 
-  it('deve preencher o formulário ao clicar no botão de editar e atualizar o evento com sucesso', () => {
+  it('deve preencher o formulário ao clicar no botão de editar, atualizar o evento e fechar o formulário ao salvar', () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [
@@ -142,11 +182,14 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
-    // Click edit button for event
+    // Formulário está fechado inicialmente
+    expect(screen.queryByText('Editar Evento')).not.toBeInTheDocument()
+
+    // Clica no botão de editar evento existente
     const editBtn = screen.getByRole('button', { name: /Editar evento Plantão Manhã/i })
     fireEvent.click(editBtn)
 
-    // Form title should change to "Editar Evento"
+    // Formulário deve se abrir com título "Editar Evento"
     expect(screen.getByText('Editar Evento')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Salvar Alterações/i })).toBeInTheDocument()
     expect(screen.getByText('Cancelar Edição')).toBeInTheDocument()
@@ -160,7 +203,7 @@ describe('DayEventsModal', () => {
     const addressInput = screen.getByPlaceholderText(/Digite o endereço completo na hora/i)
     expect(addressInput).toHaveValue('Rua Antiga, 50')
 
-    // Modify title and time and address
+    // Modifica valores
     fireEvent.change(titleInput, { target: { value: 'Plantão Noturno Extra' } })
     fireEvent.change(timeInput, { target: { value: '22:00' } })
     fireEvent.change(addressInput, { target: { value: 'Rua Nova, 100\nApto 4' } })
@@ -173,11 +216,12 @@ describe('DayEventsModal', () => {
     expect(storeEvents[0].time).toBe('22:00')
     expect(storeEvents[0].address).toBe('Rua Nova, 100\nApto 4')
 
-    // Form should return to initial state for new event
-    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()
+    // Formulário fecha após salvar a edição
+    expect(screen.queryByText('Editar Evento')).not.toBeInTheDocument()
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
   })
 
-  it('deve permitir cancelar a edição voltando ao formulário de novo evento', () => {
+  it('deve permitir cancelar a edição fechando o formulário', () => {
     useScheduleStore.setState({
       selectedDateForEvents: '2026-10-15',
       events: [
@@ -200,9 +244,9 @@ describe('DayEventsModal', () => {
     const cancelBtn = screen.getByText('Cancelar Edição')
     fireEvent.click(cancelBtn)
 
-    expect(screen.getByText('Novo Evento para este Dia')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')).toHaveValue('')
-    expect(screen.getByLabelText(/Horário \(Opcional\)/i)).toHaveValue('')
+    // Fecha o formulário
+    expect(screen.queryByText('Editar Evento')).not.toBeInTheDocument()
+    expect(screen.queryByText('Novo Evento para este Dia')).not.toBeInTheDocument()
   })
 
   it('deve exibir erro caso tente salvar evento sem título', () => {
@@ -213,7 +257,10 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
-    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    // Abre formulário
+    fireEvent.click(screen.getAllByRole('button', { name: /Adicionar Evento/i })[0])
+
+    const submitBtn = screen.getByRole('button', { name: /^Adicionar Evento$/i })
     fireEvent.click(submitBtn)
 
     expect(screen.getByText('O título do evento é obrigatório.')).toBeInTheDocument()
@@ -274,6 +321,9 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
+    // Abre formulário
+    fireEvent.click(screen.getAllByRole('button', { name: /Adicionar Evento/i })[0])
+
     const caregiverSelect = screen.getByLabelText(/Cuidadora \/ Profissional Responsável/i) as HTMLSelectElement
     expect(caregiverSelect.value).toBe('p1')
 
@@ -296,13 +346,16 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
+    // Abre formulário
+    fireEvent.click(screen.getAllByRole('button', { name: /Adicionar Evento/i })[0])
+
     const titleInput = screen.getByPlaceholderText('Ex: Auditoria ou Reunião Clínica')
     fireEvent.change(titleInput, { target: { value: 'Curativo Especial' } })
 
     const caregiverSelect = screen.getByLabelText(/Cuidadora \/ Profissional Responsável/i)
     fireEvent.change(caregiverSelect, { target: { value: 'p2' } })
 
-    const submitBtn = screen.getByRole('button', { name: /Adicionar Evento/i })
+    const submitBtn = screen.getByRole('button', { name: /^Adicionar Evento$/i })
     fireEvent.click(submitBtn)
 
     const storeEvents = useScheduleStore.getState().events
@@ -394,6 +447,9 @@ describe('DayEventsModal', () => {
 
     render(<DayEventsModal />)
 
+    // Abre formulário
+    fireEvent.click(screen.getAllByRole('button', { name: /Adicionar Evento/i })[0])
+
     const addressSelect = screen.getByLabelText('Selecionar endereço do evento')
     fireEvent.change(addressSelect, { target: { value: 'addr-1' } })
 
@@ -406,4 +462,3 @@ describe('DayEventsModal', () => {
     expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
 })
-

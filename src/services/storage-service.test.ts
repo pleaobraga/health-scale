@@ -83,6 +83,8 @@ describe('StorageService - Persistência Local-First', () => {
 
     expect(StorageService.getPersons()).toEqual([])
     expect(StorageService.getAddresses()).toEqual([])
+    expect(StorageService.getShiftDefinitions()).toEqual([])
+    expect(StorageService.getShiftRules()).toEqual([])
     expect(StorageService.getGuestDataset('guest_999')).toBeNull()
   })
 
@@ -137,6 +139,41 @@ describe('StorageService - Persistência Local-First', () => {
 
     StorageService.setActiveGuestId(null)
     expect(StorageService.getActiveGuestId()).toBeNull()
+  })
+
+  it('deve gerenciar datasets isolados de usuários autenticados com snapshotActiveSession', () => {
+    // 1. Define active user
+    StorageService.setActiveUserId('user_admin_123')
+    expect(StorageService.getActiveUserId()).toBe('user_admin_123')
+
+    // 2. Save data for active user
+    StorageService.savePersons([{ id: 'p_admin', name: 'Dr. Admin', color: '#6366f1', active: true }])
+    StorageService.saveAssignments({ '2026-10-15': ['p_admin'] })
+
+    // 3. User dataset snapshot should be automatically populated via snapshotActiveSession
+    const userSnapshot = StorageService.getUserDataset('user_admin_123')
+    expect(userSnapshot).toBeDefined()
+    expect(userSnapshot?.persons).toHaveLength(1)
+    expect(userSnapshot?.persons[0].id).toBe('p_admin')
+    expect(userSnapshot?.assignments['2026-10-15']).toEqual(['p_admin'])
+
+    // 4. Simulate switching to guest (wipes active working keys)
+    StorageService.setActiveUserId(null)
+    StorageService.resetToDefault()
+    expect(StorageService.getPersons()).toEqual([])
+    expect(StorageService.getAssignments()).toEqual({})
+
+    // 5. Restore user dataset when user logs back in
+    const reloadedSnapshot = StorageService.getUserDataset('user_admin_123')
+    expect(reloadedSnapshot).not.toBeNull()
+    StorageService.restoreDataset(reloadedSnapshot!)
+    expect(StorageService.getPersons()).toHaveLength(1)
+    expect(StorageService.getPersons()[0].name).toBe('Dr. Admin')
+    expect(StorageService.getAssignments()['2026-10-15']).toEqual(['p_admin'])
+
+    // 6. Test deleteUserDataset
+    StorageService.deleteUserDataset('user_admin_123')
+    expect(StorageService.getUserDataset('user_admin_123')).toBeNull()
   })
 })
 

@@ -146,11 +146,11 @@
     "paramMaxPeople": "Max: {{count}} person(s) per shift"
   },
   "card": {
-    "workingDays": "{{count}} working day",
-    "workingDaysPlural": "{{count}} working days",
+    "workingDays": "{{count}} working",
+    "workingDaysPlural": "{{count}} working",
     "workingDaysTooltip": "Working on {{count}} {{dayLabel}} this month",
-    "availableDays": "{{count}} avail. day",
-    "availableDaysPlural": "{{count}} avail. days",
+    "availableDays": "{{count}} avail.",
+    "availableDaysPlural": "{{count}} avail.",
     "availableDaysTooltip": "Available on {{count}} {{dayLabel}} this month",
     "dayLabel": "day",
     "dayLabelPlural": "days",
@@ -159,6 +159,7 @@
     "insertAria": "Insert all days of {{name}} into calendar",
     "hideHighlightTooltip": "Hide highlight on calendar",
     "showHighlightTooltip": "Highlight availability on calendar",
+    "noAvailabilityTooltip": "This person has no availability registered for this month",
     "editAvailabilityTooltip": "Configure month availability / Edit name, color or availability",
     "editAvailabilityAria": "Configure availability of {{name}}",
     "removeFromMonthTooltip": "Remove {{name}} from this month",
@@ -261,7 +262,8 @@
     "rateGroupDays": "{{count}} day(s): {{days}}",
     "rateGroupTotal": "Subtotal: {{total}}",
     "removeRateTooltip": "Remove rate for this group",
-    "currencySymbol": "R$"
+    "currencySymbol": "R$",
+    "calendarRemovalWarning": "Warning: If this availability is already linked to the calendar, it will be removed from the schedule upon saving changes."
   },
   "personModal": {
     "editTitle": "Edit Person",

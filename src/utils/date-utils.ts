@@ -27,10 +27,18 @@ export interface CalendarDayInfo {
 }
 
 /**
+ * Returns current month in 'YYYY-MM' format based on current date
+ */
+export function getCurrentMonth(date: Date = new Date()): string {
+  return format(date, 'yyyy-MM')
+}
+
+/**
  * Returns month formatted in Portuguese or English (e.g., "Outubro de 2026" or "October 2026")
  */
-export function formatMonthYear(yearMonth: string, lang = 'pt-BR'): string {
-  const date = parseISO(`${yearMonth}-01`)
+export function formatMonthYear(yearMonth?: string, lang = 'pt-BR'): string {
+  const ym = yearMonth && yearMonth.trim() ? yearMonth : getCurrentMonth()
+  const date = parseISO(`${ym}-01`)
   const isEn = typeof lang === 'string' && (lang === 'en-US' || lang.startsWith('en'))
   const pattern = isEn ? 'MMMM yyyy' : "MMMM 'de' yyyy"
   const locale = isEn ? enUS : ptBR
@@ -73,8 +81,9 @@ export function getMonthDaysArray(yearMonth: string): number[] {
 /**
  * Generates a full calendar grid starting on Sunday and ending on Saturday
  */
-export function getMonthCalendarGrid(yearMonth: string): CalendarDayInfo[] {
-  const baseDate = parseISO(`${yearMonth}-01`)
+export function getMonthCalendarGrid(yearMonth?: string): CalendarDayInfo[] {
+  const ym = yearMonth && yearMonth.trim() ? yearMonth : getCurrentMonth()
+  const baseDate = parseISO(`${ym}-01`)
   const monthStart = startOfMonth(baseDate)
   const monthEnd = endOfMonth(baseDate)
 

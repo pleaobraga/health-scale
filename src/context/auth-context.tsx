@@ -12,8 +12,10 @@ import {
   useAuth,
 } from './auth-context-base'
 import { auth, db } from '../services/firebase'
+import { isGuestDataEmpty, loadGuestSeedData } from '../services/seed/guestSeedLoader'
 import { StorageService } from '../services/storage-service'
 import { useScheduleStore } from '../store/use-schedule-store'
+import { getCurrentMonth } from '../utils/date-utils'
 
 import type {
   AuthContextType,
@@ -32,6 +34,45 @@ const createGuestUser = (profile: GuestProfile): User => {
     email: null,
     isAnonymous: true,
   } as unknown as User
+}
+
+async function restoreUserDataOrCloud(
+  uid: string,
+  isAdmin = false,
+): Promise<void> {
+  StorageService.setActiveUserId(uid)
+  const userDataset = StorageService.getUserDataset(uid)
+  const hasLocalData =
+    Boolean(userDataset) &&
+    ((userDataset!.persons && userDataset!.persons.length > 0) ||
+      (userDataset!.assignments &&
+        Object.keys(userDataset!.assignments).length > 0) ||
+      (userDataset!.addresses && userDataset!.addresses.length > 0))
+
+  if (hasLocalData && userDataset) {
+    StorageService.restoreDataset(userDataset)
+    useScheduleStore.getState().reloadFromStorage()
+  } else {
+    // If local dataset is missing or empty, attempt pulling data from Firestore cloud
+    try {
+      const currentMonth = getCurrentMonth()
+      const cloudResult = await useScheduleStore
+        .getState()
+        .pullCloudData(currentMonth, isAdmin)
+      if (cloudResult.success) {
+        StorageService.snapshotActiveUser(uid)
+      } else if (userDataset) {
+        StorageService.restoreDataset(userDataset)
+        useScheduleStore.getState().reloadFromStorage()
+      }
+    } catch (err) {
+      console.warn('Could not pull cloud data for authenticated user:', err)
+      if (userDataset) {
+        StorageService.restoreDataset(userDataset)
+        useScheduleStore.getState().reloadFromStorage()
+      }
+    }
+  }
 }
 
 export interface AuthProviderProps {
@@ -76,6 +117,12 @@ export function AuthProvider({
         setRole('user')
         setIsGuest(true)
         setLoading(false)
+
+        if (isGuestDataEmpty()) {
+          loadGuestSeedData().catch((err) => {
+            console.warn('Could not load guest seed data on boot:', err)
+          })
+        }
         return
       }
     }
@@ -93,24 +140,39 @@ export function AuthProvider({
         }
 
         if (StorageService.getActiveGuestId()) {
+          StorageService.snapshotActiveGuest()
           StorageService.setActiveGuestId(null)
         }
         setIsGuest(false)
         setUser(currentUser)
 
+        // Snapshot previous authenticated user if switching accounts
+        const previousActiveUserId = StorageService.getActiveUserId()
+        if (previousActiveUserId && previousActiveUserId !== currentUser.uid) {
+          StorageService.saveUserDataset(
+            previousActiveUserId,
+            StorageService.getCurrentDataset(),
+          )
+        }
+
         // Retrieve user role dynamically from Firestore 'users' collection
+        let userIsAdmin = false
         try {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid))
 
           if (userDoc.exists()) {
-            setRole(userDoc.data()?.role === 'admin' ? 'admin' : 'user')
+            userIsAdmin = userDoc.data()?.role === 'admin'
+            setRole(userIsAdmin ? 'admin' : 'user')
           } else {
             // Se o documento ainda não existir, cria o registro inicial com role 'user'
             try {
               await setDoc(doc(db, 'users', currentUser.uid), {
                 email: currentUser.email,
                 role: 'user',
-                displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'Usuário',
+                displayName:
+                  currentUser.displayName ||
+                  currentUser.email?.split('@')[0] ||
+                  'Usuário',
                 createdAt: new Date().toISOString(),
               })
             } catch {
@@ -122,6 +184,12 @@ export function AuthProvider({
           console.error('Failed to load user document from Firestore:', err)
           setRole('user')
         }
+
+        // Restore authenticated user's isolated local data if it exists, or fetch from cloud
+        await restoreUserDataOrCloud(currentUser.uid, userIsAdmin)
+
+        // Always guarantee calendar opens in the current month of today
+        useScheduleStore.setState({ currentMonth: getCurrentMonth() })
       } finally {
         setLoading(false)
       }
@@ -136,19 +204,55 @@ export function AuthProvider({
       StorageService.setActiveGuestId(null)
       StorageService.resetToDefault()
       useScheduleStore.getState().reloadFromStorage()
+    } else {
+      const currentActiveUid =
+        StorageService.getActiveUserId() || user?.uid || auth.currentUser?.uid
+      if (currentActiveUid) {
+        StorageService.saveUserDataset(
+          currentActiveUid,
+          StorageService.getCurrentDataset(),
+        )
+      }
+      StorageService.setActiveUserId(null)
+      StorageService.resetToDefault()
+      useScheduleStore.getState().reloadFromStorage()
     }
     StorageService.clearCheckedOnboarding()
     setIsGuest(false)
-    await signInWithEmailAndPassword(auth, email, password)
+    useScheduleStore.setState({ currentMonth: getCurrentMonth() })
+
+    const credential = await signInWithEmailAndPassword(auth, email, password)
+    const authenticatedUser = credential.user
+
+    let userIsAdmin = false
+    try {
+      const userDoc = await getDoc(doc(db, 'users', authenticatedUser.uid))
+      if (userDoc.exists()) {
+        userIsAdmin = userDoc.data()?.role === 'admin'
+      }
+    } catch {
+      // offline fallback
+    }
+
+    await restoreUserDataOrCloud(authenticatedUser.uid, userIsAdmin)
+    setUser(authenticatedUser)
+    setRole(userIsAdmin ? 'admin' : 'user')
   }
 
   const loginAsGuest = async (
     name: string,
-    existingId?: string
+    existingId?: string,
   ): Promise<void> => {
     StorageService.clearCheckedOnboarding()
     if (StorageService.getActiveGuestId()) {
       StorageService.snapshotActiveGuest()
+    } else {
+      const uid =
+        StorageService.getActiveUserId() || user?.uid || auth.currentUser?.uid
+      if (uid) {
+        StorageService.saveUserDataset(uid, StorageService.getCurrentDataset())
+      }
+      StorageService.setActiveUserId(null)
     }
 
     const profiles = StorageService.getGuestProfiles()
@@ -178,6 +282,15 @@ export function AuthProvider({
       }
       useScheduleStore.getState().reloadFromStorage()
 
+      if (isGuestDataEmpty()) {
+        try {
+          await loadGuestSeedData()
+        } catch (err) {
+          console.warn('Could not load guest seed data for existing guest:', err)
+        }
+      }
+
+      useScheduleStore.setState({ currentMonth: getCurrentMonth() })
       setGuestProfiles(updatedProfiles)
       setUser(createGuestUser(updatedProfile))
       setRole('user')
@@ -203,15 +316,22 @@ export function AuthProvider({
     StorageService.saveGuestProfiles(updatedProfiles)
     StorageService.setActiveGuestId(newId)
     StorageService.resetToDefault()
-    StorageService.saveGuestDataset(newId, {
-      persons: [],
-      availabilities: [],
-      assignments: {},
-      events: [],
-      monthParticipants: {},
-    })
-    useScheduleStore.getState().reloadFromStorage()
 
+    try {
+      await loadGuestSeedData()
+    } catch (err) {
+      console.warn('Could not load guest seed data for new guest:', err)
+      StorageService.saveGuestDataset(newId, {
+        persons: [],
+        availabilities: [],
+        assignments: {},
+        events: [],
+        monthParticipants: {},
+      })
+      useScheduleStore.getState().reloadFromStorage()
+    }
+
+    useScheduleStore.setState({ currentMonth: getCurrentMonth() })
     setGuestProfiles(updatedProfiles)
     setUser(createGuestUser(newProfile))
     setRole('user')
@@ -226,12 +346,25 @@ export function AuthProvider({
       StorageService.setActiveGuestId(null)
       StorageService.resetToDefault()
       useScheduleStore.getState().reloadFromStorage()
+      useScheduleStore.setState({ currentMonth: getCurrentMonth() })
       setUser(null)
       setRole(null)
       setIsGuest(false)
       setGuestProfiles(StorageService.getGuestProfiles())
       return
     }
+
+    // Authenticated user logout: snapshot and isolate their data locally
+    const uid =
+      StorageService.getActiveUserId() || user?.uid || auth.currentUser?.uid
+    if (uid) {
+      StorageService.saveUserDataset(uid, StorageService.getCurrentDataset())
+    }
+    StorageService.setActiveUserId(null)
+    StorageService.resetToDefault()
+    useScheduleStore.getState().reloadFromStorage()
+    useScheduleStore.setState({ currentMonth: getCurrentMonth() })
+
     await signOut(auth)
     setUser(null)
     setRole(null)
@@ -249,6 +382,7 @@ export function AuthProvider({
       StorageService.setActiveGuestId(null)
       StorageService.resetToDefault()
       useScheduleStore.getState().reloadFromStorage()
+      useScheduleStore.setState({ currentMonth: getCurrentMonth() })
       setUser(null)
       setRole(null)
       setIsGuest(false)

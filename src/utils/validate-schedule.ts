@@ -7,6 +7,7 @@ import {
   getWeekEndKey,
   formatDisplayDate,
 } from './date-utils'
+import { i18n } from '../i18n'
 import {
   validateSchedule as ruleEngineValidate,
   DEFAULT_SHIFTS,
@@ -59,7 +60,8 @@ export function validateSchedule({
   const personMap = new Map<string, Person>(persons.map((p) => [p.id, p]))
 
   // Helper to get person name
-  const getPersonName = (id: string) => personMap.get(id)?.name || 'Pessoa desconhecida'
+  const getPersonName = (id: string) =>
+    personMap.get(id)?.name || i18n.t('calendar:validation.messages.unknownPerson')
 
   // Days in current month
   const currentMonthDays = getMonthDaysArray(currentMonth)
@@ -95,7 +97,9 @@ export function validateSchedule({
           rule: 'empty_day',
           severity: 'warning',
           date: dateStr,
-          message: `Dia sem responsável: o dia ${formatDisplayDate(dateStr)} está sem nenhuma pessoa escalada.`,
+          message: i18n.t('calendar:validation.messages.emptyDay', {
+            date: formatDisplayDate(dateStr),
+          }),
         })
       }
       continue
@@ -136,7 +140,11 @@ export function validateSchedule({
         rule: 'multi_assigned',
         severity: 'error',
         date: dateStr,
-        message: `Conflito de alocação: o dia ${formatDisplayDate(dateStr)} possui ${assignedIds.length} pessoas atribuídas (${names}). Apenas uma pessoa deve ser designada por turno.`,
+        message: i18n.t('calendar:validation.messages.multiAssigned', {
+          date: formatDisplayDate(dateStr),
+          count: assignedIds.length,
+          names,
+        }),
       })
     }
 
@@ -170,7 +178,12 @@ export function validateSchedule({
       if (!isAvailable) {
         const shiftDef =
           assignedShiftId && allShifts ? allShifts.find((s) => s.id === assignedShiftId) : undefined
-        const shiftContext = shiftDef ? ` no plantão ${shiftDef.name} (${shiftDef.code})` : ''
+        const shiftContext = shiftDef
+          ? i18n.t('calendar:validation.messages.notAvailableShiftContext', {
+              shiftName: shiftDef.name,
+              shiftCode: shiftDef.code,
+            })
+          : ''
         errors.push({
           id: `unavail_${dateStr}_${personId}`,
           rule: 'not_available',
@@ -178,7 +191,11 @@ export function validateSchedule({
           date: dateStr,
           personId,
           personName: pName,
-          message: `Indisponibilidade: ${pName} foi escalado(a)${shiftContext} no dia ${formatDisplayDate(dateStr)}, mas não informou disponibilidade para esta data.`,
+          message: i18n.t('calendar:validation.messages.notAvailable', {
+            name: pName,
+            shiftContext,
+            date: formatDisplayDate(dateStr),
+          }),
         })
       }
     }
@@ -221,7 +238,11 @@ export function validateSchedule({
               date: dateStr,
               personId,
               personName: pName,
-              message: `Descanso violado: ${pName} foi escalado(a) em dias seguidos (${formatDisplayDate(dateStr)} e ${formatDisplayDate(nextDateStr)}). É obrigatório pelo menos 1 dia de descanso.`,
+              message: i18n.t('calendar:validation.messages.consecutiveDays', {
+                name: pName,
+                date: formatDisplayDate(dateStr),
+                nextDate: formatDisplayDate(nextDateStr),
+              }),
             })
           }
         }
@@ -259,7 +280,13 @@ export function validateSchedule({
               date: dateStr,
               personId,
               personName: pName,
-              message: `Limite semanal excedido: ${pName} foi escalado(a) ${workedDatesInWeek.length} vezes na semana de ${formatDisplayDate(weekStart)} a ${formatDisplayDate(weekEnd)} (${formattedDatesList}). O limite máximo é de 2 escalas por semana.`,
+              message: i18n.t('calendar:validation.messages.weeklyLimit', {
+                name: pName,
+                count: workedDatesInWeek.length,
+                weekStart: formatDisplayDate(weekStart),
+                weekEnd: formatDisplayDate(weekEnd),
+                datesList: formattedDatesList,
+              }),
             })
           }
         }

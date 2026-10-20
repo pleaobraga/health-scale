@@ -4,6 +4,7 @@ import {
   exportAppData,
   validateAndParseBackup,
   restoreAppData,
+  mergeAppData,
   hasExistingLocalData,
   getBackupFilename,
 } from './backup-service'
@@ -289,6 +290,96 @@ describe('BackupService', () => {
       expect(storeState.shiftDefinitions).toHaveLength(1)
       expect(storeState.shiftRules).toHaveLength(1)
       expect(storeState.dayShiftAssignments['2026-10-01']).toEqual({ s1: 'p1' })
+    })
+  })
+
+  describe('mergeAppData', () => {
+    it('deve atualizar dados conflitantes com o arquivo novo e preservar dados locais sem conflito', async () => {
+      // Estado inicial salvo localmente
+      StorageService.savePersons([
+        { id: 'p1', name: 'Dr. Lucas Antigo', color: '#10b981' },
+        { id: 'p_local_only', name: 'Dra. Helena Local', color: '#f59e0b' },
+      ])
+      StorageService.saveMonthParticipants({
+        '2026-09': ['p_local_only'],
+        '2026-10': ['p1', 'p_local_only'],
+      })
+      StorageService.saveAssignments({
+        '2026-10-01': ['p1'],
+        '2026-10-02': ['p_local_only'],
+      })
+      StorageService.saveDayShiftAssignments({
+        '2026-10-01': { shift_d12: 'p1', shift_n12: 'p_local_only' },
+        '2026-10-02': { shift_d12: 'p_local_only' },
+      })
+      StorageService.saveEvents([
+        { id: 'ev1', date: '2026-10-01', title: 'Evento Antigo' },
+        { id: 'ev_local', date: '2026-10-02', title: 'Evento Local Mantido' },
+      ])
+      StorageService.saveAddresses([
+        { id: 'addr1', name: 'Clínica Antiga', street: 'Rua A', number: '10', neighborhood: 'Centro', city: 'SP' },
+        { id: 'addr_local', name: 'Hospital Local', street: 'Rua B', number: '20', neighborhood: 'Sul', city: 'SP' },
+      ])
+
+      // Snapshot de entrada que atualiza p1, 2026-10-01, ev1, addr1 e adiciona p_new
+      const incomingSnapshot: AppDataSnapshot = {
+        exportedAt: '2026-10-21T12:00:00.000Z',
+        people: [
+          { id: 'p1', name: 'Dr. Lucas Atualizado', color: '#3b82f6' },
+          { id: 'p_new', name: 'Enf. Novo', color: '#8b5cf6' },
+        ],
+        monthParticipants: {
+          '2026-10': ['p1', 'p_new'],
+        },
+        availabilities: [
+          { personId: 'p1', month: '2026-10', availableDays: [1, 5, 10] },
+        ],
+        assignments: {
+          '2026-10-01': ['p_new'],
+        },
+        dayShiftAssignments: {
+          '2026-10-01': { shift_d12: 'p_new' },
+        },
+        events: [
+          { id: 'ev1', date: '2026-10-01', title: 'Evento Atualizado' },
+        ],
+        addresses: [
+          { id: 'addr1', name: 'Clínica Atualizada', street: 'Rua Nova', number: '100', neighborhood: 'Centro', city: 'SP' },
+        ],
+      }
+
+      await mergeAppData(incomingSnapshot)
+
+      const persons = StorageService.getPersons()
+      expect(persons).toHaveLength(3)
+      expect(persons.find((p) => p.id === 'p1')?.name).toBe('Dr. Lucas Atualizado')
+      expect(persons.find((p) => p.id === 'p_local_only')?.name).toBe('Dra. Helena Local')
+      expect(persons.find((p) => p.id === 'p_new')?.name).toBe('Enf. Novo')
+
+      const participants = StorageService.getMonthParticipants()
+      expect(participants['2026-09']).toEqual(['p_local_only'])
+      expect(participants['2026-10']).toEqual(['p1', 'p_local_only', 'p_new'])
+
+      const assignments = StorageService.getAssignments()
+      expect(assignments['2026-10-01']).toEqual(['p_new']) // Atualizado
+      expect(assignments['2026-10-02']).toEqual(['p_local_only']) // Sem conflito mantido
+
+      const dayShiftAssignments = StorageService.getDayShiftAssignments()
+      expect(dayShiftAssignments['2026-10-01']).toEqual({
+        shift_d12: 'p_new',
+        shift_n12: 'p_local_only',
+      })
+      expect(dayShiftAssignments['2026-10-02']).toEqual({ shift_d12: 'p_local_only' })
+
+      const events = StorageService.getEvents()
+      expect(events).toHaveLength(2)
+      expect(events.find((e) => e.id === 'ev1')?.title).toBe('Evento Atualizado')
+      expect(events.find((e) => e.id === 'ev_local')?.title).toBe('Evento Local Mantido')
+
+      const addresses = StorageService.getAddresses()
+      expect(addresses).toHaveLength(2)
+      expect(addresses.find((a) => a.id === 'addr1')?.name).toBe('Clínica Atualizada')
+      expect(addresses.find((a) => a.id === 'addr_local')?.name).toBe('Hospital Local')
     })
   })
 })

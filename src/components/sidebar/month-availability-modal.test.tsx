@@ -164,5 +164,47 @@ describe('MonthAvailabilityModal Component', () => {
     expect(shiftRates.shift_p24[2]).toBe(350)
     expect(shiftRates.shift_p24[4]).toBe(350)
   })
+
+  it('deve exibir aviso de remoção do calendário apenas quando remover uma disponibilidade salva anteriormente e ocultar ao readicioná-la', () => {
+    render(
+      <MonthAvailabilityModal
+        isOpen={true}
+        onClose={vi.fn()}
+        person={mockPerson}
+        currentMonth="2026-10"
+        initialAvailableDays={[10, 15]}
+        activeShifts={[]}
+        onSave={vi.fn()}
+      />
+    )
+
+    // Sem modificação inicial, o aviso não deve aparecer
+    expect(
+      screen.queryByTestId('availability-calendar-removal-warning')
+    ).not.toBeInTheDocument()
+
+    // Ao ADICIONAR um novo dia (20), o aviso NÃO deve ser exibido
+    const day20Btn = screen.getByRole('button', { name: /^20$/ })
+    fireEvent.click(day20Btn)
+    expect(
+      screen.queryByTestId('availability-calendar-removal-warning')
+    ).not.toBeInTheDocument()
+
+    // Ao REMOVER um dia salvo anteriormente (10), o aviso deve ser exibido
+    const day10Btn = screen.getByRole('button', { name: /^10$/ })
+    fireEvent.click(day10Btn)
+
+    const warningBanner = screen.getByTestId('availability-calendar-removal-warning')
+    expect(warningBanner).toBeInTheDocument()
+    expect(warningBanner).toHaveTextContent(
+      /se a disponibilidade já estiver vinculada ao calendário, ela será removida/i
+    )
+
+    // Ao readicionar o dia 10 que havia sido removido, o aviso desaparece (mesmo com o dia 20 adicionado)
+    fireEvent.click(day10Btn)
+    expect(
+      screen.queryByTestId('availability-calendar-removal-warning')
+    ).not.toBeInTheDocument()
+  })
 })
 

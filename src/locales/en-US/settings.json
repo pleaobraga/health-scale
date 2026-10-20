@@ -38,7 +38,11 @@
     "assignedDays": "Days with Shifts",
     "assignedDaysDesc": "Days with saved allocations",
     "events": "Month Events",
-    "eventsDesc": "Announcements and duties registered"
+    "eventsDesc": "Announcements and duties registered",
+    "shifts": "Work Shifts",
+    "shiftsDesc": "Registered shift types",
+    "addresses": "Addresses",
+    "addressesDesc": "Registered locations and clinics"
   },
   "backupSection": {
     "title": "Backup & Data Safety",

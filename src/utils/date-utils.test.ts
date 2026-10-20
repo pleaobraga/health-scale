@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import {
+  getCurrentMonth,
   formatMonthYear,
   getPreviousMonth,
   getNextMonth,
@@ -112,6 +113,14 @@ describe('dateUtils - Utilitários de manipulação de data', () => {
     expect(isEventInPast('2026-10-15', '15:00', mockNow)).toBe(false)
     // Same date, no time specified defaults to false (not in past)
     expect(isEventInPast('2026-10-15', undefined, mockNow)).toBe(false)
+  })
+
+  it('deve retornar o mês atual no formato YYYY-MM com getCurrentMonth', () => {
+    const customDate = new Date('2026-10-20T12:00:00')
+    expect(getCurrentMonth(customDate)).toBe('2026-10')
+
+    const janDate = new Date('2027-01-05T08:00:00')
+    expect(getCurrentMonth(janDate)).toBe('2027-01')
   })
 })
 

@@ -76,13 +76,77 @@
     color: #0f172a !important;
   }
 
-  html.dark #fullscreen-calendar-modal-container {
+  html.dark #fullscreen-calendar-modal-container,
+  #fullscreen-calendar-modal-container {
     background: transparent !important;
   }
 
-  html.dark #fullscreen-calendar-modal-container > div {
+  html.dark #fullscreen-calendar-modal-container > div,
+  #fullscreen-calendar-modal-container > div {
     background-color: #ffffff !important;
     color: #0f172a !important;
+  }
+
+  /* Force light borders across calendar during print */
+  html.dark #fullscreen-calendar-modal-container,
+  html.dark #fullscreen-calendar-modal-container div,
+  html.dark #fullscreen-calendar-modal-container span,
+  html.dark #fullscreen-calendar-modal-container p {
+    border-color: #cbd5e1 !important;
+  }
+
+  /* Calendar background & header container */
+  html.dark #fullscreen-calendar-modal-container [class*="bg-slate-50"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-slate-950"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-slate-900"] {
+    background-color: #ffffff !important;
+  }
+
+  /* Weekday header background */
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-slate-800"] {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+
+  /* Weekend headers */
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-slate-700"] {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+  }
+
+  /* Day cells inside current month */
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-slate-900"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-indigo-950"] {
+    background-color: #ffffff !important;
+  }
+
+  /* Days outside current month */
+  html.dark #fullscreen-calendar-modal-container [class*="dark:bg-slate-950/50"],
+  html.dark #fullscreen-calendar-modal-container [class*="print:bg-slate-100"] {
+    background-color: #f8fafc !important;
+  }
+
+  /* Calendar text, headers, and dates */
+  html.dark #fullscreen-calendar-modal-container h2,
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-white"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-slate-200"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-slate-100"] {
+    color: #0f172a !important;
+  }
+
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-slate-300"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-slate-400"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-slate-500"],
+  html.dark #fullscreen-calendar-modal-container [class*="dark:text-slate-600"] {
+    color: #64748b !important;
+  }
+
+  /* Person chip text and color preservation */
+  #fullscreen-calendar-modal-container .print-person-chip,
+  html.dark #fullscreen-calendar-modal-container .print-person-chip {
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Print Events Section (table, title, borders, backgrounds) in Dark Theme */

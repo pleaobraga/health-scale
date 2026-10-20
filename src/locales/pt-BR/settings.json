@@ -38,7 +38,11 @@
     "assignedDays": "Dias com Escala",
     "assignedDaysDesc": "Dias com alocações salvas",
     "events": "Eventos do Mês",
-    "eventsDesc": "Avisos e plantões registrados"
+    "eventsDesc": "Avisos e plantões registrados",
+    "shifts": "Turnos de Trabalho",
+    "shiftsDesc": "Tipos de plantão cadastrados",
+    "addresses": "Endereços",
+    "addressesDesc": "Locais e clínicas cadastrados"
   },
   "backupSection": {
     "title": "Backup e Segurança de Dados",

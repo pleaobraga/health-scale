@@ -139,6 +139,37 @@ export function MonthAvailabilityModal({
     return currentShiftDays.filter((d) => currentRates[d] === undefined || currentRates[d] <= 0)
   }, [currentShiftDays, currentRates])
 
+  const baselineShiftAvailability = useMemo(() => {
+    const safeShiftAvail: Record<string, number[]> = { ...(initialShiftAvailability || {}) }
+    if (
+      Object.keys(safeShiftAvail).length === 0 &&
+      initialAvailableDays &&
+      initialAvailableDays.length > 0 &&
+      activeShifts.length > 0
+    ) {
+      activeShifts.forEach((s) => {
+        safeShiftAvail[s.id] = [...initialAvailableDays]
+      })
+    }
+    return safeShiftAvail
+  }, [initialShiftAvailability, initialAvailableDays, activeShifts])
+
+  const hasAvailabilityChanged = useMemo(() => {
+    if (hasMultipleShifts) {
+      return Object.entries(baselineShiftAvailability).some(([sId, initialDays]) => {
+        const currentDays = shiftAvailability[sId] || []
+        return (initialDays || []).some((day) => !currentDays.includes(day))
+      })
+    }
+    return (initialAvailableDays || []).some((day) => !availableDays.includes(day))
+  }, [
+    hasMultipleShifts,
+    baselineShiftAvailability,
+    shiftAvailability,
+    initialAvailableDays,
+    availableDays,
+  ])
+
   if (!isOpen || !person || typeof document === 'undefined') return null
 
   // Union of all days across all shifts
@@ -294,6 +325,18 @@ export function MonthAvailabilityModal({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Fixed Warning when availability is modified */}
+        {hasAvailabilityChanged && (
+          <div
+            role="alert"
+            data-testid="availability-calendar-removal-warning"
+            className="flex items-center gap-2.5 px-6 py-3 bg-amber-50 dark:bg-amber-950/60 border-b border-amber-200/80 dark:border-amber-900/60 text-xs font-medium text-amber-900 dark:text-amber-200 shrink-0 animate-fadeIn"
+          >
+            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>{t('people:monthAvailability.calendarRemovalWarning')}</span>
+          </div>
+        )}
 
         {/* Body */}
         <div className="p-6 overflow-y-auto space-y-5 custom-scrollbar">

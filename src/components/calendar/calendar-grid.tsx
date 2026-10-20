@@ -18,15 +18,17 @@ import {
   Trash2,
   Wand2,
 } from 'lucide-react'
-import { use, useEffect, useRef, useState } from 'react'
+import { use, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
 import { CalendarHeader } from './calendar-header'
 import { DayCell } from './day-cell'
 import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
-import { formatMonthYear, getMonthCalendarGrid } from '../../utils/date-utils'
+import { formatMonthYear, getMonthCalendarGrid, getCurrentMonth } from '../../utils/date-utils'
 import { exportScheduleToExcel } from '../../utils/export-to-excel'
+import { computePopoverPosition } from '../../utils/popover-position'
 import { MonthPaymentsModal } from '../modals/month-payments-modal'
 import { ScheduleAuditModal } from '../modals/schedule-audit-modal'
 
@@ -38,9 +40,15 @@ export function CalendarGrid() {
   const [isPullingCloud, setIsPullingCloud] = useState(false)
   const [pullSuccess, setPullSuccess] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
+  const [actionsMenuPosition, setActionsMenuPosition] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  })
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
   const [isPaymentsModalOpen, setIsPaymentsModalOpen] = useState(false)
   const actionsMenuRef = useRef<HTMLDivElement>(null)
+  const actionsTriggerRef = useRef<HTMLButtonElement>(null)
+  const actionsPortalRef = useRef<HTMLDivElement>(null)
 
   const {
     currentMonth,
@@ -77,6 +85,9 @@ export function CalendarGrid() {
   } = useScheduleStore()
 
   useEffect(() => {
+    if (!currentMonth) {
+      useScheduleStore.setState({ currentMonth: getCurrentMonth() })
+    }
     validateCurrentSchedule()
   }, [currentMonth, assignments, dayShiftAssignments, validateCurrentSchedule])
 
@@ -102,11 +113,44 @@ export function CalendarGrid() {
     }, 200)
   }
 
+  const updateActionsMenuPosition = useCallback(() => {
+    if (!actionsTriggerRef.current) return
+    const rect = actionsTriggerRef.current.getBoundingClientRect()
+    const menuWidth = actionsPortalRef.current?.offsetWidth || 224
+    const menuHeight = actionsPortalRef.current?.offsetHeight || 200
+
+    setActionsMenuPosition(
+      computePopoverPosition({
+        triggerRect: rect,
+        menuWidth,
+        menuHeight,
+        align: 'right',
+        preferPlacement: 'bottom',
+        offset: 8,
+      })
+    )
+  }, [])
+
+  useLayoutEffect(() => {
+    if (isActionsOpen) {
+      updateActionsMenuPosition()
+    }
+  }, [isActionsOpen, updateActionsMenuPosition])
+
   useEffect(() => {
+    if (!isActionsOpen) return
+
+    updateActionsMenuPosition()
+
+    const handleScrollOrResize = () => {
+      updateActionsMenuPosition()
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         actionsMenuRef.current &&
-        !actionsMenuRef.current.contains(event.target as Node)
+        !actionsMenuRef.current.contains(event.target as Node) &&
+        (!actionsPortalRef.current || !actionsPortalRef.current.contains(event.target as Node))
       ) {
         setIsActionsOpen(false)
       }
@@ -118,20 +162,23 @@ export function CalendarGrid() {
       }
     }
 
-    if (isActionsOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      document.addEventListener('keydown', handleKeyDown)
-    }
+    window.addEventListener('scroll', handleScrollOrResize, true)
+    window.addEventListener('resize', handleScrollOrResize)
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
 
     return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true)
+      window.removeEventListener('resize', handleScrollOrResize)
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isActionsOpen])
+  }, [isActionsOpen, updateActionsMenuPosition])
 
-  const daysGrid = getMonthCalendarGrid(currentMonth)
+  const effectiveMonth = currentMonth || getCurrentMonth()
+  const daysGrid = getMonthCalendarGrid(effectiveMonth)
 
-  const currentMonthParticipantIds = monthParticipants[currentMonth] || []
+  const currentMonthParticipantIds = monthParticipants[effectiveMonth] || []
   const monthPersons = persons.filter((p) =>
     currentMonthParticipantIds.includes(p.id),
   )
@@ -308,8 +355,14 @@ export function CalendarGrid() {
           {/* Grouped Actions Dropdown (Always visible on all screen sizes) */}
           <div ref={actionsMenuRef} className="relative">
             <button
+              ref={actionsTriggerRef}
               type="button"
-              onClick={() => setIsActionsOpen(!isActionsOpen)}
+              onClick={() => {
+                if (!isActionsOpen) {
+                  updateActionsMenuPosition()
+                }
+                setIsActionsOpen(!isActionsOpen)
+              }}
               title={t('calendar:actionsMenuTooltip')}
               aria-label={t('calendar:actionsMenu')}
               aria-expanded={isActionsOpen}
@@ -326,109 +379,120 @@ export function CalendarGrid() {
               />
             </button>
 
-            {isActionsOpen && (
-              <div
-                role="menu"
-                aria-label={t('calendar:actionsMenu')}
-                data-testid="calendar-actions-dropdown-menu"
-                className="absolute right-0 top-full mt-2 z-50 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150 space-y-0.5"
-              >
-                {/* Option 1: Puxar Dados da Nuvem */}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsActionsOpen(false)
-                    void handlePullCloud()
+            {isActionsOpen &&
+              typeof document !== 'undefined' &&
+              createPortal(
+                <div
+                  ref={actionsPortalRef}
+                  role="menu"
+                  aria-label={t('calendar:actionsMenu')}
+                  data-testid="calendar-actions-dropdown-menu"
+                  style={{
+                    position: 'fixed',
+                    top: `${actionsMenuPosition.top}px`,
+                    left: `${actionsMenuPosition.left}px`,
+                    maxHeight: 'calc(100vh - 24px)',
+                    zIndex: 9999,
                   }}
-                  disabled={isPullingCloud}
-                  className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition disabled:opacity-50"
+                  className="w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 animate-in fade-in zoom-in-95 duration-150 space-y-0.5 overflow-y-auto custom-scrollbar"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    {pullSuccess ? (
-                      <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                    ) : (
-                      <CloudDownload
-                        className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 ${
-                          isPullingCloud ? 'animate-bounce' : ''
-                        }`}
-                      />
-                    )}
-                    <span className="truncate">
-                      {pullSuccess
-                        ? t('common:actions.pullSuccess')
-                        : isPullingCloud
-                          ? t('common:actions.pullingCloud')
-                          : t('common:actions.pullCloud')}
-                    </span>
-                  </div>
-                </button>
+                  {/* Option 1: Puxar Dados da Nuvem */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsActionsOpen(false)
+                      void handlePullCloud()
+                    }}
+                    disabled={isPullingCloud}
+                    className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition disabled:opacity-50"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {pullSuccess ? (
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                      ) : (
+                        <CloudDownload
+                          className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 ${
+                            isPullingCloud ? 'animate-bounce' : ''
+                          }`}
+                        />
+                      )}
+                      <span className="truncate">
+                        {pullSuccess
+                          ? t('common:actions.pullSuccess')
+                          : isPullingCloud
+                            ? t('common:actions.pullingCloud')
+                            : t('common:actions.pullCloud')}
+                      </span>
+                    </div>
+                  </button>
 
-                {/* Option 2: Exportar Excel */}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsActionsOpen(false)
-                    exportScheduleToExcel({
-                      month: currentMonth,
-                      persons,
-                      assignments,
-                      events,
-                      dayShiftAssignments,
-                      shiftDefinitions,
-                      availabilities,
-                    })
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
-                >
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span className="truncate">{t('calendar:exportExcel')}</span>
-                </button>
+                  {/* Option 2: Exportar Excel */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsActionsOpen(false)
+                      exportScheduleToExcel({
+                        month: currentMonth,
+                        persons,
+                        assignments,
+                        events,
+                        dayShiftAssignments,
+                        shiftDefinitions,
+                        availabilities,
+                      })
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="truncate">{t('calendar:exportExcel')}</span>
+                  </button>
 
-                {/* Option 3: Imprimir / PDF */}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsActionsOpen(false)
-                    handlePrint()
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  <Printer className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
-                  <span className="truncate">{t('calendar:printPdf')}</span>
-                </button>
+                  {/* Option 3: Imprimir / PDF */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsActionsOpen(false)
+                      handlePrint()
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    <Printer className="w-4 h-4 text-slate-600 dark:text-slate-400 shrink-0" />
+                    <span className="truncate">{t('calendar:printPdf')}</span>
+                  </button>
 
-                {/* Option 4: Tela Cheia */}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsActionsOpen(false)
-                    setFullScreenModalOpen(true)
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition"
-                >
-                  <Maximize2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                  <span className="truncate">{t('calendar:fullscreen')}</span>
-                </button>
+                  {/* Option 4: Tela Cheia */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsActionsOpen(false)
+                      setFullScreenModalOpen(true)
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition"
+                  >
+                    <Maximize2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span className="truncate">{t('calendar:fullscreen')}</span>
+                  </button>
 
-                {/* Option 5: Valores a Pagar / Fechamento Financeiro */}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setIsActionsOpen(false)
-                    setIsPaymentsModalOpen(true)
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
-                >
-                  <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span className="truncate">{t('calendar:monthlyPayments')}</span>
-                </button>
-              </div>
-            )}
+                  {/* Option 5: Valores a Pagar / Fechamento Financeiro */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsActionsOpen(false)
+                      setIsPaymentsModalOpen(true)
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"
+                  >
+                    <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="truncate">{t('calendar:monthlyPayments')}</span>
+                  </button>
+                </div>,
+                document.body
+              )}
           </div>
         </div>
       </div>

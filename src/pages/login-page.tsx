@@ -7,17 +7,21 @@ import {
   EyeOff,
   Lock,
   Mail,
+  Moon,
+  Sun,
   Trash2,
   UserCheck,
   UserPlus,
   X,
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
 import { LanguageSelector } from '../components/common/language-selector'
 import { useAuth } from '../context/auth-context'
+import { detectInitialLanguage, LANGUAGE_STORAGE_KEY } from '../i18n'
+import { useScheduleStore } from '../store/use-schedule-store'
 import { getFriendlyAuthErrorMessage } from '../utils/auth-errors'
 
 import type { TFunction } from 'i18next'
@@ -30,7 +34,8 @@ const formatLastActive = (
   if (!isoString) return t('auth:recently')
   try {
     const date = new Date(isoString)
-    const localeStr = lang === 'en-US' || lang.startsWith('en') ? 'en-US' : 'pt-BR'
+    const localeStr =
+      lang === 'en-US' || lang.startsWith('en') ? 'en-US' : 'pt-BR'
     const datePart = date.toLocaleDateString(localeStr, {
       day: '2-digit',
       month: '2-digit',
@@ -49,6 +54,8 @@ export function LoginPage() {
   const { t, i18n } = useTranslation(['auth', 'common'])
   const { user, login, loginAsGuest, guestProfiles, deleteGuestProfile } =
     useAuth()
+  const isDarkMode = useScheduleStore((state) => state.isDarkMode)
+  const toggleDarkMode = useScheduleStore((state) => state.toggleDarkMode)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -63,6 +70,35 @@ export function LoginPage() {
   const [guestName, setGuestName] = useState('')
   const [guestError, setGuestError] = useState<string | null>(null)
   const [isGuestSubmitting, setIsGuestSubmitting] = useState(false)
+
+  // Language detection and initialization on Login page mount
+  useEffect(() => {
+    let hasSavedPreference = false
+
+    if (typeof localStorage !== 'undefined') {
+      try {
+        hasSavedPreference = Boolean(localStorage.getItem(LANGUAGE_STORAGE_KEY))
+      } catch {
+        hasSavedPreference = false
+      }
+    }
+
+    if (
+      !hasSavedPreference &&
+      typeof document !== 'undefined' &&
+      document.cookie
+    ) {
+      hasSavedPreference = document.cookie.includes(`${LANGUAGE_STORAGE_KEY}=`)
+    }
+
+    // Only apply browser language detection if the user hasn't explicitly saved a preference
+    if (!hasSavedPreference) {
+      const preferred = detectInitialLanguage()
+      if (i18n.language !== preferred) {
+        void i18n.changeLanguage(preferred)
+      }
+    }
+  }, [i18n])
 
   // If already authenticated, redirect to destination or /calendario
   if (user) {
@@ -112,9 +148,7 @@ export function LoginPage() {
         '/calendario'
       navigate(fromPath, { replace: true })
     } catch (err: unknown) {
-      setGuestError(
-        (err as Error)?.message || t('auth:errors.loadGuestError'),
-      )
+      setGuestError((err as Error)?.message || t('auth:errors.loadGuestError'))
     } finally {
       setIsGuestSubmitting(false)
     }
@@ -150,9 +184,34 @@ export function LoginPage() {
       data-testid="login-page"
       className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 font-sans select-none transition-colors relative"
     >
-      {/* Top right language selector */}
-      <div className="absolute top-4 right-4 z-20">
-        <LanguageSelector variant="compact" align="right" />
+      {/* Top right actions: Theme toggle & Language selector */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          data-testid="login-theme-toggle-btn"
+          title={
+            isDarkMode
+              ? t('common:actions.lightMode')
+              : t('common:actions.darkMode')
+          }
+          aria-label={
+            isDarkMode
+              ? t('common:actions.lightMode')
+              : t('common:actions.darkMode')
+          }
+          className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+        >
+          {isDarkMode ? (
+            <Sun className="w-5 h-5 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          )}
+        </button>
+        <LanguageSelector
+          variant="compact"
+          align="right"
+        />
       </div>
 
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl p-6 sm:p-8 space-y-6">
@@ -237,7 +296,9 @@ export function LoginPage() {
               />
               <button
                 type="button"
-                aria-label={showPassword ? t('auth:hidePassword') : t('auth:showPassword')}
+                aria-label={
+                  showPassword ? t('auth:hidePassword') : t('auth:showPassword')
+                }
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition"
@@ -272,11 +333,15 @@ export function LoginPage() {
         </form>
 
         {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
-          <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 relative">
+        <div
+          className="flex items-center my-1 w-full"
+          aria-hidden="true"
+        >
+          <div className="flex-1 border-t border-slate-200 dark:border-slate-800" />
+          <span className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0 select-none">
             {t('auth:or')}
           </span>
+          <div className="flex-1 border-t border-slate-200 dark:border-slate-800" />
         </div>
 
         {/* Enter as Guest trigger button */}
@@ -292,11 +357,6 @@ export function LoginPage() {
           <UserCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           <span>{t('auth:enterAsGuest')}</span>
         </button>
-
-        {/* Footer info */}
-        <div className="pt-2 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800/80">
-          {t('auth:secureCredentialsNotice')}
-        </div>
       </div>
 
       {/* Guest Access Modal */}
@@ -377,7 +437,13 @@ export function LoginPage() {
                           </p>
                           <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            <span>{formatLastActive(profile.lastActiveAt, i18n.language, t)}</span>
+                            <span>
+                              {formatLastActive(
+                                profile.lastActiveAt,
+                                i18n.language,
+                                t,
+                              )}
+                            </span>
                           </p>
                         </div>
                       </button>
@@ -397,7 +463,9 @@ export function LoginPage() {
                           type="button"
                           onClick={() => deleteGuestProfile(profile.id)}
                           data-testid={`delete-guest-${profile.id}`}
-                          aria-label={t('auth:deleteProfileOf', { name: profile.name })}
+                          aria-label={t('auth:deleteProfileOf', {
+                            name: profile.name,
+                          })}
                           title={t('auth:deleteGuestTitle')}
                           className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
                         >
@@ -462,5 +530,3 @@ export function LoginPage() {
     </div>
   )
 }
-
-

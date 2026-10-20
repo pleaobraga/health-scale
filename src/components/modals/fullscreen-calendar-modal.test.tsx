@@ -312,4 +312,37 @@ describe('FullScreenCalendarModal', () => {
     expect(screen.getByTestId('shift-badge-2026-10-15-N12')).toBeInTheDocument()
     expect(screen.getByTestId('shift-badge-2026-10-15-N12')).toHaveTextContent('N12')
   })
+
+  it('deve manter o documento com a classe dark durante o disparo da impressão para não alterar visualmente o modal na tela', () => {
+    document.documentElement.classList.add('dark')
+    useScheduleStore.setState({ isFullScreenModalOpen: true, isDarkMode: true })
+
+    let darkDuringPrint = false
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {
+      darkDuringPrint = document.documentElement.classList.contains('dark')
+    })
+
+    render(<FullScreenCalendarModal />)
+
+    const printBtn = screen.getByTitle(/imprimir escala do mês/i)
+    fireEvent.click(printBtn)
+
+    expect(printSpy).toHaveBeenCalledTimes(1)
+    expect(darkDuringPrint).toBe(true)
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+
+    printSpy.mockRestore()
+    document.documentElement.classList.remove('dark')
+  })
+
+  it('deve conter classes dark:print nos elementos do calendário para renderizar em light mode na impressão', () => {
+    useScheduleStore.setState({ isFullScreenModalOpen: true, isDarkMode: true })
+    render(<FullScreenCalendarModal />)
+
+    const modalContent = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i }).closest('#fullscreen-calendar-modal-container')
+    expect(modalContent).toBeInTheDocument()
+
+    const title = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i })
+    expect(title).toHaveClass('dark:print:text-slate-950')
+  })
 })

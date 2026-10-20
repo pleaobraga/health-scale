@@ -187,4 +187,17 @@ describe('CalendarGrid Component', () => {
       screen.queryByTestId('calendar-actions-dropdown-menu'),
     ).not.toBeInTheDocument()
   })
+
+  it('deve garantir que o calendário inicializa no mês do dia atual quando currentMonth estiver vazio', () => {
+    useScheduleStore.setState({ currentMonth: '' })
+
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const expectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+    expect(useScheduleStore.getState().currentMonth).toBe(expectedMonth)
+  })
 })

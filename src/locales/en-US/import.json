@@ -40,7 +40,10 @@
     "teamIncluded": "Included team ({{count}}):",
     "othersCount": "+{{count}} others",
     "cancel": "Cancel",
-    "restore": "Restore Backup"
+    "restore": "Restore Backup",
+    "overwriteRestore": "Erase All & Restore Backup",
+    "mergeUpdate": "Update Data with File",
+    "existingDataNotice": "You already have locally saved data. Choose whether to erase everything and use only the uploaded file, or update your current data while keeping non-conflicting records."
   },
   "overwriteModal": {
     "title": "Warning: Data Overwrite",

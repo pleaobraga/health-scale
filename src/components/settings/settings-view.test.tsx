@@ -31,10 +31,14 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     })
   })
 
-  it('deve renderizar a seção de Redefinir Armazenamento Local com o botão visível', () => {
+  it('deve renderizar a seção de Redefinir Armazenamento Local com o botão visível e o resumo contendo turnos e endereços', () => {
     renderSettings()
 
     expect(screen.getByTestId('clear-local-data-card')).toBeInTheDocument()
+    expect(screen.getByTestId('storage-summary-shifts')).toBeInTheDocument()
+    expect(screen.getByTestId('storage-summary-addresses')).toBeInTheDocument()
+    expect(screen.getByText('Turnos de Trabalho')).toBeInTheDocument()
+    expect(screen.getByText('Endereços')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /limpar todos os dados locais/i }),
     ).toBeInTheDocument()
@@ -94,11 +98,13 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
       ).toBeInTheDocument()
     })
 
-    // Verifica que a store foi completamente zerada
+    // Verifica que a store foi completamente zerada (incluindo turnos e regras)
     expect(useScheduleStore.getState().persons).toEqual([])
     expect(useScheduleStore.getState().assignments).toEqual({})
     expect(useScheduleStore.getState().events).toEqual([])
     expect(useScheduleStore.getState().addresses).toEqual([])
+    expect(useScheduleStore.getState().shiftDefinitions).toEqual([])
+    expect(useScheduleStore.getState().shiftRules).toEqual([])
   })
 
   it('deve exibir o botão de limpar dados locais tanto para administradores quanto para usuários comuns e convidados', () => {

@@ -1,5 +1,7 @@
 import { parseISO, addHours, differenceInMinutes, startOfWeek, format } from 'date-fns'
 
+import { i18n } from '../../i18n'
+
 import type { Person } from '../../types'
 import type {
   ShiftDefinition,
@@ -189,7 +191,8 @@ export function validateSchedule(
 ): RuleViolation[] {
   const violations: RuleViolation[] = []
   const personMap = new Map<string, Person>(people.map((p) => [p.id, p]))
-  const getPersonName = (id: string) => personMap.get(id)?.name || 'Profissional'
+  const getPersonName = (id: string) =>
+    personMap.get(id)?.name || i18n.t('calendar:validation.messages.unknownProfessional')
 
   // Filter only active rules
   const activeRules = allRules.filter((r) => activeRuleIds.includes(r.id))
@@ -240,7 +243,13 @@ export function validateSchedule(
                   personName,
                   date,
                   shiftId: dayShifts[0]?.shiftDefinition.id,
-                  message: `${rule.name}: ${personName} possui ${dayShifts.length} plantões no dia ${date} (máximo permitido: ${maxOccurrences}).`,
+                  message: i18n.t('calendar:validation.messages.maxShiftsDay', {
+                    ruleName: rule.name,
+                    personName,
+                    count: dayShifts.length,
+                    date,
+                    max: maxOccurrences,
+                  }),
                 })
               }
             }
@@ -266,7 +275,12 @@ export function validateSchedule(
                   personName,
                   date: triggerShift.date,
                   shiftId: triggerShift.shiftDefinition.id,
-                  message: `${rule.name}: ${personName} ultrapassou o limite semanal com ${weekShifts.length} plantões na semana (máximo permitido: ${maxOccurrences}).`,
+                  message: i18n.t('calendar:validation.messages.maxShiftsWeek', {
+                    ruleName: rule.name,
+                    personName,
+                    count: weekShifts.length,
+                    max: maxOccurrences,
+                  }),
                 })
               }
             }
@@ -281,7 +295,12 @@ export function validateSchedule(
                 personName,
                 date: triggerShift.date,
                 shiftId: triggerShift.shiftDefinition.id,
-                message: `${rule.name}: ${personName} ultrapassou o limite mensal com ${relevantShifts.length} plantões no mês (máximo permitido: ${maxOccurrences}).`,
+                message: i18n.t('calendar:validation.messages.maxShiftsMonth', {
+                  ruleName: rule.name,
+                  personName,
+                  count: relevantShifts.length,
+                  max: maxOccurrences,
+                }),
               })
             }
           }
@@ -316,7 +335,13 @@ export function validateSchedule(
                   personName,
                   date,
                   shiftId: dayShifts[0]?.shiftDefinition.id,
-                  message: `${rule.name}: ${personName} totalizou ${totalHours}h no dia ${date} (máximo permitido: ${maxHours}h).`,
+                  message: i18n.t('calendar:validation.messages.maxHoursDay', {
+                    ruleName: rule.name,
+                    personName,
+                    totalHours,
+                    date,
+                    maxHours,
+                  }),
                 })
               }
             }
@@ -341,7 +366,12 @@ export function validateSchedule(
                   personName,
                   date: triggerShift.date,
                   shiftId: triggerShift.shiftDefinition.id,
-                  message: `${rule.name}: ${personName} totalizou ${totalHours}h na semana (máximo permitido: ${maxHours}h).`,
+                  message: i18n.t('calendar:validation.messages.maxHoursWeek', {
+                    ruleName: rule.name,
+                    personName,
+                    totalHours,
+                    maxHours,
+                  }),
                 })
               }
             }
@@ -356,7 +386,12 @@ export function validateSchedule(
                 personId,
                 personName,
                 date: triggerShift.date,
-                message: `${rule.name}: ${personName} totalizou ${totalHours}h no mês (máximo permitido: ${maxHours}h).`,
+                message: i18n.t('calendar:validation.messages.maxHoursMonth', {
+                  ruleName: rule.name,
+                  personName,
+                  totalHours,
+                  maxHours,
+                }),
               })
             }
           }
@@ -389,7 +424,14 @@ export function validateSchedule(
                 personName,
                 date: nextShift.date,
                 shiftId: nextShift.shiftDefinition.id,
-                message: `${rule.name}: ${personName} tem apenas ${formattedRest}h de descanso entre o plantão de ${currentShift.date} e o de ${nextShift.date} (mínimo exigido: ${minRestHours}h).`,
+                message: i18n.t('calendar:validation.messages.minRestHours', {
+                  ruleName: rule.name,
+                  personName,
+                  restHours: formattedRest,
+                  prevDate: currentShift.date,
+                  nextDate: nextShift.date,
+                  minRestHours,
+                }),
               })
             }
           }
@@ -433,7 +475,12 @@ export function validateSchedule(
                 personId,
                 personName,
                 date: dateStr,
-                message: `${rule.name}: ${personName} está escalado(a) por ${currentStreak} dias consecutivos (limite: ${limit}).`,
+                message: i18n.t('calendar:validation.messages.consecutiveDaysLimit', {
+                  ruleName: rule.name,
+                  personName,
+                  streak: currentStreak,
+                  limit,
+                }),
               })
             }
           }
@@ -473,7 +520,15 @@ export function validateSchedule(
                 if (allSameShift) {
                   const shiftDef = item.shiftDefinition
                   const names = distinctPersonIds.map(getPersonName).join(', ')
-                  message = `${rule.name}: O turno ${shiftDef.name} (${shiftDef.code}) possui ${distinctPersonIds.length} profissionais no dia ${itemDate} (máximo permitido: ${maxPeople}). Profissionais: ${names}.`
+                  message = i18n.t('calendar:validation.messages.maxPeopleSameShift', {
+                    ruleName: rule.name,
+                    shiftName: shiftDef.name,
+                    shiftCode: shiftDef.code,
+                    count: distinctPersonIds.length,
+                    date: itemDate,
+                    maxPeople,
+                    names,
+                  })
                 } else {
                   const details = distinctPersonIds
                     .map((pId) => {
@@ -485,7 +540,13 @@ export function validateSchedule(
                       return `${pName} (${shifts})`
                     })
                     .join(', ')
-                  message = `${rule.name}: Há ${distinctPersonIds.length} profissionais trabalhando simultaneamente no mesmo horário no dia ${itemDate} (máximo permitido: ${maxPeople}). Profissionais: ${details}.`
+                  message = i18n.t('calendar:validation.messages.maxPeopleOverlappingShifts', {
+                    ruleName: rule.name,
+                    count: distinctPersonIds.length,
+                    date: itemDate,
+                    maxPeople,
+                    details,
+                  })
                 }
 
                 violationCountMap.set(vKey, distinctPersonIds.length)
@@ -523,15 +584,15 @@ export function validateSchedule(
           entriesByDate.set(entry.date, list)
         }
 
-        const dayNamesPt = [
-          'domingo',
-          'segunda-feira',
-          'terça-feira',
-          'quarta-feira',
-          'quinta-feira',
-          'sexta-feira',
-          'sábado',
-        ]
+        const weekdayKeys = [
+          'calendar:weekdays.sunday',
+          'calendar:weekdays.monday',
+          'calendar:weekdays.tuesday',
+          'calendar:weekdays.wednesday',
+          'calendar:weekdays.thursday',
+          'calendar:weekdays.friday',
+          'calendar:weekdays.saturday',
+        ] as const
 
         for (const [dateStr, dayEntries] of entriesByDate.entries()) {
           if (dayEntries.length === 0) continue
@@ -571,18 +632,27 @@ export function validateSchedule(
           }
 
           if (isViolated) {
-            const dayName = dayNamesPt[dayOfWeek]
+            const dayName = i18n.t(weekdayKeys[dayOfWeek]).toLowerCase()
             const shiftList = Array.from(uniqueShifts.values())
               .map((s) => `${s.name} [${s.code}] (${s.durationHours}h)`)
               .join(', ')
 
             let reason: string
             if (comparison === 'EXACT') {
-              reason = `possui ${totalHours}h de plantão (esperado: exatamente ${targetHours}h)`
+              reason = i18n.t('calendar:validation.messages.dailyShiftHoursReasonExact', {
+                totalHours,
+                targetHours,
+              })
             } else if (comparison === 'MAX') {
-              reason = `possui ${totalHours}h de plantão (máximo permitido: ${targetHours}h)`
+              reason = i18n.t('calendar:validation.messages.dailyShiftHoursReasonMax', {
+                totalHours,
+                targetHours,
+              })
             } else {
-              reason = `possui apenas ${totalHours}h de plantão (mínimo exigido: ${targetHours}h)`
+              reason = i18n.t('calendar:validation.messages.dailyShiftHoursReasonMin', {
+                totalHours,
+                targetHours,
+              })
             }
 
             for (const item of dayEntries) {
@@ -594,7 +664,13 @@ export function validateSchedule(
                 personName: getPersonName(item.personId),
                 date: dateStr,
                 shiftId: item.shiftDefinition.id,
-                message: `${rule.name}: O dia ${dateStr} (${dayName}) ${reason}. Plantões escalados: ${shiftList}.`,
+                message: i18n.t('calendar:validation.messages.dailyShiftHours', {
+                  ruleName: rule.name,
+                  date: dateStr,
+                  dayName,
+                  reason,
+                  shiftList,
+                }),
               })
             }
           }

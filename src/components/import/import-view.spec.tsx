@@ -51,15 +51,24 @@ describe('ImportView Component', () => {
     expect(screen.getByText(/Clique para selecionar/i)).toBeInTheDocument()
   })
 
-  it('deve permitir começar do zero limpando dados e navegando para a tela de pessoas', async () => {
+  it('deve permitir começar do zero limpando dados e navegando para a tela de calendário quando não houver dados salvos', async () => {
     renderWithRouter()
 
     expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
-    const startZeroBtn = screen.getByRole('button', { name: /começar do zero/i })
+    const startZeroBtn = screen.getByTestId('start-zero-button')
     fireEvent.click(startZeroBtn)
 
-    expect(useScheduleStore.getState().currentView).toBe('people')
+    expect(useScheduleStore.getState().currentView).toBe('calendar')
     expect(useScheduleStore.getState().persons).toEqual([])
+  })
+
+  it('não deve exibir o botão "Começar do zero" quando já houver dados salvos localmente', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+
+    renderWithRouter()
+
+    expect(await screen.findByText('Restauração de Backup')).toBeInTheDocument()
+    expect(screen.queryByTestId('start-zero-button')).not.toBeInTheDocument()
   })
 
   it('deve exibir mensagem de erro quando arquivo inválido for selecionado', async () => {
@@ -183,6 +192,41 @@ describe('ImportView Component', () => {
 
     await waitFor(() => {
       expect(restoreSpy).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('deve exibir o botão de atualizar dados e chamar mergeAppData quando já existirem dados locais', async () => {
+    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
+    const mergeSpy = vi.spyOn(backupService, 'mergeAppData').mockResolvedValue()
+
+    const validSnapshot: AppDataSnapshot = {
+      exportedAt: '2026-10-17T12:00:00.000Z',
+      people: [{ id: 'p1', name: 'Dr. Lucas', color: '#10b981' }],
+      monthParticipants: {},
+      availabilities: [],
+      assignments: {},
+      events: [],
+    }
+
+    const validFile = new File([JSON.stringify(validSnapshot)], 'backup.json', {
+      type: 'application/json',
+    })
+
+    renderWithRouter()
+
+    const input = screen.getByTestId('backup-file-input')
+    fireEvent.change(input, { target: { files: [validFile] } })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('overwrite-restore-button')).toBeInTheDocument()
+      expect(screen.getByTestId('merge-restore-button')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('merge-restore-button'))
+
+    await waitFor(() => {
+      expect(mergeSpy).toHaveBeenCalledTimes(1)
+      expect(mergeSpy).toHaveBeenCalledWith(expect.objectContaining({ people: validSnapshot.people }))
     })
   })
 

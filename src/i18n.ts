@@ -23,6 +23,58 @@ export const LANGUAGE_STORAGE_KEY = 'health-schedule:language'
 
 export const defaultNS = 'common'
 
+/**
+ * Detects the preferred initial language based on:
+ * 1. Previously saved user preference (localStorage or cookies)
+ * 2. Navigator preferred language (starts with 'pt' -> 'pt-BR', otherwise -> 'en-US')
+ * 3. Fallback to 'en-US'
+ */
+export function detectInitialLanguage(): 'pt-BR' | 'en-US' {
+  // 1. Check for saved preference in localStorage
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY)
+      if (saved) {
+        return saved === 'en-US' || saved.toLowerCase().startsWith('en')
+          ? 'en-US'
+          : 'pt-BR'
+      }
+    } catch {
+      // Ignore localStorage read errors
+    }
+  }
+
+  // 1b. Check for saved preference in cookies (if present)
+  if (typeof document !== 'undefined' && document.cookie) {
+    try {
+      const match = document.cookie.match(
+        new RegExp(`(?:^|; )${LANGUAGE_STORAGE_KEY}=([^;]*)`),
+      )
+      if (match && match[1]) {
+        const decoded = decodeURIComponent(match[1])
+        if (decoded) {
+          return decoded === 'en-US' || decoded.toLowerCase().startsWith('en')
+            ? 'en-US'
+            : 'pt-BR'
+        }
+      }
+    } catch {
+      // Ignore cookie parsing errors
+    }
+  }
+
+  // 2. Check navigator.language
+  if (typeof navigator !== 'undefined' && navigator.language) {
+    if (navigator.language.toLowerCase().startsWith('pt')) {
+      return 'pt-BR'
+    }
+    return 'en-US'
+  }
+
+  // 3. Fallback to English
+  return 'en-US'
+}
+
 export const resources = {
   'pt-BR': {
     common: ptCommon,
@@ -60,8 +112,9 @@ void i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage', 'cookie', 'navigator'],
       lookupLocalStorage: LANGUAGE_STORAGE_KEY,
+      lookupCookie: LANGUAGE_STORAGE_KEY,
       caches: ['localStorage'],
     },
   })
