@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { use, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { ConfirmClearLocalDataModal } from './confirm-clear-local-data-modal'
 import { AuthContext } from '../../context/auth-context'
@@ -27,6 +27,7 @@ import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { LanguageSelector } from '../common/language-selector'
+import { ImportView } from '../import/import-view'
 
 export function SettingsView() {
   const { t } = useTranslation(['settings', 'common'])
@@ -49,6 +50,19 @@ export function SettingsView() {
   const [isClearModalOpen, setIsClearModalOpen] = useState(false)
   const [isClearingLocalData, setIsClearingLocalData] = useState(false)
   const [clearFeedback, setClearFeedback] = useState<string | null>(null)
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const activeTab =
+    tabParam === 'importar' || tabParam === 'import' ? 'import' : 'general'
+
+  const handleTabChange = (tab: 'general' | 'import') => {
+    if (tab === 'import') {
+      setSearchParams({ tab: 'importar' })
+    } else {
+      setSearchParams({})
+    }
+  }
 
   const auth = use(AuthContext)
   // Show admin cloud sync controls if authenticated as admin (or in isolated test/dev)
@@ -135,17 +149,67 @@ export function SettingsView() {
         {/* Header */}
         <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200 dark:border-slate-800">
           <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
-            <Settings className="w-5 h-5" />
+            {activeTab === 'import' ? (
+              <Upload className="w-5 h-5" />
+            ) : (
+              <Settings className="w-5 h-5" />
+            )}
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              {t('title', { defaultValue: 'Configurações Gerais' })}
+              {activeTab === 'import'
+                ? t('settings:tabs.import', { defaultValue: 'Importar Dados' })
+                : t('settings:title', { defaultValue: 'Configurações Gerais' })}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {t('subtitle', { defaultValue: 'Preferências do sistema, persistência e sincronização de dados' })}
+              {activeTab === 'import'
+                ? t('settings:backupSection.importOrRestore', {
+                    defaultValue: 'Restaure backups ou inicie a configuração da equipe',
+                  })
+                : t('settings:subtitle', {
+                    defaultValue: 'Preferências do sistema, persistência e sincronização de dados',
+                  })}
             </p>
           </div>
         </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'general'}
+            onClick={() => handleTabChange('general')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              activeTab === 'general'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            <span>{t('settings:tabs.general', { defaultValue: 'Geral' })}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'import'}
+            onClick={() => handleTabChange('import')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+              activeTab === 'import'
+                ? 'bg-indigo-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            <span>{t('settings:tabs.import', { defaultValue: 'Importar Dados' })}</span>
+          </button>
+        </div>
+
+        {activeTab === 'import' ? (
+          <ImportView embedded />
+        ) : (
+          <>
 
         {/* Section: Idioma / Language (Visível para Todos os Usuários) */}
         <div
@@ -415,13 +479,14 @@ export function SettingsView() {
               </span>
             </button>
 
-            <NavLink
-              to="/importar"
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition"
+            <button
+              type="button"
+              onClick={() => handleTabChange('import')}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition cursor-pointer"
             >
               <Upload className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>{t('settings:backupSection.importOrRestore')}</span>
-            </NavLink>
+            </button>
           </div>
         </div>
 
@@ -479,6 +544,8 @@ export function SettingsView() {
             </p>
           </div>
         </div>
+          </>
+        )}
       </div>
 
       {/* Confirmation Modal */}

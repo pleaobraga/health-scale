@@ -133,4 +133,34 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
       screen.getByRole('button', { name: /limpar todos os dados locais/i }),
     ).toBeInTheDocument()
   })
+
+  it('deve alternar entre as abas Geral e Importar Dados e exibir o conteúdo de importação', () => {
+    renderSettings()
+
+    // Default tab is Geral
+    expect(screen.getByTestId('clear-local-data-card')).toBeInTheDocument()
+
+    // Click Importar Dados tab
+    const importTab = screen.getByRole('tab', { name: /importar dados/i })
+    fireEvent.click(importTab)
+
+    // General sections are hidden, import view content is displayed
+    expect(screen.queryByTestId('clear-local-data-card')).not.toBeInTheDocument()
+    expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+
+    // Click Geral tab
+    const generalTab = screen.getByRole('tab', { name: /geral/i })
+    fireEvent.click(generalTab)
+
+    expect(screen.getByTestId('clear-local-data-card')).toBeInTheDocument()
+  })
+
+  it('deve alternar para a aba de importação ao clicar no botão Importar ou Restaurar', () => {
+    renderSettings()
+
+    const importButton = screen.getByRole('button', { name: /importar ou restaurar/i })
+    fireEvent.click(importButton)
+
+    expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+  })
 })

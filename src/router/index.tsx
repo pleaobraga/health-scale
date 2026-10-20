@@ -4,7 +4,6 @@ import { AdminRoute } from '../components/auth/admin-route'
 import { PrivateRoute } from '../components/auth/private-route'
 import { CalendarView } from '../components/calendar/calendar-view'
 import { ErrorBoundary } from '../components/common/error-boundary'
-import { ImportView } from '../components/import/import-view'
 import { RootLayout } from '../components/layout/root-layout'
 import { PeopleManagementView } from '../components/people-management/people-management-view'
 import { RulesManagementView } from '../components/settings/rules-management-view'
@@ -42,10 +41,11 @@ export function AppRoutes() {
           <Route path="regras" element={<RulesManagementView />} />
           {/* Address Management Route */}
           <Route path="enderecos" element={<AddressManagementView />} />
-          {/* Data Import Route */}
-          <Route path="importar" element={<ImportView />} />
+          {/* Data Import Route (redirects to settings tab) */}
+          <Route path="importar" element={<Navigate to="/configuracoes?tab=importar" replace />} />
           {/* General Settings */}
           <Route path="configuracoes" element={<SettingsView />} />
+          <Route path="configuracoes/importar" element={<Navigate to="/configuracoes?tab=importar" replace />} />
           <Route path="configuracoes/turnos" element={<Navigate to="/turnos" replace />} />
           <Route path="configuracoes/regras" element={<Navigate to="/regras" replace />} />
 

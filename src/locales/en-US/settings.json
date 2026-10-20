@@ -1,6 +1,10 @@
 {
   "title": "General Settings",
   "subtitle": "System preferences, persistence, and data synchronization",
+  "tabs": {
+    "general": "General",
+    "import": "Import Data"
+  },
   "languageSection": {
     "title": "Idioma / Language",
     "description": "Select the system display language",

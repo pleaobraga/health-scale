@@ -29,7 +29,11 @@ import { useScheduleStore } from '../../store/use-schedule-store'
 
 import type { AppDataSnapshot } from '../../types'
 
-export function ImportView() {
+export interface ImportViewProps {
+  embedded?: boolean
+}
+
+export function ImportView({ embedded = false }: ImportViewProps) {
   const { t, i18n } = useTranslation(['import', 'settings', 'common'])
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -224,10 +228,10 @@ export function ImportView() {
     }
   }
 
-  return (
-    <div className="flex-1 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 md:p-8 flex flex-col items-center custom-scrollbar">
+  const renderContent = () => (
+    <>
       <div className="w-full max-w-4xl space-y-6">
-        {/* Onboarding Welcome Banner (Highlighted when system is empty or as welcome) */}
+      {/* Onboarding Welcome Banner (Highlighted when system is empty or as welcome) */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white p-6 sm:p-8 shadow-xl">
           <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
@@ -558,6 +562,16 @@ export function ImportView() {
         onCancel={() => setIsConfirmModalOpen(false)}
         isRestoring={isRestoring}
       />
+    </>
+  )
+
+  if (embedded) {
+    return renderContent()
+  }
+
+  return (
+    <div className="flex-1 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 md:p-8 flex flex-col items-center custom-scrollbar">
+      {renderContent()}
     </div>
   )
 }

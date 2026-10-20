@@ -14,7 +14,6 @@ import {
   Settings,
   ShieldCheck,
   Sun,
-  Upload,
   User as UserIcon,
   UserCog,
   Users,
@@ -105,13 +104,6 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
       path: '/enderecos',
       label: t('nav.addresses', { defaultValue: 'Gerenciar Endereços' }),
       icon: MapPin,
-      end: false,
-    },
-    {
-      id: 'import',
-      path: '/importar',
-      label: t('nav.import', { defaultValue: 'Importar Dados' }),
-      icon: Upload,
       end: false,
     },
     {

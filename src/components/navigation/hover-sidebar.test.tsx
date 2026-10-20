@@ -107,13 +107,10 @@ describe('HoverSidebar Component', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 
-  it('deve alternar a tela para "import" ao clicar em Importar Dados', () => {
+  it('não deve exibir o link direto de Importar Dados na barra de navegação', () => {
     renderWithRouter()
 
-    const importLink = screen.getByRole('link', { name: /importar dados/i })
-    fireEvent.click(importLink)
-
-    expect(useScheduleStore.getState().currentView).toBe('import')
+    expect(screen.queryByRole('link', { name: /importar dados/i })).not.toBeInTheDocument()
   })
 
   it('deve exibir o botão de Exportar Dados e permitir o clique', async () => {

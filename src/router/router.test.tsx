@@ -124,13 +124,12 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
       expect(screen.getByText(/Cadastro Geral de Funcionários/i)).toBeInTheDocument()
     })
 
-    // Click on import link
-    const importLink = screen.getByRole('link', { name: /importar dados/i })
-    fireEvent.click(importLink)
+    // Click on shifts link
+    const shiftsLink = screen.getByRole('link', { name: /turnos de trabalho/i })
+    fireEvent.click(shiftsLink)
 
     await waitFor(() => {
-      expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
-      expect(screen.getByText('Restauração de Backup')).toBeInTheDocument()
+      expect(screen.getByText(/Gestão Global de Turnos/i)).toBeInTheDocument()
     })
 
     // Click on settings link

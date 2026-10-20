@@ -1,17 +1,17 @@
 import {
-  MapPin,
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  X,
   AlertTriangle,
   Building2,
-  Copy,
   Check,
+  Copy,
+  MapPin,
+  Pencil,
+  Plus,
   RefreshCw,
+  Search,
+  Trash2,
+  X,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -115,7 +115,9 @@ function AddressModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                {addressToEdit ? t('addresses:editAddress') : t('addresses:newAddress')}
+                {addressToEdit
+                  ? t('addresses:editAddress')
+                  : t('addresses:newAddress')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {t('addresses:subtitle')}
@@ -135,7 +137,11 @@ function AddressModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} noValidate className="p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="p-6 space-y-4"
+        >
           {error && (
             <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 font-medium">
               {error}
@@ -272,13 +278,15 @@ function AddressModal({
               type="submit"
               className="px-4 py-2 text-xs font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition shadow-xs"
             >
-              {addressToEdit ? t('addresses:saveChanges') : t('addresses:createButton')}
+              {addressToEdit
+                ? t('addresses:saveChanges')
+                : t('addresses:createButton')}
             </button>
           </div>
         </form>
       </div>
     </div>,
-    document.body
+    document.body,
   )
 }
 
@@ -370,13 +378,14 @@ function ConfirmDeleteAddressModal({
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   )
 }
 
 export function AddressManagementView() {
   const { t } = useTranslation(['addresses', 'common', 'settings'])
-  const { addresses, addAddress, updateAddress, deleteAddress, pullCloudData } = useScheduleStore()
+  const { addresses, addAddress, updateAddress, deleteAddress, pullCloudData } =
+    useScheduleStore()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -385,6 +394,24 @@ export function AddressManagementView() {
   const [copiedAddressId, setCopiedAddressId] = useState<string | null>(null)
   const [isPulling, setIsPulling] = useState(false)
   const [pullFeedback, setPullFeedback] = useState<string | null>(null)
+
+  const handlePullCloudData = async () => {
+    try {
+      setIsPulling(true)
+      setPullFeedback(null)
+      const res = await pullCloudData()
+      if (res.success) {
+        setPullFeedback(t('addresses:pullSuccess', { defaultValue: 'Dados da nuvem sincronizados com sucesso!' }))
+      } else {
+        setPullFeedback(res.message || t('settings:cloudSyncSection.pullError', { defaultValue: 'Erro ao sincronizar com a nuvem.' }))
+      }
+    } catch {
+      setPullFeedback(t('settings:cloudSyncSection.pullError', { defaultValue: 'Erro ao conectar com a nuvem.' }))
+    } finally {
+      setIsPulling(false)
+      setTimeout(() => setPullFeedback(null), 4000)
+    }
+  }
 
   const filteredAddresses = addresses.filter((a) => {
     const q = searchQuery.toLowerCase().trim()
@@ -398,27 +425,6 @@ export function AddressManagementView() {
       (a.city && a.city.toLowerCase().includes(q))
     )
   })
-
-  const handlePullCloud = async () => {
-    try {
-      setIsPulling(true)
-      setPullFeedback(null)
-      const result = await pullCloudData()
-      if (result.success) {
-        setPullFeedback(t('settings:cloudSyncSection.pullSuccess'))
-      } else if (result.code === 'no_data') {
-        setPullFeedback(t('settings:cloudSyncSection.noCloudData'))
-      } else {
-        setPullFeedback(t('settings:cloudSyncSection.pullError'))
-      }
-      setTimeout(() => setPullFeedback(null), 4000)
-    } catch {
-      setPullFeedback(t('settings:cloudSyncSection.pullError'))
-      setTimeout(() => setPullFeedback(null), 4000)
-    } finally {
-      setIsPulling(false)
-    }
-  }
 
   const handleCopy = async (addr: Address) => {
     const textToCopy = formatAddressOneLine(addr)
@@ -470,14 +476,16 @@ export function AddressManagementView() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handlePullCloud}
+            onClick={handlePullCloudData}
             disabled={isPulling}
-            title={t('common:actions.pullCloudTooltip')}
-            aria-label={t('common:actions.pullCloud')}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 shadow-xs transition disabled:opacity-50 shrink-0"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:bg-slate-300 dark:active:bg-slate-600 border border-slate-200 dark:border-slate-700 shadow-2xs transition-all shrink-0 disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isPulling ? 'animate-spin' : ''}`} />
-            <span>{isPulling ? t('common:actions.pullingCloud') : t('common:actions.pullCloud')}</span>
+            <span>
+              {isPulling
+                ? t('addresses:pullingCloud', { defaultValue: 'Puxando...' })
+                : t('addresses:pullCloud', { defaultValue: 'Puxar dados da nuvem' })}
+            </span>
           </button>
 
           <button
@@ -517,7 +525,10 @@ export function AddressManagementView() {
           <span className="bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-2xs">
             {t('addresses:totalBadge', {
               count: addresses.length,
-              label: addresses.length === 1 ? t('addresses:addressSingular') : t('addresses:addressPlural'),
+              label:
+                addresses.length === 1
+                  ? t('addresses:addressSingular')
+                  : t('addresses:addressPlural'),
             })}
           </span>
         </div>
@@ -569,7 +580,9 @@ export function AddressManagementView() {
 
                 {addr.complement && (
                   <p className="text-xs text-slate-600 dark:text-slate-300 pl-10">
-                    <span className="font-semibold text-slate-500 dark:text-slate-400">{t('addresses:complementAbbr')} </span>
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">
+                      {t('addresses:complementAbbr')}{' '}
+                    </span>
                     {addr.complement}
                   </p>
                 )}
@@ -585,8 +598,14 @@ export function AddressManagementView() {
                 <button
                   type="button"
                   onClick={() => handleCopy(addr)}
-                  title={copiedAddressId === addr.id ? t('addresses:copied') : t('addresses:copyAddress')}
-                  aria-label={t('addresses:copyAddressFor', { name: addr.name })}
+                  title={
+                    copiedAddressId === addr.id
+                      ? t('addresses:copied')
+                      : t('addresses:copyAddress')
+                  }
+                  aria-label={t('addresses:copyAddressFor', {
+                    name: addr.name,
+                  })}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     copiedAddressId === addr.id
                       ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50'
@@ -609,7 +628,9 @@ export function AddressManagementView() {
                   type="button"
                   onClick={() => handleOpenEdit(addr)}
                   title={t('common:actions.edit')}
-                  aria-label={t('addresses:editAddressFor', { name: addr.name })}
+                  aria-label={t('addresses:editAddressFor', {
+                    name: addr.name,
+                  })}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -619,7 +640,9 @@ export function AddressManagementView() {
                   type="button"
                   onClick={() => setAddressToDelete(addr)}
                   title={t('common:actions.delete')}
-                  aria-label={t('addresses:deleteAddressFor', { name: addr.name })}
+                  aria-label={t('addresses:deleteAddressFor', {
+                    name: addr.name,
+                  })}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -653,4 +676,3 @@ export function AddressManagementView() {
     </div>
   )
 }
-

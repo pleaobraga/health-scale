@@ -1,6 +1,10 @@
 {
   "title": "Configurações Gerais",
   "subtitle": "Preferências do sistema, persistência e sincronização de dados",
+  "tabs": {
+    "general": "Geral",
+    "import": "Importar Dados"
+  },
   "languageSection": {
     "title": "Idioma / Language",
     "description": "Selecione o idioma de exibição do sistema",

@@ -35,11 +35,15 @@ export function RootLayout() {
     } else if (path.startsWith('/enderecos')) {
       setCurrentView('addresses')
     } else if (path.startsWith('/configuracoes')) {
-      setCurrentView('settings')
+      if (location.search.includes('tab=importar') || location.search.includes('tab=import')) {
+        setCurrentView('import')
+      } else {
+        setCurrentView('settings')
+      }
     } else if (path.startsWith('/usuarios')) {
       setCurrentView('users')
     }
-  }, [location.pathname, setCurrentView])
+  }, [location.pathname, location.search, setCurrentView])
 
   // Onboarding redirection check for empty storage on initial root route
   useEffect(() => {
@@ -64,7 +68,7 @@ export function RootLayout() {
     let isMounted = true
     hasExistingLocalData().then((hasData) => {
       if (isMounted && !hasData) {
-        navigate('/importar', { replace: true })
+        navigate('/configuracoes?tab=importar', { replace: true })
       }
     })
     return () => {
