@@ -55,7 +55,7 @@
     "newSubtitle": "Register a new healthcare professional to the team",
     "nameLabel": "Full Name / Identification *",
     "namePlaceholder": "E.g.: Dr. Mary Smith, Nurse John...",
-    "colorLabel": "Highlight / Identification Color",
+    "colorLabel": "Identification Color",
     "customColor": "Custom Color",
     "cancel": "Cancel",
     "save": "Save Changes",

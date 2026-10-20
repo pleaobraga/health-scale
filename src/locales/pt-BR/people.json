@@ -55,7 +55,7 @@
     "newSubtitle": "Cadastre um novo profissional na equipe",
     "nameLabel": "Nome Completo / Identificação *",
     "namePlaceholder": "Ex: Dra. Mariana Costa, Enf. Pedro...",
-    "colorLabel": "Cor de Destaque / Identificação",
+    "colorLabel": "Cor de Identificação",
     "customColor": "Cor Personalizada",
     "cancel": "Cancelar",
     "save": "Salvar Alterações",

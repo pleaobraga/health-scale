@@ -132,10 +132,10 @@ export function GlobalPersonModal({
             />
           </div>
 
-          {/* Color Palette Picker */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          {/* Color Swatches */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Palette className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>{t('people:globalModal.colorLabel')}</span>
               </label>
@@ -166,7 +166,7 @@ export function GlobalPersonModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 max-h-56 overflow-y-auto">
+            <div className="flex flex-wrap items-center gap-1.5 max-h-32 overflow-y-auto p-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/40">
               {/* Native Colorpicker Tile */}
               {(() => {
                 const isCustom = !TAILWIND_PALETTE.some(
@@ -176,10 +176,8 @@ export function GlobalPersonModal({
                   <label
                     title={t('people:globalModal.customColor')}
                     aria-label={t('people:globalModal.customColor')}
-                    className={`relative w-full aspect-square rounded-xl flex items-center justify-center transition-all cursor-pointer group shadow-xs ${
-                      isCustom
-                        ? 'ring-3 ring-indigo-500 dark:ring-indigo-400 scale-105 shadow-md'
-                        : 'hover:scale-105 hover:shadow-xs'
+                    className={`relative w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs group ${
+                      isCustom ? 'ring-2 ring-indigo-500 scale-105' : ''
                     }`}
                     style={{
                       background: isCustom
@@ -195,34 +193,29 @@ export function GlobalPersonModal({
                       aria-label={t('people:globalModal.customColor')}
                     />
                     {isCustom ? (
-                      <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-sm" />
+                      <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-xs" />
                     ) : (
-                      <Pipette className="w-4 h-4 text-white drop-shadow-md group-hover:scale-110 transition-transform" />
+                      <Pipette className="w-3.5 h-3.5 text-white drop-shadow-xs group-hover:scale-110 transition-transform" />
                     )}
                   </label>
                 )
               })()}
 
-              {TAILWIND_PALETTE.map((color) => {
-                const isSelected = selectedColor.toLowerCase() === color.hex.toLowerCase()
-                return (
-                  <button
-                    key={color.hex}
-                    type="button"
-                    onClick={() => setSelectedColor(color.hex)}
-                    title={`${color.name} (${color.hex})`}
-                    aria-label={color.name}
-                    className={`w-full aspect-square rounded-xl flex items-center justify-center transition-all ${
-                      isSelected
-                        ? 'ring-3 ring-indigo-500 dark:ring-indigo-400 scale-105 shadow-md'
-                        : 'hover:scale-105 hover:shadow-xs'
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                  >
-                    {isSelected && <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-sm" />}
-                  </button>
-                )
-              })}
+              {TAILWIND_PALETTE.map((pal) => (
+                <button
+                  key={pal.hex}
+                  type="button"
+                  onClick={() => setSelectedColor(pal.hex)}
+                  style={{ backgroundColor: pal.hex }}
+                  className="w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer"
+                  title={pal.name}
+                  aria-label={pal.name}
+                >
+                  {selectedColor.toLowerCase() === pal.hex.toLowerCase() && (
+                    <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
