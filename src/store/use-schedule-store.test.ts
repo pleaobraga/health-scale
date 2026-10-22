@@ -545,5 +545,114 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.dayShiftAssignments['2026-10-05']?.shift_n12).toBe('p2')
     expect(state.assignments['2026-11-05']).toContain(personId)
   })
+
+  it('deve sincronizar automaticamente turnos, participantes do mês, disponibilidades e plantões diários de um mês ainda não escalado quando o Firebase sync estiver ativo', () => {
+    CloudSyncService.setSyncEnabled(true)
+    const saveShiftsSpy = vi.spyOn(CloudSyncService, 'saveShiftsToCloud').mockResolvedValue(true)
+    const saveRulesSpy = vi.spyOn(CloudSyncService, 'saveRulesToCloud').mockResolvedValue(true)
+    const saveMonthSpy = vi.spyOn(CloudSyncService, 'saveMonthToCloud').mockResolvedValue(true)
+
+    const store = useScheduleStore.getState()
+    const unscheduledMonth = '2026-11'
+
+    // 1. Cadastra turno de trabalho
+    const newShift = store.addShiftDefinition({
+      name: 'Plantão Noturno Extra',
+      code: 'N12E',
+      color: '#6366f1',
+      durationHours: 12,
+      startTime: '19:00',
+      enabledByDefault: true,
+    })
+    expect(saveShiftsSpy).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ id: newShift.id, name: 'Plantão Noturno Extra' })]),
+    )
+
+    // 2. Cadastra regra
+    const newRule = store.addShiftRule({
+      name: 'Regra Teste',
+      description: 'Descanso mínimo de 11h',
+      type: 'MIN_REST_HOURS',
+      parameters: { minRestHours: 11 },
+      severity: 'ERROR',
+      enabledByDefault: true,
+    })
+    expect(saveRulesSpy).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ id: newRule.id, name: 'Regra Teste' })]),
+    )
+
+    // 3. Configura plantões diários para o mês não escalado (2026-11)
+    saveMonthSpy.mockClear()
+    store.setMonthDailyShifts(unscheduledMonth, {
+      [newShift.id]: [1, 2, 10],
+    })
+    expect(saveMonthSpy).toHaveBeenCalledWith(
+      unscheduledMonth,
+      expect.objectContaining({
+        monthDailyShifts: expect.objectContaining({
+          [unscheduledMonth]: { [newShift.id]: [1, 2, 10] },
+        }),
+      }),
+    )
+
+    // 4. Vincula profissionais ao mês não escalado (2026-11)
+    saveMonthSpy.mockClear()
+    store.addPersonsToMonth(['p1', 'p2'], unscheduledMonth)
+    expect(saveMonthSpy).toHaveBeenCalledWith(
+      unscheduledMonth,
+      expect.objectContaining({
+        monthParticipants: expect.objectContaining({
+          [unscheduledMonth]: ['p1', 'p2'],
+        }),
+      }),
+    )
+
+    // 5. Define disponibilidade para p1 no mês não escalado (2026-11)
+    saveMonthSpy.mockClear()
+    store.setPersonAvailability('p1', unscheduledMonth, [1, 10], {
+      [newShift.id]: [1, 10],
+    })
+    expect(saveMonthSpy).toHaveBeenCalledWith(
+      unscheduledMonth,
+      expect.objectContaining({
+        availabilities: expect.arrayContaining([
+          expect.objectContaining({
+            personId: 'p1',
+            month: unscheduledMonth,
+            availableDays: [1, 10],
+          }),
+        ]),
+      }),
+    )
+  })
+
+  it('deve fazer fallback para buscar dados de outro mês na nuvem em pullCloudData quando o documento do mês alvo ainda não existir', async () => {
+    vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
+      monthData: null,
+      persons: [{ id: 'p1', name: 'Dra. Helena', color: '#10b981' }],
+      addresses: [],
+      shifts: [],
+      rules: [],
+    })
+    const fetchFallbackSpy = vi.spyOn(CloudSyncService, 'fetchMonthFromCloud').mockResolvedValueOnce({
+      month: '2026-10',
+      assignments: {},
+      monthParticipants: { '2026-11': ['p1'] },
+      availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [5, 15] }],
+      monthDailyShifts: { '2026-11': { shift_d12: [5, 15] } },
+    })
+
+    const store = useScheduleStore.getState()
+    const res = await store.pullCloudData('2026-11', true)
+
+    expect(res.success).toBe(true)
+    expect(fetchFallbackSpy).toHaveBeenCalled()
+    const state = useScheduleStore.getState()
+    expect(state.monthParticipants['2026-11']).toEqual(['p1'])
+    expect(state.availabilities).toEqual([
+      { personId: 'p1', month: '2026-11', availableDays: [5, 15] },
+    ])
+    expect(state.monthDailyShifts['2026-11']).toEqual({ shift_d12: [5, 15] })
+  })
 })
 

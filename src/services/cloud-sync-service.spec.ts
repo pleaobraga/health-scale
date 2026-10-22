@@ -326,4 +326,43 @@ describe('CloudSyncService - On-Demand Refresh and Explicit Save', () => {
     expect(success).toBe(true)
     expect(firestoreModule.setDoc).toHaveBeenCalledTimes(5)
   })
+
+  it('deve salvar documentos na nuvem para todos os meses presentes em monthData (incluindo meses ainda não escalados) durante pushAllToCloud', async () => {
+    CloudSyncService.setSyncEnabled(false)
+
+    const success = await CloudSyncService.pushAllToCloud(
+      '2026-10',
+      {
+        monthData: {
+          assignments: {},
+          monthParticipants: { '2026-11': ['p1'] },
+          availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [2, 8] }],
+          monthDailyShifts: { '2026-11': { shift_d12: [2, 8] } },
+        },
+        persons: [{ id: 'p1', name: 'Dra. Marina', color: '#10b981', active: true }],
+        addresses: [],
+      },
+      true,
+      true,
+    )
+
+    expect(success).toBe(true)
+    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+      { path: 'schedules/2026-10' },
+      expect.objectContaining({
+        month: '2026-10',
+        monthParticipants: { '2026-11': ['p1'] },
+      }),
+      { merge: true },
+    )
+    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+      { path: 'schedules/2026-11' },
+      expect.objectContaining({
+        month: '2026-11',
+        monthParticipants: { '2026-11': ['p1'] },
+        monthDailyShifts: { '2026-11': { shift_d12: [2, 8] } },
+      }),
+      { merge: true },
+    )
+  })
 })

@@ -445,8 +445,56 @@ export class CloudSyncService {
     isAdmin?: boolean,
     ignoreSyncEnabled = true,
   ): Promise<boolean> {
+    const monthsToSave = new Set<string>([month])
+    const md = data.monthData
+    if (md.monthParticipants) {
+      Object.keys(md.monthParticipants).forEach((m) => {
+        if (/^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+    if (md.availabilities) {
+      md.availabilities.forEach((a) => {
+        if (a.month && /^\d{4}-\d{2}$/.test(a.month)) monthsToSave.add(a.month)
+      })
+    }
+    if (md.monthDailyShifts) {
+      Object.keys(md.monthDailyShifts).forEach((m) => {
+        if (/^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+    if (md.monthActiveShifts) {
+      Object.keys(md.monthActiveShifts).forEach((m) => {
+        if (/^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+    if (md.monthActiveRules) {
+      Object.keys(md.monthActiveRules).forEach((m) => {
+        if (/^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+    if (md.assignments) {
+      Object.keys(md.assignments).forEach((d) => {
+        const m = d.slice(0, 7)
+        if (/^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+    if (md.dayShiftAssignments) {
+      Object.keys(md.dayShiftAssignments).forEach((d) => {
+        const m = d.slice(0, 7)
+        if (/^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+    if (md.events) {
+      md.events.forEach((e) => {
+        const m = e.date?.slice(0, 7)
+        if (m && /^\d{4}-\d{2}$/.test(m)) monthsToSave.add(m)
+      })
+    }
+
     const promises: Promise<boolean>[] = [
-      this.saveMonthToCloud(month, data.monthData, isAdmin, ignoreSyncEnabled),
+      ...Array.from(monthsToSave).map((m) =>
+        this.saveMonthToCloud(m, data.monthData, isAdmin, ignoreSyncEnabled)
+      ),
       this.savePeopleToCloud(data.persons, isAdmin, ignoreSyncEnabled),
       this.saveAddressesToCloud(data.addresses, isAdmin, ignoreSyncEnabled),
     ]

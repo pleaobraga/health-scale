@@ -42,6 +42,7 @@ export function SettingsView() {
     shiftDefinitions,
     addresses,
     pullCloudData,
+    forcePushCloudData,
     clearAllLocalData,
   } = useScheduleStore()
   const [isExporting, setIsExporting] = useState(false)
@@ -84,6 +85,11 @@ export function SettingsView() {
     const nextState = !syncEnabled
     setSyncEnabled(nextState)
     CloudSyncService.setSyncEnabled(nextState)
+    if (nextState) {
+      forcePushCloudData(isAdmin).catch((err) => {
+        console.error('Failed to push local data after enabling sync:', err)
+      })
+    }
   }
 
   const handlePullCloudData = async () => {
@@ -91,7 +97,7 @@ export function SettingsView() {
       setIsPulling(true)
       setPullFeedback(null)
 
-      const result = await pullCloudData()
+      const result = await pullCloudData(undefined, isAdmin)
       let feedbackMessage = result.message
       if (result.success) {
         feedbackMessage = t('cloudSyncSection.pullSuccess')

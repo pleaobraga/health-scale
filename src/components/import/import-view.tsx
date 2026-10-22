@@ -63,7 +63,7 @@ export function ImportView({ embedded = false }: ImportViewProps) {
       setIsPullingCloud(true)
       setCloudFeedback(null)
 
-      const result = await pullCloudData()
+      const result = await pullCloudData(undefined, isAdmin)
       if (result.success) {
         setCloudFeedback({
           type: 'success',

@@ -198,6 +198,44 @@ if (typeof document !== 'undefined' && initialDarkMode) {
   document.documentElement.classList.add('dark')
 }
 
+const buildMonthCloudPayload = (state: ScheduleStore) => ({
+  assignments: state.assignments,
+  monthParticipants: state.monthParticipants,
+  availabilities: state.availabilities,
+  events: state.events,
+  dayShiftAssignments: state.dayShiftAssignments,
+  monthDailyShifts: state.monthDailyShifts,
+  monthActiveShifts: state.monthActiveShifts,
+  monthActiveRules: state.monthActiveRules,
+})
+
+const getMonthsToSync = (state: ScheduleStore, targetMonth?: string): string[] => {
+  const months = new Set<string>([
+    targetMonth || state.currentMonth,
+    state.currentMonth,
+    getCurrentMonth(),
+  ])
+  Object.keys(state.monthParticipants).forEach((m) => months.add(m))
+  Object.keys(state.monthDailyShifts).forEach((m) => months.add(m))
+  Object.keys(state.monthActiveShifts).forEach((m) => months.add(m))
+  Object.keys(state.monthActiveRules).forEach((m) => months.add(m))
+  state.availabilities.forEach((a) => {
+    if (a.month) months.add(a.month)
+  })
+  return Array.from(months).filter(Boolean)
+}
+
+const syncMonthScheduleIfEnabled = (state: ScheduleStore, targetMonth?: string) => {
+  if (!CloudSyncService.isSyncEnabled()) return
+  const payload = buildMonthCloudPayload(state)
+  const months = getMonthsToSync(state, targetMonth)
+  months.forEach((m) => {
+    CloudSyncService.saveMonthToCloud(m, payload).catch((err) => {
+      console.error(`Failed to sync month ${m} to cloud:`, err)
+    })
+  })
+}
+
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   currentView: 'calendar',
   setCurrentView: (view) => set({ currentView: view }),
@@ -324,6 +362,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
     StorageService.saveMonthParticipants(updated)
     set({ monthParticipants: updated })
+    syncMonthScheduleIfEnabled(get(), month)
   },
 
   addPersonsToMonth: (personIds, month) => {
@@ -336,6 +375,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
     StorageService.saveMonthParticipants(updated)
     set({ monthParticipants: updated })
+    syncMonthScheduleIfEnabled(get(), month)
   },
 
   removePersonFromMonth: (personId, month) => {
@@ -367,6 +407,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       hasUnsavedChanges: get().isEditMode && hasAssignmentChanges ? true : get().hasUnsavedChanges,
       highlightedPersonId: get().highlightedPersonId === personId ? null : get().highlightedPersonId,
     })
+    syncMonthScheduleIfEnabled(get(), month)
   },
 
   addPerson: (name, color, availableDays = []) => {
@@ -389,14 +430,17 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.savePersons(updatedPersons)
     StorageService.saveAvailabilities(updatedAvails)
 
-    if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updatedPersons)
-    }
-
     set({
       persons: updatedPersons,
       availabilities: updatedAvails,
     })
+
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updatedPersons)
+      if (availableDays.length > 0) {
+        syncMonthScheduleIfEnabled(get(), get().currentMonth)
+      }
+    }
   },
 
   updatePerson: (id, name, color) => {
@@ -463,10 +507,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveAssignments(currentAssignments)
     StorageService.saveMonthParticipants(updatedMonthParticipants)
 
-    if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.savePeopleToCloud(updatedPersons)
-    }
-
     set({
       persons: updatedPersons,
       availabilities: updatedAvails,
@@ -475,6 +515,12 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       monthParticipants: updatedMonthParticipants,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
     })
+
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.savePeopleToCloud(updatedPersons)
+      syncMonthScheduleIfEnabled(get(), get().currentMonth)
+    }
+
     return true
   },
 
@@ -591,6 +637,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         ? { hasUnsavedChanges: true }
         : {}),
     })
+
+    syncMonthScheduleIfEnabled(get(), month)
 
     if (get().hasValidated) {
       get().validateCurrentSchedule()
@@ -930,15 +978,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveEvents(updated)
     set({ events: updated })
 
-    if (CloudSyncService.isSyncEnabled()) {
-      const month = eventData.date.substring(0, 7)
-      CloudSyncService.saveMonthToCloud(month, {
-        assignments: get().assignments,
-        monthParticipants: get().monthParticipants,
-        availabilities: get().availabilities,
-        events: updated,
-      })
-    }
+    const month = eventData.date.substring(0, 7)
+    syncMonthScheduleIfEnabled(get(), month)
   },
 
   updateEvent: (eventId, updatedData) => {
@@ -948,16 +989,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveEvents(updated)
     set({ events: updated })
 
-    if (CloudSyncService.isSyncEnabled()) {
-      const targetEvent = updated.find((e) => e.id === eventId)
-      const month = targetEvent ? targetEvent.date.substring(0, 7) : get().currentMonth
-      CloudSyncService.saveMonthToCloud(month, {
-        assignments: get().assignments,
-        monthParticipants: get().monthParticipants,
-        availabilities: get().availabilities,
-        events: updated,
-      })
-    }
+    const targetEvent = updated.find((e) => e.id === eventId)
+    const month = targetEvent ? targetEvent.date.substring(0, 7) : get().currentMonth
+    syncMonthScheduleIfEnabled(get(), month)
   },
 
   deleteEvent: (eventId) => {
@@ -967,14 +1001,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveEvents(updated)
     set({ events: updated })
 
-    if (CloudSyncService.isSyncEnabled()) {
-      CloudSyncService.saveMonthToCloud(month, {
-        assignments: get().assignments,
-        monthParticipants: get().monthParticipants,
-        availabilities: get().availabilities,
-        events: updated,
-      })
-    }
+    syncMonthScheduleIfEnabled(get(), month)
   },
 
   addAddress: (addressData) => {
@@ -1030,17 +1057,14 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     if (hasEventChanges) {
       StorageService.saveEvents(updatedEvents)
+      set({ addresses: updated, events: updatedEvents })
       if (CloudSyncService.isSyncEnabled()) {
         affectedMonths.forEach((month) => {
-          CloudSyncService.saveMonthToCloud(month, {
-            assignments: get().assignments,
-            monthParticipants: get().monthParticipants,
-            availabilities: get().availabilities,
-            events: updatedEvents,
-          }).catch((err) => console.error('Failed to sync updated events to cloud:', err))
+          CloudSyncService.saveMonthToCloud(month, buildMonthCloudPayload(get())).catch((err) =>
+            console.error('Failed to sync updated events to cloud:', err)
+          )
         })
       }
-      set({ addresses: updated, events: updatedEvents })
     } else {
       set({ addresses: updated })
     }
@@ -1085,17 +1109,14 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     if (hasEventChanges) {
       StorageService.saveEvents(updatedEvents)
+      set({ addresses: updated, events: updatedEvents })
       if (CloudSyncService.isSyncEnabled()) {
         affectedMonths.forEach((month) => {
-          CloudSyncService.saveMonthToCloud(month, {
-            assignments: get().assignments,
-            monthParticipants: get().monthParticipants,
-            availabilities: get().availabilities,
-            events: updatedEvents,
-          }).catch((err) => console.error('Failed to sync updated events to cloud:', err))
+          CloudSyncService.saveMonthToCloud(month, buildMonthCloudPayload(get())).catch((err) =>
+            console.error('Failed to sync updated events to cloud:', err)
+          )
         })
       }
-      set({ addresses: updated, events: updatedEvents })
     } else {
       set({ addresses: updated })
     }
@@ -1164,6 +1185,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       monthActiveShifts: updatedActiveShifts,
     })
 
+    syncMonthScheduleIfEnabled(get(), month)
+
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1182,6 +1205,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     StorageService.saveMonthActiveShiftsMap(updatedMap)
     set({ monthActiveShifts: updatedMap })
+
+    syncMonthScheduleIfEnabled(get(), month)
 
     if (get().hasValidated) {
       get().validateCurrentSchedule()
@@ -1202,6 +1227,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveMonthActiveRulesMap(updatedMap)
     set({ monthActiveRules: updatedMap })
 
+    syncMonthScheduleIfEnabled(get(), month)
+
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1220,6 +1247,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveMonthActiveShiftsMap(updatedMap)
     set({ monthActiveShifts: updatedMap })
 
+    syncMonthScheduleIfEnabled(get(), month)
+
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1234,6 +1263,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     StorageService.saveMonthActiveShiftsMap(updatedMap)
     set({ monthActiveShifts: updatedMap })
+
+    syncMonthScheduleIfEnabled(get(), month)
 
     if (get().hasValidated) {
       get().validateCurrentSchedule()
@@ -1253,6 +1284,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveMonthActiveRulesMap(updatedMap)
     set({ monthActiveRules: updatedMap })
 
+    syncMonthScheduleIfEnabled(get(), month)
+
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1267,6 +1300,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
     StorageService.saveMonthActiveRulesMap(updatedMap)
     set({ monthActiveRules: updatedMap })
+
+    syncMonthScheduleIfEnabled(get(), month)
 
     if (get().hasValidated) {
       get().validateCurrentSchedule()
@@ -1297,6 +1332,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       monthActiveRules: updatedRulesMap,
     })
 
+    syncMonthScheduleIfEnabled(get(), month)
+
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1313,6 +1350,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = [...get().shiftDefinitions, newShift]
     StorageService.saveShiftDefinitions(updated)
     set({ shiftDefinitions: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveShiftsToCloud(updated).catch((err) => {
+        console.error('Failed to sync shifts to cloud:', err)
+      })
+    }
     return newShift
   },
 
@@ -1323,6 +1365,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     )
     StorageService.saveShiftDefinitions(updated)
     set({ shiftDefinitions: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveShiftsToCloud(updated).catch((err) => {
+        console.error('Failed to sync shifts to cloud:', err)
+      })
+    }
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1332,6 +1379,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = get().shiftDefinitions.filter((s) => s.id !== id)
     StorageService.saveShiftDefinitions(updated)
     set({ shiftDefinitions: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveShiftsToCloud(updated).catch((err) => {
+        console.error('Failed to sync shifts to cloud:', err)
+      })
+    }
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1352,6 +1404,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = [...get().shiftDefinitions, duplicated]
     StorageService.saveShiftDefinitions(updated)
     set({ shiftDefinitions: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveShiftsToCloud(updated).catch((err) => {
+        console.error('Failed to sync shifts to cloud:', err)
+      })
+    }
   },
 
   addShiftRule: (ruleData) => {
@@ -1365,6 +1422,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = [...get().shiftRules, newRule]
     StorageService.saveShiftRules(updated)
     set({ shiftRules: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveRulesToCloud(updated).catch((err) => {
+        console.error('Failed to sync rules to cloud:', err)
+      })
+    }
     return newRule
   },
 
@@ -1375,6 +1437,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     )
     StorageService.saveShiftRules(updated)
     set({ shiftRules: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveRulesToCloud(updated).catch((err) => {
+        console.error('Failed to sync rules to cloud:', err)
+      })
+    }
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1384,6 +1451,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = get().shiftRules.filter((r) => r.id !== id)
     StorageService.saveShiftRules(updated)
     set({ shiftRules: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveRulesToCloud(updated).catch((err) => {
+        console.error('Failed to sync rules to cloud:', err)
+      })
+    }
     if (get().hasValidated) {
       get().validateCurrentSchedule()
     }
@@ -1403,6 +1475,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const updated = [...get().shiftRules, duplicated]
     StorageService.saveShiftRules(updated)
     set({ shiftRules: updated })
+    if (CloudSyncService.isSyncEnabled()) {
+      CloudSyncService.saveRulesToCloud(updated).catch((err) => {
+        console.error('Failed to sync rules to cloud:', err)
+      })
+    }
   },
 
   validateCurrentSchedule: () => {
@@ -1432,6 +1509,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     StorageService.saveEvents(get().events)
     StorageService.saveMonthParticipants(get().monthParticipants)
     StorageService.saveAddresses(get().addresses)
+    StorageService.saveShiftDefinitions(get().shiftDefinitions)
+    StorageService.saveShiftRules(get().shiftRules)
+    StorageService.saveMonthDailyShiftsMap(get().monthDailyShifts)
+    StorageService.saveMonthActiveShiftsMap(get().monthActiveShifts)
+    StorageService.saveMonthActiveRulesMap(get().monthActiveRules)
 
     // Commit draft into savedAssignments and savedDayShiftAssignments
     set({
@@ -1444,22 +1526,17 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     let cloudSaved = false
     if (CloudSyncService.isSyncEnabled()) {
       try {
-        const [monthSaved, peopleSaved, addressesSaved, shiftsSaved, rulesSaved] = await Promise.all([
-          CloudSyncService.saveMonthToCloud(get().currentMonth, {
-            assignments: get().assignments,
-            monthParticipants: get().monthParticipants,
-            availabilities: get().availabilities,
-            events: get().events,
-            dayShiftAssignments: get().dayShiftAssignments,
-            monthDailyShifts: get().monthDailyShifts,
-            monthActiveShifts: get().monthActiveShifts,
-            monthActiveRules: get().monthActiveRules,
-          }),
-          CloudSyncService.savePeopleToCloud(get().persons),
-          CloudSyncService.saveAddressesToCloud(get().addresses),
-          CloudSyncService.saveShiftsToCloud(get().shiftDefinitions),
-          CloudSyncService.saveRulesToCloud(get().shiftRules),
-        ])
+        const monthPayload = buildMonthCloudPayload(get())
+        const monthsToSync = getMonthsToSync(get(), get().currentMonth)
+        const [monthsSavedResults, peopleSaved, addressesSaved, shiftsSaved, rulesSaved] =
+          await Promise.all([
+            Promise.all(monthsToSync.map((m) => CloudSyncService.saveMonthToCloud(m, monthPayload))),
+            CloudSyncService.savePeopleToCloud(get().persons),
+            CloudSyncService.saveAddressesToCloud(get().addresses),
+            CloudSyncService.saveShiftsToCloud(get().shiftDefinitions),
+            CloudSyncService.saveRulesToCloud(get().shiftRules),
+          ])
+        const monthSaved = monthsSavedResults.every(Boolean)
         cloudSaved = monthSaved && peopleSaved && addressesSaved && shiftsSaved && rulesSaved
       } catch (err) {
         console.error('Failed to sync schedule to cloud:', err)
@@ -1493,11 +1570,32 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     const targetMonth = month || get().currentMonth
 
     try {
-      const { monthData, persons, addresses, shifts, rules } = await CloudSyncService.pullAllFromCloud(
-        targetMonth,
-        isAdmin,
-        true,
-      )
+      const {
+        monthData: initialMonthData,
+        persons,
+        addresses,
+        shifts,
+        rules,
+      } = await CloudSyncService.pullAllFromCloud(targetMonth, isAdmin, true)
+
+      let monthData = initialMonthData
+      if (!monthData) {
+        const fallbackMonths = Array.from(
+          new Set([get().currentMonth, getCurrentMonth()]),
+        ).filter((m) => m && m !== targetMonth)
+
+        for (const fallbackMonth of fallbackMonths) {
+          const fallbackData = await CloudSyncService.fetchMonthFromCloud(
+            fallbackMonth,
+            isAdmin,
+            true,
+          )
+          if (fallbackData) {
+            monthData = fallbackData
+            break
+          }
+        }
+      }
 
       if (!monthData && !persons && !addresses && !shifts && !rules) {
         return {
@@ -1586,19 +1684,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   forcePushCloudData: async (isAdmin?: boolean) => {
     set({ isSaving: true })
     try {
+      const monthPayload = buildMonthCloudPayload(get())
       const success = await CloudSyncService.pushAllToCloud(
         get().currentMonth,
         {
-          monthData: {
-            assignments: get().assignments,
-            monthParticipants: get().monthParticipants,
-            availabilities: get().availabilities,
-            events: get().events,
-            dayShiftAssignments: get().dayShiftAssignments,
-            monthDailyShifts: get().monthDailyShifts,
-            monthActiveShifts: get().monthActiveShifts,
-            monthActiveRules: get().monthActiveRules,
-          },
+          monthData: monthPayload,
           persons: get().persons,
           addresses: get().addresses,
           shifts: get().shiftDefinitions,
@@ -1607,6 +1697,11 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         isAdmin,
         true,
       )
+
+      const todayMonth = getCurrentMonth()
+      if (success && todayMonth !== get().currentMonth) {
+        await CloudSyncService.saveMonthToCloud(todayMonth, monthPayload, isAdmin, true)
+      }
 
       set({ isSaving: false })
       return {

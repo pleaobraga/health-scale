@@ -47,6 +47,13 @@ async function restoreUserDataOrCloud(
     ((userDataset!.persons && userDataset!.persons.length > 0) ||
       (userDataset!.assignments &&
         Object.keys(userDataset!.assignments).length > 0) ||
+      (userDataset!.monthParticipants &&
+        Object.keys(userDataset!.monthParticipants).length > 0) ||
+      (userDataset!.availabilities &&
+        userDataset!.availabilities.length > 0) ||
+      (userDataset!.monthDailyShifts &&
+        Object.keys(userDataset!.monthDailyShifts).length > 0) ||
+      (userDataset!.events && userDataset!.events.length > 0) ||
       (userDataset!.addresses && userDataset!.addresses.length > 0))
 
   if (hasLocalData && userDataset) {

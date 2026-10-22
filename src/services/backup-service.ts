@@ -1,3 +1,4 @@
+import { CloudSyncService } from './cloud-sync-service'
 import { StorageService } from './storage-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 
@@ -295,6 +296,10 @@ export async function restoreAppData(data: AppDataSnapshot): Promise<void> {
     currentView: 'calendar',
     ...(data.theme === 'dark' || data.theme === 'light' ? { isDarkMode: data.theme === 'dark' } : {}),
   })
+
+  if (CloudSyncService.isSyncEnabled()) {
+    await useScheduleStore.getState().forcePushCloudData()
+  }
 }
 
 /**
@@ -506,6 +511,10 @@ export async function mergeAppData(data: AppDataSnapshot): Promise<void> {
     hasValidated: false,
     currentView: 'calendar',
   })
+
+  if (CloudSyncService.isSyncEnabled()) {
+    await useScheduleStore.getState().forcePushCloudData()
+  }
 }
 
 export const BackupService = {
