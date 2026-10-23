@@ -1,4 +1,4 @@
-import { Edit2, Eye, EyeOff, CalendarPlus, Check, UserMinus } from 'lucide-react'
+import { Edit2, Eye, EyeOff, CalendarCheck, CalendarPlus, Check, UserMinus } from 'lucide-react'
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
@@ -17,9 +17,11 @@ export interface PersonCardProps {
   availableDaysCount: number
   workingDaysCount?: number
   isHighlighted: boolean
+  isScheduledHighlighted?: boolean
   isEditMode?: boolean
   availableShifts?: ShiftOption[]
   onToggleHighlight: () => void
+  onToggleScheduledHighlight?: () => void
   onEdit: () => void
   onInsertAllDays: (shiftId?: string) => void
   onRemoveFromMonth?: () => void
@@ -30,9 +32,11 @@ export function PersonCard({
   availableDaysCount,
   workingDaysCount = 0,
   isHighlighted,
+  isScheduledHighlighted = false,
   isEditMode = false,
   availableShifts = [],
   onToggleHighlight,
+  onToggleScheduledHighlight,
   onEdit,
   onInsertAllDays,
   onRemoveFromMonth,
@@ -47,12 +51,19 @@ export function PersonCard({
   const canInsertAllDays = isEditMode && availableDaysCount > 0
   const hasMultipleShifts = isEditMode && availableShifts && availableShifts.length > 1
   const hasAvailability = availableDaysCount > 0
+  const hasWorkingDays = workingDaysCount > 0
 
   const highlightTooltip = !hasAvailability
     ? t('people:card.noAvailabilityTooltip')
     : isHighlighted
       ? t('people:card.hideHighlightTooltip')
       : t('people:card.showHighlightTooltip')
+
+  const scheduledHighlightTooltip = !hasWorkingDays
+    ? t('people:card.noScheduledDaysTooltip')
+    : isScheduledHighlighted
+      ? t('people:card.hideScheduledHighlightTooltip')
+      : t('people:card.showScheduledHighlightTooltip')
 
   const updatePosition = useCallback(() => {
     if (!buttonRef.current) return
@@ -147,6 +158,8 @@ export function PersonCard({
       className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all ${
         isHighlighted
           ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-500/20 shadow-sm'
+          : isScheduledHighlighted
+          ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-500/20 shadow-sm'
           : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xs'
       }`}
     >
@@ -282,6 +295,25 @@ export function PersonCard({
               )}
           </div>
         )}
+
+        {/* Toggle View Scheduled Days */}
+        <button
+          type="button"
+          disabled={!hasWorkingDays}
+          onClick={onToggleScheduledHighlight}
+          title={scheduledHighlightTooltip}
+          aria-label={scheduledHighlightTooltip}
+          data-testid={`toggle-scheduled-highlight-${person.id}`}
+          className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
+            !hasWorkingDays
+              ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
+              : isScheduledHighlighted
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
+          }`}
+        >
+          <CalendarCheck className="w-3.5 h-3.5" />
+        </button>
 
         {/* Toggle View Availability */}
         <button

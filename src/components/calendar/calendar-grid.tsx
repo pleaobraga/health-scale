@@ -57,6 +57,7 @@ export function CalendarGrid() {
     isEditMode,
     toggleEditMode,
     highlightedPersonId,
+    highlightedScheduledPersonId,
     persons,
     monthParticipants,
     availabilities,
@@ -185,6 +186,10 @@ export function CalendarGrid() {
 
   const highlightedPerson = highlightedPersonId
     ? persons.find((p) => p.id === highlightedPersonId) || null
+    : null
+
+  const highlightedScheduledPerson = highlightedScheduledPersonId
+    ? persons.find((p) => p.id === highlightedScheduledPersonId) || null
     : null
 
   const isPersonAvailable = (
@@ -540,15 +545,36 @@ export function CalendarGrid() {
         </div>
       )}
 
+      {highlightedScheduledPerson && (
+        <div className="bg-emerald-50/80 dark:bg-emerald-950/40 px-4 py-1.5 text-xs text-emerald-800 dark:text-emerald-200 border-b border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: highlightedScheduledPerson.color }}
+            />
+            <span>
+              {t('calendar:showingScheduledDays')}{' '}
+              <strong>{highlightedScheduledPerson.name}</strong>{' '}
+              {t('calendar:scheduledDaysHighlighted')}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Main 7-Column Grid (Sunday to Saturday) */}
       <div className="flex flex-col">
         <CalendarHeader />
         <div className="grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 flex-1 auto-rows-fr">
           {daysGrid.map((dayInfo) => {
             const assigned = assignments[dayInfo.dateStr] || []
+            const dayShiftMapForDate = dayShiftAssignments[dayInfo.dateStr]
             const dayEvents = events.filter((e) => e.date === dayInfo.dateStr)
             const isHighlightedAvail = highlightedPerson
               ? isPersonAvailable(highlightedPerson.id, dayInfo.dayNumber)
+              : false
+            const isHighlightedScheduled = highlightedScheduledPerson
+              ? assigned.includes(highlightedScheduledPerson.id) ||
+                Object.values(dayShiftMapForDate || {}).includes(highlightedScheduledPerson.id)
               : false
 
             return (
@@ -558,13 +584,15 @@ export function CalendarGrid() {
                 currentMonth={currentMonth}
                 isEditMode={isEditMode}
                 assignedPersonIds={assigned}
-                dayShiftMap={dayShiftAssignments[dayInfo.dateStr]}
+                dayShiftMap={dayShiftMapForDate}
                 activeShifts={getDayActiveShifts(dayInfo.dateStr)}
                 allPersons={persons}
                 monthPersons={monthPersons}
                 events={dayEvents}
                 highlightedPerson={highlightedPerson}
                 isHighlightedPersonAvailable={isHighlightedAvail}
+                highlightedScheduledPerson={highlightedScheduledPerson}
+                isHighlightedPersonScheduled={isHighlightedScheduled}
                 isPersonAvailable={isPersonAvailable}
                 violations={validationErrors.filter((err) => err.date === dayInfo.dateStr)}
                 onOpenEvents={() => setSelectedDateForEvents(dayInfo.dateStr)}

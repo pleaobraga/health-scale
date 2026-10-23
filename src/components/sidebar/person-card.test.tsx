@@ -264,4 +264,55 @@ describe('PersonCard Component', () => {
     fireEvent.click(toggleBtn)
     expect(handleToggle).not.toHaveBeenCalled()
   })
+
+  it('deve chamar onToggleScheduledHighlight ao clicar no ícone de ver dias escalados quando workingDaysCount > 0', () => {
+    const handleToggleScheduled = vi.fn()
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={5}
+        workingDaysCount={3}
+        isHighlighted={false}
+        isScheduledHighlighted={false}
+        isEditMode={false}
+        onToggleHighlight={vi.fn()}
+        onToggleScheduledHighlight={handleToggleScheduled}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    )
+
+    const scheduledBtn = screen.getByTitle('Destacar dias escalados no calendário')
+    expect(scheduledBtn).toBeInTheDocument()
+    expect(scheduledBtn).not.toBeDisabled()
+
+    fireEvent.click(scheduledBtn)
+    expect(handleToggleScheduled).toHaveBeenCalledTimes(1)
+  })
+
+  it('deve desabilitar o ícone de ver dias escalados quando a pessoa não estiver escalada em nenhum dia no mês', () => {
+    const handleToggleScheduled = vi.fn()
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={5}
+        workingDaysCount={0}
+        isHighlighted={false}
+        isScheduledHighlighted={false}
+        isEditMode={false}
+        onToggleHighlight={vi.fn()}
+        onToggleScheduledHighlight={handleToggleScheduled}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    )
+
+    const scheduledBtn = screen.getByTitle('Esta pessoa não está escalada em nenhum dia neste mês')
+    expect(scheduledBtn).toBeInTheDocument()
+    expect(scheduledBtn).toBeDisabled()
+    expect(scheduledBtn).toHaveClass('opacity-40', 'cursor-not-allowed')
+
+    fireEvent.click(scheduledBtn)
+    expect(handleToggleScheduled).not.toHaveBeenCalled()
+  })
 })

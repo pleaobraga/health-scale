@@ -39,10 +39,13 @@ export function Sidebar() {
     monthParticipants,
     availabilities,
     assignments,
+    dayShiftAssignments,
     currentMonth,
     isEditMode,
     highlightedPersonId,
     setHighlightedPersonId,
+    highlightedScheduledPersonId,
+    setHighlightedScheduledPersonId,
     addPersonsToMonth,
     removePersonFromMonth,
     setPersonAvailability,
@@ -115,13 +118,22 @@ export function Sidebar() {
   }
 
   const getPersonWorkingDaysCount = (personId: string): number => {
-    let count = 0
+    const workingDates = new Set<string>()
     Object.entries(assignments).forEach(([dateStr, personIds]) => {
       if (dateStr.startsWith(currentMonth) && personIds.includes(personId)) {
-        count++
+        workingDates.add(dateStr)
       }
     })
-    return count
+    Object.entries(dayShiftAssignments).forEach(([dateStr, shiftMap]) => {
+      if (
+        dateStr.startsWith(currentMonth) &&
+        shiftMap &&
+        Object.values(shiftMap).includes(personId)
+      ) {
+        workingDates.add(dateStr)
+      }
+    })
+    return workingDates.size
   }
 
   const handleSaveAvailability = (
@@ -517,9 +529,15 @@ export function Sidebar() {
                         workingDaysCount={workingDays}
                         availableShifts={availableShifts}
                         isHighlighted={highlightedPersonId === person.id}
+                        isScheduledHighlighted={
+                          highlightedScheduledPersonId === person.id
+                        }
                         isEditMode={isEditMode}
                         onToggleHighlight={() =>
                           setHighlightedPersonId(person.id)
+                        }
+                        onToggleScheduledHighlight={() =>
+                          setHighlightedScheduledPersonId(person.id)
                         }
                         onEdit={() => setPersonForAvailability(person)}
                         onInsertAllDays={(shiftId) =>

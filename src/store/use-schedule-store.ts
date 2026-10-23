@@ -50,6 +50,7 @@ interface ScheduleStore {
   currentMonth: string; // 'YYYY-MM'
   isEditMode: boolean;
   highlightedPersonId: string | null;
+  highlightedScheduledPersonId: string | null;
   selectedDateForEvents: string | null;
   isFullScreenModalOpen: boolean;
 
@@ -109,6 +110,7 @@ interface ScheduleStore {
   toggleEditMode: () => void;
   setEditMode: (val: boolean) => void;
   setHighlightedPersonId: (id: string | null) => void;
+  setHighlightedScheduledPersonId: (id: string | null) => void;
   setSelectedDateForEvents: (dateStr: string | null) => void;
   setFullScreenModalOpen: (open: boolean) => void;
   isUnsavedModalOpen: boolean;
@@ -242,6 +244,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   currentMonth: getCurrentMonth(),
   isEditMode: false,
   highlightedPersonId: null,
+  highlightedScheduledPersonId: null,
   selectedDateForEvents: null,
   isFullScreenModalOpen: false,
   isUnsavedModalOpen: false,
@@ -340,9 +343,23 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   },
 
   setHighlightedPersonId: (id) => {
-    set((state) => ({
-      highlightedPersonId: state.highlightedPersonId === id ? null : id,
-    }))
+    set((state) => {
+      const nextId = state.highlightedPersonId === id ? null : id
+      return {
+        highlightedPersonId: nextId,
+        ...(nextId ? { highlightedScheduledPersonId: null } : {}),
+      }
+    })
+  },
+
+  setHighlightedScheduledPersonId: (id) => {
+    set((state) => {
+      const nextId = state.highlightedScheduledPersonId === id ? null : id
+      return {
+        highlightedScheduledPersonId: nextId,
+        ...(nextId ? { highlightedPersonId: null } : {}),
+      }
+    })
   },
 
   setSelectedDateForEvents: (dateStr) => {
@@ -406,6 +423,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       assignments: currentAssignments,
       hasUnsavedChanges: get().isEditMode && hasAssignmentChanges ? true : get().hasUnsavedChanges,
       highlightedPersonId: get().highlightedPersonId === personId ? null : get().highlightedPersonId,
+      highlightedScheduledPersonId:
+        get().highlightedScheduledPersonId === personId ? null : get().highlightedScheduledPersonId,
     })
     syncMonthScheduleIfEnabled(get(), month)
   },
@@ -467,6 +486,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     set({
       persons: updatedPersons,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
+      highlightedScheduledPersonId:
+        get().highlightedScheduledPersonId === id ? null : get().highlightedScheduledPersonId,
     })
   },
 
@@ -514,6 +535,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       savedAssignments: { ...currentAssignments },
       monthParticipants: updatedMonthParticipants,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
+      highlightedScheduledPersonId:
+        get().highlightedScheduledPersonId === id ? null : get().highlightedScheduledPersonId,
     })
 
     if (CloudSyncService.isSyncEnabled()) {

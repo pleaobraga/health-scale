@@ -1,4 +1,4 @@
-import { Calendar as CalendarIcon, X, Sparkles, AlertCircle, Plus } from 'lucide-react'
+import { Calendar as CalendarIcon, CalendarCheck, X, Sparkles, AlertCircle, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -23,6 +23,8 @@ export interface DayCellProps {
   events: CalendarEvent[]
   highlightedPerson: Person | null
   isHighlightedPersonAvailable: boolean
+  highlightedScheduledPerson?: Person | null
+  isHighlightedPersonScheduled?: boolean
   isPersonAvailable: (personId: string, dayNumber: number, shiftId?: string) => boolean
   violations?: ValidationError[]
   onOpenEvents: () => void
@@ -44,6 +46,8 @@ export function DayCell({
   events,
   highlightedPerson,
   isHighlightedPersonAvailable,
+  highlightedScheduledPerson = null,
+  isHighlightedPersonScheduled = false,
   isPersonAvailable,
   violations,
   onOpenEvents,
@@ -82,14 +86,18 @@ export function DayCell({
     return shiftDefinitions[0]
   }
 
-  // Background styling when a person's availability is being highlighted
+  // Background styling when a person's availability or schedule is being highlighted
   const isTargetOfHighlight = highlightedPerson && isHighlightedPersonAvailable && isCurrentMonth
+  const isTargetOfScheduledHighlight =
+    highlightedScheduledPerson && isHighlightedPersonScheduled && isCurrentMonth
 
   return (
     <div
       className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 dark:border-slate-800 p-2 flex flex-col justify-between transition-all relative ${
         !isCurrentMonth
           ? 'bg-slate-50/70 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600'
+          : isTargetOfScheduledHighlight
+          ? 'bg-emerald-50/60 dark:bg-emerald-950/30 ring-2 ring-inset ring-emerald-500/60 dark:ring-emerald-400/50'
           : isTargetOfHighlight
           ? 'bg-amber-50/50 dark:bg-amber-950/30 ring-2 ring-inset ring-amber-400/50 dark:ring-amber-500/40'
           : isToday
@@ -123,6 +131,17 @@ export function DayCell({
             >
               <Sparkles className="w-2.5 h-2.5" />
               {t('calendar:dayCell.disp')}
+            </span>
+          )}
+
+          {/* Scheduled Highlight indicator */}
+          {isTargetOfScheduledHighlight && (
+            <span
+              className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full"
+              title={t('calendar:dayCell.scheduledPersonTooltip', { name: highlightedScheduledPerson.name })}
+            >
+              <CalendarCheck className="w-2.5 h-2.5" />
+              {t('calendar:dayCell.scheduledBadge')}
             </span>
           )}
 

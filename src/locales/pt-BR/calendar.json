@@ -11,6 +11,8 @@
   "saveNow": "Salvar Agora",
   "showingAvailability": "Exibindo disponibilidade de:",
   "daysHighlighted": "(dias destacados em amarelo)",
+  "showingScheduledDays": "Exibindo dias escalados de:",
+  "scheduledDaysHighlighted": "(dias destacados em verde)",
   "saveChanges": "Salvar Alterações",
   "discard": "Descartar",
   "discardTooltip": "Descartar alterações e reverter ao último estado salvo",
@@ -127,9 +129,11 @@
     "noAssignments": "Nenhum profissional escalado",
     "vacant": "Vago",
     "markedAvailability": "{{name}} marcou disponibilidade",
+    "scheduledPersonTooltip": "{{name}} está escalado(a) neste dia",
     "eventsTooltip": "{{count}} evento(s) neste dia. Clique para ver/editar.",
     "viewOrAddEvents": "Ver ou adicionar eventos do dia",
     "disp": "Disp.",
+    "scheduledBadge": "Escalado",
     "conflict": "Conflito: {{count}} escalados"
   },
   "candidatePicker": {

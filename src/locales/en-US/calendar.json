@@ -11,6 +11,8 @@
   "saveNow": "Save Now",
   "showingAvailability": "Showing availability for:",
   "daysHighlighted": "(days highlighted in yellow)",
+  "showingScheduledDays": "Showing scheduled days for:",
+  "scheduledDaysHighlighted": "(days highlighted in green)",
   "saveChanges": "Save Changes",
   "discard": "Discard",
   "discardTooltip": "Discard changes and revert to last saved state",
@@ -127,9 +129,11 @@
     "noAssignments": "No staff assigned",
     "vacant": "Vacant",
     "markedAvailability": "{{name}} marked availability",
+    "scheduledPersonTooltip": "{{name}} is scheduled on this day",
     "eventsTooltip": "{{count}} event(s) on this day. Click to view/edit.",
     "viewOrAddEvents": "View or add day events",
     "disp": "Avail.",
+    "scheduledBadge": "Scheduled",
     "conflict": "Conflict: {{count}} assigned"
   },
   "candidatePicker": {
