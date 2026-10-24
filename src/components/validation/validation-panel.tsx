@@ -110,7 +110,7 @@ export function ValidationPanel() {
   return (
     <section
       aria-label={t('calendar:validation.title')}
-      className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 shadow-xs transition-colors space-y-4"
+      className="mobile:hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 shadow-xs transition-colors space-y-4"
     >
       {/* Unified Action & Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">

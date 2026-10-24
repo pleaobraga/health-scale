@@ -117,4 +117,10 @@ describe('ValidationPanel Component', () => {
     expect(screen.queryByRole('button', { name: /Ocultar validação/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Recolher painel/i })).not.toBeInTheDocument()
   })
+
+  it('deve ficar oculto em telas pequenas (<= 640px)', () => {
+    render(<ValidationPanel />)
+
+    expect(screen.getByRole('region', { name: /Operação & Auditoria da Escala/i })).toHaveClass('mobile:hidden')
+  })
 })
