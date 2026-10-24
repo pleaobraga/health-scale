@@ -200,4 +200,24 @@ describe('CalendarGrid Component', () => {
     const expectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
     expect(useScheduleStore.getState().currentMonth).toBe(expectedMonth)
   })
+
+  it('deve exibir apenas o número de violações no botão de diagnóstico e ocultar o texto do botão de edição em telas pequenas', () => {
+    useScheduleStore.setState({ validateCurrentSchedule: () => [] })
+    useScheduleStore.setState({
+      validationErrors: [
+        { id: 'v1', rule: 'r1', severity: 'error', message: 'Erro 1', date: '2026-10-01' },
+        { id: 'v2', rule: 'r1', severity: 'warning', message: 'Aviso 1', date: '2026-10-02' },
+      ],
+    })
+
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    expect(screen.getByText('2 Violações')).toBeInTheDocument()
+    expect(screen.queryByText(/na escala/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Edição' }).querySelector('span')).toHaveClass('mobile:hidden')
+  })
 })

@@ -208,7 +208,9 @@
     "title": "Operação & Auditoria da Escala",
     "subtitle": "Valide as regras de descanso e limites semanais antes de publicar.",
     "validate": "Validar Escala",
-    "auditButton": "{{count}} Violações na Escala",
+    "auditButton": "{{count}} Violações",
+    "auditButton_one": "{{count}} Violação",
+    "auditButton_other": "{{count}} Violações",
     "auditButtonTooltip": "Abrir diagnóstico detalhado para entender os erros",
     "allCompliant": "Escala Conforme",
     "dayViolationsModal": {

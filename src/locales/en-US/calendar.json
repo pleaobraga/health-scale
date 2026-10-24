@@ -208,7 +208,9 @@
     "title": "Schedule Operations & Audit",
     "subtitle": "Validate rest regulations and weekly limits before publishing.",
     "validate": "Validate Schedule",
-    "auditButton": "{{count}} Schedule Violations",
+    "auditButton": "{{count}} Violations",
+    "auditButton_one": "{{count}} Violation",
+    "auditButton_other": "{{count}} Violations",
     "auditButtonTooltip": "Open detailed diagnostic to understand errors",
     "allCompliant": "Schedule Compliant",
     "dayViolationsModal": {
