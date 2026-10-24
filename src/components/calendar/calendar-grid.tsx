@@ -49,6 +49,7 @@ export function CalendarGrid() {
   const actionsMenuRef = useRef<HTMLDivElement>(null)
   const actionsTriggerRef = useRef<HTMLButtonElement>(null)
   const actionsPortalRef = useRef<HTMLDivElement>(null)
+  const calendarRef = useRef<HTMLDivElement>(null)
 
   const {
     currentMonth,
@@ -91,6 +92,25 @@ export function CalendarGrid() {
     }
     validateCurrentSchedule()
   }, [currentMonth, assignments, dayShiftAssignments, validateCurrentSchedule])
+
+  // Small screens (<= 640px): the month panel sits below the calendar, so scroll the
+  // calendar into view whenever an availability or schedule highlight is turned on
+  const previousHighlightRef = useRef({ highlightedPersonId, highlightedScheduledPersonId })
+  useEffect(() => {
+    const previous = previousHighlightRef.current
+    previousHighlightRef.current = { highlightedPersonId, highlightedScheduledPersonId }
+
+    const isHighlightActivated =
+      (highlightedPersonId && highlightedPersonId !== previous.highlightedPersonId) ||
+      (highlightedScheduledPersonId &&
+        highlightedScheduledPersonId !== previous.highlightedScheduledPersonId)
+    if (!isHighlightActivated) return
+
+    const isSmallScreen = window.matchMedia?.('(max-width: 640px)').matches
+    if (isSmallScreen) {
+      calendarRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+    }
+  }, [highlightedPersonId, highlightedScheduledPersonId])
 
   const handlePullCloud = async () => {
     try {
@@ -219,7 +239,11 @@ export function CalendarGrid() {
   }
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors shrink-0">
+    <div
+      ref={calendarRef}
+      data-testid="calendar-grid"
+      className="w-full bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors shrink-0 scroll-mt-3"
+    >
       {/* Calendar Top Toolbar */}
       <div className="p-4 border-b rounded-t-2xl border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 mobile:gap-y-0 bg-white dark:bg-slate-900 transition-colors">
         {/* Month Navigation */}
@@ -570,7 +594,9 @@ export function CalendarGrid() {
             <span>
               {t('calendar:showingScheduledDays')}{' '}
               <strong>{highlightedScheduledPerson.name}</strong>{' '}
-              {t('calendar:scheduledDaysHighlighted')}
+              <span data-testid="scheduled-days-highlighted-hint" className="mobile:hidden">
+                {t('calendar:scheduledDaysHighlighted')}
+              </span>
             </span>
           </div>
         </div>

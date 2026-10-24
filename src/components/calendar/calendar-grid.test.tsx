@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CalendarGrid } from './calendar-grid'
@@ -250,5 +250,62 @@ describe('CalendarGrid Component', () => {
     expect(screen.getByText('Salvar Alterações')).toHaveClass('hidden', 'mobile:inline')
     fireEvent.click(saveBtn)
     expect(saveMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('em telas pequenas, rola até o calendário ao ativar o destaque de disponibilidade ou de escala', () => {
+    useScheduleStore.setState({
+      validateCurrentSchedule: () => [],
+      highlightedPersonId: null,
+      highlightedScheduledPersonId: null,
+    })
+    const scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
+    const matchMediaSpy = vi.fn().mockReturnValue({ matches: true })
+    vi.stubGlobal('matchMedia', matchMediaSpy)
+
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+    expect(scrollSpy).not.toHaveBeenCalled()
+
+    act(() => useScheduleStore.setState({ highlightedPersonId: 'p1' }))
+    expect(matchMediaSpy).toHaveBeenCalledWith('(max-width: 640px)')
+    expect(scrollSpy).toHaveBeenCalledTimes(1)
+
+    act(() =>
+      useScheduleStore.setState({ highlightedPersonId: null, highlightedScheduledPersonId: 'p1' }),
+    )
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+
+    // Turning the highlight off must not scroll
+    act(() => useScheduleStore.setState({ highlightedScheduledPersonId: null }))
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+
+    // Large screens never scroll
+    matchMediaSpy.mockReturnValue({ matches: false })
+    act(() => useScheduleStore.setState({ highlightedPersonId: 'p1' }))
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+
+    vi.unstubAllGlobals()
+  })
+
+  it('em telas pequenas, oculta o texto "(dias destacados em verde)" ao destacar a escala de uma pessoa', () => {
+    useScheduleStore.setState({
+      validateCurrentSchedule: () => [],
+      highlightedPersonId: null,
+      highlightedScheduledPersonId: 'p1',
+    })
+
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const hint = screen.getByTestId('scheduled-days-highlighted-hint')
+    expect(hint).toHaveTextContent('(dias destacados em verde)')
+    expect(hint).toHaveClass('mobile:hidden')
   })
 })
