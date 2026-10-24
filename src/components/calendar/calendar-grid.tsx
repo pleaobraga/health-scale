@@ -93,7 +93,7 @@ export function CalendarGrid() {
     validateCurrentSchedule()
   }, [currentMonth, assignments, dayShiftAssignments, validateCurrentSchedule])
 
-  // Small screens (<= 640px): the month panel sits below the calendar, so scroll the
+  // Stacked layout (< lg / 1024px): the month panel sits below the calendar, so scroll the
   // calendar into view whenever an availability or schedule highlight is turned on
   const previousHighlightRef = useRef({ highlightedPersonId, highlightedScheduledPersonId })
   useEffect(() => {
@@ -106,8 +106,8 @@ export function CalendarGrid() {
         highlightedScheduledPersonId !== previous.highlightedScheduledPersonId)
     if (!isHighlightActivated) return
 
-    const isSmallScreen = window.matchMedia?.('(max-width: 640px)').matches
-    if (isSmallScreen) {
+    const sideBySideQuery = window.matchMedia?.('(min-width: 1024px)')
+    if (sideBySideQuery && !sideBySideQuery.matches) {
       calendarRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
     }
   }, [highlightedPersonId, highlightedScheduledPersonId])

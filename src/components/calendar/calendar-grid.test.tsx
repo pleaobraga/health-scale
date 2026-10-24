@@ -252,7 +252,7 @@ describe('CalendarGrid Component', () => {
     expect(saveMock).toHaveBeenCalledTimes(1)
   })
 
-  it('em telas pequenas, rola até o calendário ao ativar o destaque de disponibilidade ou de escala', () => {
+  it('com o layout empilhado (< 1024px), rola até o calendário ao ativar o destaque de disponibilidade ou de escala', () => {
     useScheduleStore.setState({
       validateCurrentSchedule: () => [],
       highlightedPersonId: null,
@@ -260,7 +260,7 @@ describe('CalendarGrid Component', () => {
     })
     const scrollSpy = vi.fn()
     Element.prototype.scrollIntoView = scrollSpy
-    const matchMediaSpy = vi.fn().mockReturnValue({ matches: true })
+    const matchMediaSpy = vi.fn().mockReturnValue({ matches: false })
     vi.stubGlobal('matchMedia', matchMediaSpy)
 
     render(
@@ -271,7 +271,7 @@ describe('CalendarGrid Component', () => {
     expect(scrollSpy).not.toHaveBeenCalled()
 
     act(() => useScheduleStore.setState({ highlightedPersonId: 'p1' }))
-    expect(matchMediaSpy).toHaveBeenCalledWith('(max-width: 640px)')
+    expect(matchMediaSpy).toHaveBeenCalledWith('(min-width: 1024px)')
     expect(scrollSpy).toHaveBeenCalledTimes(1)
 
     act(() =>
@@ -283,8 +283,8 @@ describe('CalendarGrid Component', () => {
     act(() => useScheduleStore.setState({ highlightedScheduledPersonId: null }))
     expect(scrollSpy).toHaveBeenCalledTimes(2)
 
-    // Large screens never scroll
-    matchMediaSpy.mockReturnValue({ matches: false })
+    // Side-by-side layout (>= 1024px) never scrolls
+    matchMediaSpy.mockReturnValue({ matches: true })
     act(() => useScheduleStore.setState({ highlightedPersonId: 'p1' }))
     expect(scrollSpy).toHaveBeenCalledTimes(2)
 
