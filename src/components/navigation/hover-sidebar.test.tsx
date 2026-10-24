@@ -128,15 +128,14 @@ describe('HoverSidebar Component', () => {
     })
   })
 
-  it('deve exibir o cabeçalho mobile e abrir o menu em tela cheia ao clicar no botão de menu', () => {
+  it('deve exibir a barra inferior (sem cabeçalho superior) e abrir o menu em tela cheia pelo botão Mais', () => {
     renderWithRouter()
 
-    // Mobile header visible with menu button
-    const mobileHeader = screen.getByTestId('mobile-header')
-    expect(mobileHeader).toBeInTheDocument()
+    // Below 768px the bottom tab bar replaces the old top header
+    expect(screen.getByTestId('mobile-bottom-nav')).toHaveClass('md:hidden')
+    expect(screen.queryByTestId('mobile-header')).not.toBeInTheDocument()
 
-    const menuBtn = screen.getByTestId('mobile-menu-button')
-    expect(menuBtn).toBeInTheDocument()
+    const menuBtn = screen.getByTestId('mobile-bottom-nav-more')
 
     // Fullscreen mobile menu initially closed
     expect(

@@ -31,7 +31,7 @@ export function ToastViewport() {
     <div
       aria-live="polite"
       data-testid="toast-viewport"
-      className="fixed z-130 right-4 bottom-4 w-[calc(100%-2rem)] max-w-sm flex flex-col gap-2 pointer-events-none mobile:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] print:hidden"
+      className="fixed z-130 right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 w-[calc(100%-2rem)] max-w-sm flex flex-col gap-2 pointer-events-none print:hidden"
     >
       {toasts.map((toast) => {
         const { icon: Icon, className, iconClassName } = TOAST_STYLES[toast.type]
