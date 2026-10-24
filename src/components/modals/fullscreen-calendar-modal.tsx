@@ -35,6 +35,7 @@ export function FullScreenCalendarModal() {
     monthActiveShifts = {},
     events,
     getDayActiveShifts,
+    setSelectedDateForEvents,
   } = useScheduleStore()
 
   const weekdays = [
@@ -256,7 +257,7 @@ export function FullScreenCalendarModal() {
               return (
                 <div
                   key={dayInfo.dateStr}
-                  className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 dark:print:border-slate-300 print:bg-white dark:print:bg-white ${
+                  className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 mobile:p-0 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 dark:print:border-slate-300 print:bg-white dark:print:bg-white ${
                     !dayInfo.isCurrentMonth
                       ? 'bg-slate-100/60 dark:bg-slate-950/50 text-slate-400 dark:text-slate-600 print:bg-slate-100/70 dark:print:bg-slate-100/70 print:text-slate-400 dark:print:text-slate-400'
                       : dayInfo.isToday
@@ -265,9 +266,19 @@ export function FullScreenCalendarModal() {
                   }`}
                 >
                   {/* Cell Top Header */}
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span
-                      className={`text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
+                  <div className="flex items-center justify-between mb-1.5 mobile:justify-center mobile:pt-1">
+                    {/* Day number: on small screens (<= 640px) it opens the events modal */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDateForEvents(dayInfo.dateStr)}
+                      tabIndex={-1}
+                      data-testid={`fullscreen-day-number-${dayInfo.dateStr}`}
+                      aria-label={
+                        hasEvents
+                          ? t('calendar:dayCell.eventsTooltip', { count: dayEvents.length })
+                          : t('calendar:dayCell.viewOrAddEvents')
+                      }
+                      className={`pointer-events-none mobile:pointer-events-auto mobile:cursor-pointer text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
                         hasEvents
                           ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full print:w-6 print:h-6 print:bg-red-100 dark:print:bg-red-100 print:text-red-700 dark:print:text-red-700'
                           : dayInfo.isToday
@@ -278,12 +289,12 @@ export function FullScreenCalendarModal() {
                       }`}
                     >
                       {dayInfo.dayNumber}
-                    </span>
+                    </button>
 
                     {/* Events Count Tag */}
                     {hasEvents && (
                       <span
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded-md print:bg-red-50 dark:print:bg-red-50 print:border print:border-red-300 dark:print:border-red-300 print:text-red-700 dark:print:text-red-700"
+                        className="mobile:hidden inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded-md print:bg-red-50 dark:print:bg-red-50 print:border print:border-red-300 dark:print:border-red-300 print:text-red-700 dark:print:text-red-700"
                         title={dayEvents.map((e) => e.title).join(' | ')}
                       >
                         <CalendarIcon className="w-3 h-3" />
@@ -318,7 +329,7 @@ export function FullScreenCalendarModal() {
                               WebkitPrintColorAdjust: 'exact',
                               printColorAdjust: 'exact',
                             }}
-                            className="text-white text-xs md:text-sm font-semibold px-2 py-1 rounded-lg shadow-2xs flex items-center justify-between truncate print:text-white print:font-bold print:border-2 print:rounded-md print:px-2 print:py-0.5 print:shadow-none print-person-chip"
+                            className="text-white text-xs md:text-sm font-semibold px-2 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between truncate w-full print:text-white print:font-bold print:border-2 print:rounded-md print:px-2 print:py-0.5 print:shadow-none print-person-chip"
                             title={
                               personShift
                                 ? `${personShift.name}: ${person.name}`
@@ -335,7 +346,7 @@ export function FullScreenCalendarModal() {
                                     WebkitPrintColorAdjust: 'exact',
                                     printColorAdjust: 'exact',
                                   }}
-                                  className="text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded-sm shrink-0 shadow-xs print:text-[8px] print:px-1"
+                                  className="mobile:hidden text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded-sm shrink-0 shadow-xs print:text-[8px] print:px-1"
                                 >
                                   {personShift.code}
                                 </span>

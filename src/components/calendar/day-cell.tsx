@@ -145,7 +145,8 @@ export function DayCell({
           {/* Scheduled Highlight indicator */}
           {isTargetOfScheduledHighlight && (
             <span
-              className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full"
+              data-testid="scheduled-highlight-badge"
+              className="mobile:hidden inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full"
               title={t('calendar:dayCell.scheduledPersonTooltip', { name: highlightedScheduledPerson.name })}
             >
               <CalendarCheck className="w-2.5 h-2.5" />

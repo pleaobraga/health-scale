@@ -515,5 +515,27 @@ describe('DayCell Component', () => {
     expect(screen.queryByText(/vago/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /escalar pessoa/i })).not.toBeInTheDocument()
   })
-})
 
+  it('deve ocultar a tag "Escalado" em telas pequenas ao destacar dias escalados', () => {
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={['p1']}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        highlightedScheduledPerson={mockPersons[0]}
+        isHighlightedPersonScheduled
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    expect(screen.getByTestId('scheduled-highlight-badge')).toHaveClass('mobile:hidden')
+  })
+})

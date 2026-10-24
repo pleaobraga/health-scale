@@ -351,4 +351,39 @@ describe('FullScreenCalendarModal', () => {
     const title = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i })
     expect(title).toHaveClass('dark:print:text-slate-950')
   })
+
+  it('em telas pequenas (<= 640px) oculta tag de eventos e sigla da escala, e o número do dia abre o modal de eventos', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      selectedDateForEvents: null,
+      shiftDefinitions: [
+        {
+          id: 's_d12',
+          name: 'Plantão Diurno 12h',
+          code: 'D12',
+          startTime: '07:00',
+          durationHours: 12,
+          color: '#3B82F6',
+          enabledByDefault: true,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+      ],
+      dayShiftAssignments: {
+        '2026-10-15': { s_d12: 'p1' },
+      },
+    })
+
+    render(<FullScreenCalendarModal />)
+
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveClass('mobile:hidden')
+    expect(screen.getByTitle('Dia do Professor')).toHaveClass('mobile:hidden')
+    expect(screen.getAllByText('Dr. Roberto Alves')[0].closest('[title]')).toHaveClass('w-full', 'mobile:px-1')
+
+    const dayNumberBtn = screen.getByTestId('fullscreen-day-number-2026-10-15')
+    expect(dayNumberBtn).toHaveClass('pointer-events-none', 'mobile:pointer-events-auto')
+    fireEvent.click(dayNumberBtn)
+    expect(useScheduleStore.getState().selectedDateForEvents).toBe('2026-10-15')
+  })
 })
