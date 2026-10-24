@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { AvailabilityMiniCalendar } from './availability-mini-calendar'
 import { TAILWIND_PALETTE } from '../../constants/tailwind-colors'
+import { ConfirmDialog } from '../common/confirm-dialog'
 
 import type { Person } from '../../types'
 
@@ -32,6 +33,7 @@ export function PersonModal({
   const [selectedColor, setSelectedColor] = useState(TAILWIND_PALETTE[0].hex)
   const [availableDays, setAvailableDays] = useState<number[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
 
   useEffect(() => {
     if (personToEdit) {
@@ -58,13 +60,12 @@ export function PersonModal({
     onClose()
   }
 
-  const handleDelete = () => {
+  const handleConfirmDelete = () => {
     if (personToEdit && onDelete) {
-      if (confirm(t('people:personModal.deleteConfirm', { name: personToEdit.name }))) {
-        onDelete(personToEdit.id)
-        onClose()
-      }
+      onDelete(personToEdit.id)
     }
+    setIsDeleteConfirmOpen(false)
+    onClose()
   }
 
   return createPortal(
@@ -214,7 +215,7 @@ export function PersonModal({
             {personToEdit && onDelete ? (
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => setIsDeleteConfirmOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-xl transition"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -242,6 +243,15 @@ export function PersonModal({
           </div>
         </form>
       </div>
+
+      <ConfirmDialog
+        isOpen={isDeleteConfirmOpen && Boolean(personToEdit)}
+        title={t('people:personModal.deleteTitle')}
+        description={t('people:personModal.deleteConfirm', { name: personToEdit?.name ?? '' })}
+        confirmLabel={t('common:actions.delete')}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setIsDeleteConfirmOpen(false)}
+      />
     </div>,
     document.body
   )

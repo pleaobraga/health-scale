@@ -272,6 +272,7 @@
     "editTitle": "Editar Pessoa",
     "newTitle": "Adicionar Nova Pessoa",
     "nameRequired": "Por favor, informe o nome da pessoa.",
+    "deleteTitle": "Remover profissional",
     "deleteConfirm": "Tem certeza que deseja remover {{name}}? Esta ação removerá também as escalas associadas.",
     "nameLabel": "Nome Completo / Identificação *",
     "namePlaceholder": "Ex: Dra. Camila Santos",

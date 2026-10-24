@@ -310,4 +310,27 @@ describe('CalendarGrid Component', () => {
     expect(hint).toHaveTextContent('(dias destacados em verde)')
     expect(hint).toHaveClass('mobile:hidden')
   })
+  it('deve pedir confirmação em um modal antes de limpar o mês', () => {
+    const clearMonthAssignmentsMock = vi.fn()
+    useScheduleStore.setState({ isEditMode: true, clearMonthAssignments: clearMonthAssignmentsMock })
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /limpar mês/i }))
+    const dialog = screen.getByRole('alertdialog', { name: /limpar mês/i })
+    expect(dialog).toHaveTextContent(/outubro/i)
+    expect(clearMonthAssignmentsMock).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(clearMonthAssignmentsMock).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: /limpar mês/i }))
+    fireEvent.click(screen.getByTestId('confirm-dialog-confirm'))
+    expect(clearMonthAssignmentsMock).toHaveBeenCalledWith('2026-10')
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
 })

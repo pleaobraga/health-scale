@@ -31,10 +31,7 @@ export const Default: Story = {
         <ConfirmClearLocalDataModal
           isOpen={isOpen}
           onClose={() => setIsOpen(false)}
-          onConfirm={() => {
-            alert('Dados locais limpos!')
-            setIsOpen(false)
-          }}
+          onConfirm={() => setIsOpen(false)}
         />
       </div>
     )

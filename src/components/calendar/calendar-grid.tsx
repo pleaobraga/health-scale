@@ -30,6 +30,7 @@ import { notifyPullResult } from '../../utils/cloud-feedback'
 import { formatMonthYear, getMonthCalendarGrid, getCurrentMonth } from '../../utils/date-utils'
 import { exportScheduleToExcel, getScheduleFileBaseName } from '../../utils/export-to-excel'
 import { computePopoverPosition } from '../../utils/popover-position'
+import { ConfirmDialog } from '../common/confirm-dialog'
 import { MonthPaymentsModal } from '../modals/month-payments-modal'
 import { ScheduleAuditModal } from '../modals/schedule-audit-modal'
 
@@ -39,6 +40,7 @@ export function CalendarGrid() {
   const isAdmin = auth?.isAdmin ?? false
 
   const [isPullingCloud, setIsPullingCloud] = useState(false)
+  const [isClearMonthConfirmOpen, setIsClearMonthConfirmOpen] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [actionsMenuPosition, setActionsMenuPosition] = useState<{ top: number; left: number }>({
     top: 0,
@@ -296,16 +298,7 @@ export function CalendarGrid() {
 
               <button
                 type="button"
-                onClick={() => {
-                  const confirmed = window.confirm(
-                    t('calendar:confirmClearMonth', {
-                      month: formatMonthYear(currentMonth, i18n.language),
-                    }),
-                  )
-                  if (confirmed) {
-                    clearMonthAssignments(currentMonth)
-                  }
-                }}
+                onClick={() => setIsClearMonthConfirmOpen(true)}
                 title={t('calendar:clearMonthTooltip')}
                 aria-label={t('calendar:clearMonth')}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs"
@@ -673,6 +666,20 @@ export function CalendarGrid() {
         isOpen={isPaymentsModalOpen}
         onClose={() => setIsPaymentsModalOpen(false)}
         currentMonth={currentMonth}
+      />
+
+      <ConfirmDialog
+        isOpen={isClearMonthConfirmOpen}
+        title={t('calendar:clearMonth')}
+        description={t('calendar:confirmClearMonth', {
+          month: formatMonthYear(currentMonth, i18n.language),
+        })}
+        confirmLabel={t('calendar:clearMonth')}
+        onConfirm={() => {
+          clearMonthAssignments(currentMonth)
+          setIsClearMonthConfirmOpen(false)
+        }}
+        onCancel={() => setIsClearMonthConfirmOpen(false)}
       />
     </div>
   )
