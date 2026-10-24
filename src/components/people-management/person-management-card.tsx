@@ -2,6 +2,7 @@ import { Edit2, Trash2, CalendarCheck2, RotateCcw, UserX, CheckCircle, ShieldAle
 import { useTranslation } from 'react-i18next'
 
 import type { Person } from '../../types'
+import type { ReactNode } from 'react'
 
 export interface PersonManagementCardProps {
   person: Person
@@ -12,6 +13,8 @@ export interface PersonManagementCardProps {
   onDeactivate: (person: Person) => void
   onDeleteRequest: (person: Person) => void
   onReactivate: (personId: string) => void
+  /** Optional drag handle rendered before the avatar (used for reordering) */
+  dragHandle?: ReactNode
 }
 
 export function PersonManagementCard({
@@ -23,6 +26,7 @@ export function PersonManagementCard({
   onDeactivate,
   onDeleteRequest,
   onReactivate,
+  dragHandle,
 }: PersonManagementCardProps) {
   const { t } = useTranslation(['people', 'common'])
   const isActive = person.active !== false
@@ -30,14 +34,15 @@ export function PersonManagementCard({
   return (
     <div
       data-testid={`person-card-${person.id}`}
-      className={`bg-white dark:bg-slate-900 rounded-2xl border p-4 flex flex-col justify-between gap-4 shadow-xs transition group ${
+      className={`h-full bg-white dark:bg-slate-900 rounded-2xl border p-4 flex flex-col justify-between gap-4 shadow-xs transition group ${
         !isActive
           ? 'opacity-65 hover:opacity-100 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50'
           : 'border-slate-200 dark:border-slate-800 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700'
       }`}
     >
-      {/* Top: Avatar & Info */}
+      {/* Top: Drag handle, Avatar & Info */}
       <div className="flex items-start gap-3.5">
+        {dragHandle && <div className="self-center">{dragHandle}</div>}
         <div
           className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-xs shrink-0 transition-opacity ${
             !isActive ? 'grayscale-40' : ''

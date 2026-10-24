@@ -6,12 +6,15 @@ import { ConfirmDeleteModal } from './confirm-delete-modal'
 import { DeactivatePersonModal } from './deactivate-person-modal'
 import { GlobalPersonModal } from './global-person-modal'
 import { PersonManagementCard } from './person-management-card'
+import { useListOrder } from '../../hooks/use-list-order'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { sortByListOrder } from '../../utils/list-order'
+import { SortableList } from '../common/sortable-list'
 
 import type { Person } from '../../types'
 
 export function PeopleManagementView() {
-  const { t } = useTranslation(['people', 'common'])
+  const { t, i18n } = useTranslation(['people', 'common'])
   const {
     persons,
     monthParticipants,
@@ -30,7 +33,12 @@ export function PeopleManagementView() {
   const [personToDelete, setPersonToDelete] = useState<Person | null>(null)
   const [personToDeactivate, setPersonToDeactivate] = useState<Person | null>(null)
 
-  const filteredPersons = persons.filter((p) =>
+  // Alphabetical by default; a drag-and-drop order saved on this device takes precedence
+  const { order: personOrder, handleReorder } = useListOrder('people')
+  const sortedPersons = sortByListOrder(persons, personOrder, (a, b) =>
+    a.name.localeCompare(b.name, i18n.language, { sensitivity: 'base' })
+  )
+  const filteredPersons = sortedPersons.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase().trim())
   )
 
@@ -153,25 +161,33 @@ export function PeopleManagementView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
-          {filteredPersons.map((person) => {
-            const monthsCount = getParticipatingMonthsCount(person.id)
-            const isInCurrentMonth = currentMonthParticipants.includes(person.id)
-            const canDelete = canDeletePerson(person.id)
+          <SortableList
+            items={filteredPersons}
+            layout="grid"
+            getItemLabel={(person) => person.name}
+            onReorder={(activeId, overId) =>
+              handleReorder(sortedPersons.map((p) => p.id), activeId, overId)
+            }
+            renderItem={(person, dragHandle) => {
+              const monthsCount = getParticipatingMonthsCount(person.id)
+              const isInCurrentMonth = currentMonthParticipants.includes(person.id)
+              const canDelete = canDeletePerson(person.id)
 
-            return (
-              <PersonManagementCard
-                key={person.id}
-                person={person}
-                monthsCount={monthsCount}
-                isInCurrentMonth={isInCurrentMonth}
-                canDelete={canDelete}
-                onEdit={handleOpenEdit}
-                onDeactivate={setPersonToDeactivate}
-                onDeleteRequest={handleDeleteRequest}
-                onReactivate={reactivatePerson}
-              />
-            )
-          })}
+              return (
+                <PersonManagementCard
+                  person={person}
+                  monthsCount={monthsCount}
+                  isInCurrentMonth={isInCurrentMonth}
+                  canDelete={canDelete}
+                  onEdit={handleOpenEdit}
+                  onDeactivate={setPersonToDeactivate}
+                  onDeleteRequest={handleDeleteRequest}
+                  onReactivate={reactivatePerson}
+                  dragHandle={dragHandle}
+                />
+              )
+            }}
+          />
         </div>
       )}
 

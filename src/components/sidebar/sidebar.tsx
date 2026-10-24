@@ -20,10 +20,11 @@ import { AddMonthParticipantsModal } from './add-month-participants-modal'
 import { AddMonthRulesModal } from './add-month-rules-modal'
 import { MonthAvailabilityModal } from './month-availability-modal'
 import { PersonCard } from './person-card'
-import { SortablePersonList } from './sortable-person-list'
-import { sortByPersonOrder, usePersonOrder } from './use-person-order'
+import { useListOrder } from '../../hooks/use-list-order'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear } from '../../utils/date-utils'
+import { sortByListOrder } from '../../utils/list-order'
+import { SortableList } from '../common/sortable-list'
 import { MonthShiftConfigModal } from '../modals/month-shift-config-modal'
 
 import type { Person, ShiftRule } from '../../types'
@@ -92,8 +93,8 @@ export function Sidebar() {
 
   // Active items for current month
   const currentParticipantIds = monthParticipants[currentMonth] || []
-  const { personOrder, handleReorder } = usePersonOrder()
-  const monthPersons = sortByPersonOrder(
+  const { order: personOrder, handleReorder } = useListOrder('month-people')
+  const monthPersons = sortByListOrder(
     persons.filter((p) => currentParticipantIds.includes(p.id)),
     personOrder,
   )
@@ -507,8 +508,9 @@ export function Sidebar() {
                     </button>
                   </div>
                 ) : (
-                  <SortablePersonList
-                    persons={filteredPersons}
+                  <SortableList
+                    items={filteredPersons}
+                    getItemLabel={(person) => person.name}
                     onReorder={(activeId, overId) =>
                       handleReorder(
                         monthPersons.map((p) => p.id),
@@ -516,7 +518,7 @@ export function Sidebar() {
                         overId,
                       )
                     }
-                    renderPerson={(person, dragHandle) => {
+                    renderItem={(person, dragHandle) => {
                       const availDays = getPersonAvailableDays(person.id)
                       const workingDays = getPersonWorkingDaysCount(person.id)
                       const personAvail = availabilities.find(

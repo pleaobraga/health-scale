@@ -198,5 +198,12 @@ describe('RulesManagementView Component', () => {
     expect(screen.queryByText('Máximo 1 turno por dia')).not.toBeInTheDocument()
     expect(screen.getByText(/nenhuma regra encontrada/i)).toBeInTheDocument()
   })
-})
 
+  it('deve exibir a alça de drag and drop para reordenar as regras', () => {
+    renderRulesView()
+
+    expect(screen.getByTestId('drag-handle-rule_max_1_day')).toHaveAccessibleName(
+      'Arrastar para reordenar Máximo 1 turno por dia',
+    )
+  })
+})

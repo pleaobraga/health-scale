@@ -128,5 +128,11 @@ describe('ShiftsManagementView Component', () => {
     expect(created).toBeDefined()
     expect(created?.color.toLowerCase()).toBe('#123456')
   })
-})
 
+  it('deve exibir a alça de drag and drop para reordenar os turnos', () => {
+    renderShiftsView()
+
+    expect(screen.getByTestId('sortable-item-shift_d12')).toBeInTheDocument()
+    expect(screen.getByTestId('drag-handle-shift_d12')).toHaveAccessibleName(/Arrastar para reordenar/)
+  })
+})

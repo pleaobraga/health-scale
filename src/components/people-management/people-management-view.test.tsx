@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import { PeopleManagementView } from './people-management-view'
+import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
 describe('PeopleManagementView Component', () => {
@@ -83,8 +84,8 @@ describe('PeopleManagementView Component', () => {
   it('deve permitir editar um funcionário existente', () => {
     render(<PeopleManagementView />)
 
-    const editBtns = screen.getAllByRole('button', { name: /editar/i })
-    fireEvent.click(editBtns[0]) // Dra. Camila
+    const camilaCard = screen.getByTestId('person-card-p1')
+    fireEvent.click(within(camilaCard).getByRole('button', { name: /editar/i }))
 
     expect(screen.getByText('Editar Funcionário')).toBeInTheDocument()
 
@@ -187,5 +188,25 @@ describe('PeopleManagementView Component', () => {
     fireEvent.click(confirmDeleteBtn)
 
     expect(useScheduleStore.getState().persons.some((p) => p.id === 'p2')).toBe(false)
+  })
+
+  it('deve ordenar os cards em ordem alfabética por padrão e respeitar a ordem salva pelo drag and drop', () => {
+    useScheduleStore.setState({
+      persons: [
+        { id: 'p1', name: 'Carla Souza', color: '#3b82f6', active: true },
+        { id: 'p2', name: 'ana Lima', color: '#10b981', active: true },
+        { id: 'p3', name: 'Bruno Alves', color: '#8b5cf6', active: true },
+      ],
+    })
+    const { unmount } = render(<PeopleManagementView />)
+
+    const getOrder = () => screen.getAllByTestId(/^sortable-item-/).map((el) => el.dataset.testid)
+    expect(getOrder()).toEqual(['sortable-item-p2', 'sortable-item-p3', 'sortable-item-p1'])
+    expect(screen.getByTestId('drag-handle-p1')).toHaveAccessibleName('Arrastar para reordenar Carla Souza')
+    unmount()
+
+    StorageService.saveListOrder('people', ['p1', 'p2'])
+    render(<PeopleManagementView />)
+    expect(getOrder()).toEqual(['sortable-item-p1', 'sortable-item-p2', 'sortable-item-p3'])
   })
 })

@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { AddressManagementView } from './address-management-view'
+import { StorageService } from '../services/storage-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 
 import type { Address } from '../types'
@@ -197,5 +198,14 @@ describe('AddressManagementView', () => {
     render(<AddressManagementView />)
 
     expect(screen.queryByRole('button', { name: /Puxar dados da nuvem/i })).not.toBeInTheDocument()
+  })
+
+  it('deve permitir reordenar os cards via drag and drop respeitando a ordem salva localmente', () => {
+    StorageService.saveListOrder('addresses', ['addr-2', 'addr-1'])
+    render(<AddressManagementView />)
+
+    const order = screen.getAllByTestId(/^sortable-item-/).map((el) => el.dataset.testid)
+    expect(order).toEqual(['sortable-item-addr-2', 'sortable-item-addr-1'])
+    expect(screen.getByTestId('drag-handle-addr-1')).toHaveAccessibleName(/Arrastar para reordenar/)
   })
 })

@@ -76,6 +76,14 @@
   "status": {
     "defaultActive": "Padrão Ativo",
     "defaultInactive": "Padrão Inativo"
+  },
+  "reorder": {
+    "handle": "Arrastar para reordenar {{name}}",
+    "instructions": "Para reordenar, pressione espaço ou Enter na alça, use as setas para mover e pressione espaço ou Enter novamente para soltar. Pressione Esc para cancelar.",
+    "start": "{{name}} selecionado para reordenar.",
+    "over": "{{name}} movido para a posição de {{target}}.",
+    "end": "{{name}} solto na posição de {{target}}.",
+    "cancel": "Reordenação de {{name}} cancelada."
   }
 }
 

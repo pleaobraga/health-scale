@@ -15,7 +15,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { TAILWIND_PALETTE } from '../../constants/tailwind-colors'
+import { useListOrder } from '../../hooks/use-list-order'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { sortByListOrder } from '../../utils/list-order'
+import { SortableList } from '../common/sortable-list'
 
 import type { ShiftDefinition } from '../../types'
 
@@ -42,7 +45,9 @@ export function ShiftsManagementView() {
   const [color, setColor] = useState('#3B82F6')
   const [enabledByDefault, setEnabledByDefault] = useState(true)
 
-  const filteredShifts = shiftDefinitions.filter((shift) => {
+  const { order: shiftOrder, handleReorder } = useListOrder('shifts')
+  const sortedShifts = sortByListOrder(shiftDefinitions, shiftOrder)
+  const filteredShifts = sortedShifts.filter((shift) => {
     const q = searchQuery.toLowerCase().trim()
     if (!q) return true
     return (
@@ -183,75 +188,85 @@ export function ShiftsManagementView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredShifts.map((shift) => (
-            <div
-              key={shift.id}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between gap-4 transition hover:border-slate-300 dark:hover:border-slate-700"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <span
-                    style={{ backgroundColor: shift.color }}
-                    className="px-2.5 py-1 rounded-lg text-white font-extrabold text-xs shadow-2xs"
-                  >
-                    {shift.code}
-                  </span>
+          <SortableList
+            items={filteredShifts}
+            layout="grid"
+            getItemLabel={(shift) => `${shift.code} – ${shift.name}`}
+            onReorder={(activeId, overId) =>
+              handleReorder(sortedShifts.map((item) => item.id), activeId, overId)
+            }
+            renderItem={(shift, dragHandle) => (
+              <div
+                className="h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between gap-4 transition hover:border-slate-300 dark:hover:border-slate-700"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      {dragHandle}
+                      <span
+                        style={{ backgroundColor: shift.color }}
+                        className="px-2.5 py-1 rounded-lg text-white font-extrabold text-xs shadow-2xs"
+                      >
+                        {shift.code}
+                      </span>
+                    </div>
 
-                  {/* Enabled By Default Badge */}
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      shift.enabledByDefault
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    {shift.enabledByDefault ? t('common:status.defaultActive') : t('common:status.defaultInactive')}
-                  </span>
-                </div>
+                    {/* Enabled By Default Badge */}
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        shift.enabledByDefault
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                      }`}
+                    >
+                      {shift.enabledByDefault ? t('common:status.defaultActive') : t('common:status.defaultInactive')}
+                    </span>
+                  </div>
 
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    {shift.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span>{t('settings:shifts.startTime')}: <strong>{shift.startTime}</strong></span>
-                    <span>•</span>
-                    <span>{t('settings:shifts.durationHours')}: <strong>{t('settings:shifts.hoursBadge', { hours: shift.durationHours })}</strong></span>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      {shift.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      <span>{t('settings:shifts.startTime')}: <strong>{shift.startTime}</strong></span>
+                      <span>•</span>
+                      <span>{t('settings:shifts.durationHours')}: <strong>{t('settings:shifts.hoursBadge', { hours: shift.durationHours })}</strong></span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Actions Footer */}
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(shift)}
+                    title={t('settings:shifts.edit')}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => duplicateShiftDefinition(shift.id)}
+                    title={t('settings:shifts.duplicate')}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirmId(shift.id)}
+                    title={t('settings:shifts.delete')}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-
-              {/* Actions Footer */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEditModal(shift)}
-                  title={t('settings:shifts.edit')}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => duplicateShiftDefinition(shift.id)}
-                  title={t('settings:shifts.duplicate')}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDeleteConfirmId(shift.id)}
-                  title={t('settings:shifts.delete')}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
+            )}
+          />
         </div>
       )}
 

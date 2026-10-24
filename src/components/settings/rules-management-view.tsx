@@ -16,7 +16,10 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useListOrder } from '../../hooks/use-list-order'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { sortByListOrder } from '../../utils/list-order'
+import { SortableList } from '../common/sortable-list'
 
 import type {
   PeriodScope,
@@ -60,7 +63,9 @@ export function RulesManagementView() {
   const [targetShiftIds, setTargetShiftIds] = useState<string[]>([])
   const [enabledByDefault, setEnabledByDefault] = useState(true)
 
-  const filteredRules = shiftRules.filter((rule) => {
+  const { order: ruleOrder, handleReorder } = useListOrder('rules')
+  const sortedRules = sortByListOrder(shiftRules, ruleOrder)
+  const filteredRules = sortedRules.filter((rule) => {
     const q = searchQuery.toLowerCase().trim()
     if (!q) return true
     return (
@@ -330,16 +335,23 @@ export function RulesManagementView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredRules.map((rule) => {
+          <SortableList
+            items={filteredRules}
+            layout="grid"
+            getItemLabel={(rule) => rule.name}
+            onReorder={(activeId, overId) =>
+              handleReorder(sortedRules.map((item) => item.id), activeId, overId)
+            }
+            renderItem={(rule, dragHandle) => {
               const isError = rule.severity === 'ERROR'
               return (
                 <div
-                  key={rule.id}
-                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col justify-between gap-4 transition hover:shadow-xs"
+                  className="h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col justify-between gap-4 transition hover:shadow-xs"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
+                        {dragHandle}
                         {/* Severity Badge */}
                         <span
                           title={
@@ -535,7 +547,8 @@ export function RulesManagementView() {
                   </div>
                 </div>
               )
-            })}
+            }}
+          />
           </div>
         )}
 

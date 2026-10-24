@@ -215,12 +215,12 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
   })
 
   it('deve exibir os cards na ordem salva localmente e uma alça de arrastar em cada card', () => {
-    StorageService.savePersonOrder(['p2', 'p1'])
+    StorageService.saveListOrder('month-people', ['p2', 'p1'])
     renderSidebar()
 
-    const cards = screen.getAllByTestId(/^sortable-person-/)
-    expect(cards.map((c) => c.dataset.testid)).toEqual(['sortable-person-p2', 'sortable-person-p1'])
-    expect(screen.getByTestId('person-drag-handle-p1')).toHaveAccessibleName(
+    const cards = screen.getAllByTestId(/^sortable-item-/)
+    expect(cards.map((c) => c.dataset.testid)).toEqual(['sortable-item-p2', 'sortable-item-p1'])
+    expect(screen.getByTestId('drag-handle-p1')).toHaveAccessibleName(
       'Arrastar para reordenar Dra. Camila Santos',
     )
   })

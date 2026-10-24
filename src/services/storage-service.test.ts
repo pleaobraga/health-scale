@@ -176,30 +176,34 @@ describe('StorageService - Persistência Local-First', () => {
     expect(StorageService.getUserDataset('user_admin_123')).toBeNull()
   })
 
-  it('deve salvar a ordem das pessoas separada por perfil de convidado / usuário', () => {
+  it('deve salvar a ordem das listas separada por lista e por perfil de convidado / usuário', () => {
     StorageService.setActiveGuestId('guest-a')
-    StorageService.savePersonOrder(['p2', 'p1'])
+    StorageService.saveListOrder('people', ['p2', 'p1'])
+    StorageService.saveListOrder('shifts', ['s1'])
 
     StorageService.setActiveGuestId('guest-b')
-    expect(StorageService.getPersonOrder()).toEqual([])
-    StorageService.savePersonOrder(['p1'])
+    expect(StorageService.getListOrder('people')).toEqual([])
+    StorageService.saveListOrder('people', ['p1'])
 
     StorageService.setActiveGuestId('guest-a')
-    expect(StorageService.getPersonOrder()).toEqual(['p2', 'p1'])
-    expect(StorageService.getPersonOrderKey()).toBe('scale_manager_person_order_v1_guest_guest-a')
+    expect(StorageService.getListOrder('people')).toEqual(['p2', 'p1'])
+    expect(StorageService.getListOrder('shifts')).toEqual(['s1'])
+    expect(StorageService.getListOrderKey('people')).toBe('scale_manager_list_order_v1_people_guest_guest-a')
     StorageService.setActiveGuestId(null)
   })
 
-  it('não deve incluir a ordem das pessoas no dataset (backup / sincronização) e deve limpá-la ao apagar os dados locais', () => {
-    StorageService.savePersonOrder(['p1', 'p2'])
-    expect(JSON.stringify(StorageService.getCurrentDataset())).not.toContain('person_order')
+  it('não deve incluir a ordem das listas no dataset (backup / sincronização) e deve limpá-la ao apagar os dados locais', () => {
+    StorageService.saveListOrder('month-people', ['p1', 'p2'])
+    StorageService.saveListOrder('addresses', ['a1'])
+    expect(JSON.stringify(StorageService.getCurrentDataset())).not.toContain('list_order')
 
     StorageService.clearAllLocalData()
-    expect(StorageService.getPersonOrder()).toEqual([])
+    expect(StorageService.getListOrder('month-people')).toEqual([])
+    expect(StorageService.getListOrder('addresses')).toEqual([])
   })
 
-  it('deve ignorar valores inválidos salvos para a ordem das pessoas', () => {
-    localStorage.setItem(StorageService.getPersonOrderKey(), '{"not":"an array"}')
-    expect(StorageService.getPersonOrder()).toEqual([])
+  it('deve ignorar valores inválidos salvos para a ordem das listas', () => {
+    localStorage.setItem(StorageService.getListOrderKey('rules'), '{"not":"an array"}')
+    expect(StorageService.getListOrder('rules')).toEqual([])
   })
 })
