@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MonthPaymentsModal } from './month-payments-modal'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
-describe('MonthPaymentsModal Component', () => {
+describe('MonthPaymentsModal', () => {
   beforeEach(() => {
     useScheduleStore.setState({
       persons: [
@@ -75,7 +75,7 @@ describe('MonthPaymentsModal Component', () => {
     expect(screen.getByText('3 plantões')).toBeInTheDocument()
   })
 
-  it('permite expandir os detalhes de um profissional para visualizar os plantões e valores diários', () => {
+  it('expands a professional to show their shifts and daily amounts', () => {
     render(
       <MonthPaymentsModal
         isOpen={true}
@@ -108,7 +108,7 @@ describe('MonthPaymentsModal Component', () => {
     expect(screen.queryByText('Dr. Lucas Ferreira')).not.toBeInTheDocument()
   })
 
-  it('calcula corretamente valores quando profissionais estão alocados via assignments legados', () => {
+  it('computes the amounts for professionals assigned through legacy assignments', () => {
     useScheduleStore.setState({
       persons: [
         { id: 'p1', name: 'Dr. Lucas Ferreira', color: '#3b82f6', active: true },

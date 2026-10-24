@@ -1,368 +1,344 @@
 import * as firestoreModule from 'firebase/firestore'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-import { CloudSyncService, CLOUD_SYNC_STORAGE_KEY } from './cloud-sync-service'
+import {
+  CloudSyncService,
+  CLOUD_SYNC_STORAGE_KEY,
+  MONTH_DOC_SCHEMA_VERSION,
+  getMonthsInScheduleData,
+  mergeMonthDocs,
+  sliceMonthScheduleData,
+} from './cloud-sync-service'
+import { StorageService } from './storage-service'
+
+const mockAuth = vi.hoisted(() => ({ currentUser: null as { uid: string } | null }))
+
+vi.mock('./firebase', () => ({ auth: mockAuth, db: {} }))
 
 vi.mock('firebase/firestore', async (importOriginal) => {
   const actual = await importOriginal<typeof firestoreModule>()
   return {
     ...actual,
     doc: vi.fn().mockImplementation((_db, collection, id) => ({ path: `${collection}/${id}` })),
+    collection: vi.fn().mockImplementation((_db, path) => ({ path })),
     getDoc: vi.fn().mockResolvedValue({
       exists: () => true,
-      data: () => ({
-        assignments: { '2026-10-01': ['p1'] },
-        monthParticipants: { '2026-10': ['p1'] },
-      }),
+      data: () => ({ role: 'admin' }),
     }),
+    getDocsFromServer: vi.fn().mockResolvedValue({ docs: [] }),
     setDoc: vi.fn().mockResolvedValue(undefined),
     serverTimestamp: vi.fn().mockReturnValue('mock-server-timestamp'),
   }
 })
 
-describe('CloudSyncService - On-Demand Refresh and Explicit Save', () => {
+const mockScheduleDocs = (docs: Record<string, Record<string, unknown>>) => {
+  vi.mocked(firestoreModule.getDocsFromServer).mockResolvedValueOnce({
+    docs: Object.entries(docs).map(([id, data]) => ({ id, data: () => data })),
+  } as unknown as firestoreModule.QuerySnapshot)
+}
+
+const timestamp = (millis: number) => ({ toMillis: () => millis })
+
+const fullDataset = {
+  assignments: { '2026-10-01': ['p1'], '2026-11-03': ['p2'] },
+  dayShiftAssignments: { '2026-10-01': { shift_d12: 'p1' } },
+  monthParticipants: { '2026-10': ['p1'], '2026-11': ['p2'] },
+  availabilities: [
+    { personId: 'p1', month: '2026-10', availableDays: [1] },
+    { personId: 'p2', month: '2026-11', availableDays: [3] },
+  ],
+  events: [
+    { id: 'e1', date: '2026-10-09', title: 'Meeting' },
+    { id: 'e2', date: '2026-11-20', title: 'Training' },
+  ],
+  monthDailyShifts: { '2026-11': { shift_d12: [3] } },
+  monthActiveShifts: { '2026-10': ['shift_d12'] },
+  monthActiveRules: { '2026-10': ['rule_1'] },
+}
+
+describe('CloudSyncService', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.clearAllMocks()
-    CloudSyncService.setSyncEnabled(false)
+    mockAuth.currentUser = null
+    CloudSyncService.clearCachedAdminStatus()
   })
 
-  it('deve gerenciar o toggle de sincronização no localStorage corretamente', () => {
-    expect(CloudSyncService.isSyncEnabled()).toBe(false)
-
-    CloudSyncService.setSyncEnabled(true)
-    expect(localStorage.getItem(CLOUD_SYNC_STORAGE_KEY)).toBe('true')
-    expect(CloudSyncService.isSyncEnabled()).toBe(true)
-
-    CloudSyncService.setSyncEnabled(false)
-    expect(localStorage.getItem(CLOUD_SYNC_STORAGE_KEY)).toBe('false')
-    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('NÃO deve buscar dados no Firestore (getDoc) no refresh se o toggle estiver DESLIGADO', async () => {
-    CloudSyncService.setSyncEnabled(false)
+  describe('sync toggle', () => {
+    it('stores the toggle in localStorage', () => {
+      expect(CloudSyncService.isSyncEnabled()).toBe(false)
 
-    const result = await CloudSyncService.fetchMonthFromCloud('2026-10', true)
+      CloudSyncService.setSyncEnabled(true)
+      expect(CloudSyncService.isSyncEnabled()).toBe(true)
 
-    expect(firestoreModule.getDoc).not.toHaveBeenCalled()
-    expect(result).toBeNull()
-  })
+      CloudSyncService.setSyncEnabled(false)
+      expect(CloudSyncService.isSyncEnabled()).toBe(false)
+    })
 
-  it('NÃO deve buscar dados no Firestore (getDoc) para usuários comuns (não-admin)', async () => {
-    CloudSyncService.setSyncEnabled(true)
+    it('keeps a separate toggle per account', () => {
+      StorageService.setActiveUserId('admin_a')
+      CloudSyncService.setSyncEnabled(true)
+      expect(localStorage.getItem(`${CLOUD_SYNC_STORAGE_KEY}_admin_a`)).toBe('true')
 
-    const result = await CloudSyncService.fetchMonthFromCloud('2026-10', false)
+      StorageService.setActiveUserId('admin_b')
+      expect(CloudSyncService.isSyncEnabled()).toBe(false)
 
-    expect(firestoreModule.getDoc).not.toHaveBeenCalled()
-    expect(result).toBeNull()
-  })
+      StorageService.setActiveUserId('admin_a')
+      expect(CloudSyncService.isSyncEnabled()).toBe(true)
+    })
 
-  it('deve buscar dados via getDoc no refresh quando o toggle estiver LIGADO e o usuário for admin', async () => {
-    CloudSyncService.setSyncEnabled(true)
+    it('moves the old device-wide toggle to the first account that reads it', () => {
+      localStorage.setItem(CLOUD_SYNC_STORAGE_KEY, 'true')
+      StorageService.setActiveUserId('admin_a')
 
-    const result = await CloudSyncService.fetchMonthFromCloud('2026-10', true)
+      expect(CloudSyncService.isSyncEnabled()).toBe(true)
+      expect(localStorage.getItem(`${CLOUD_SYNC_STORAGE_KEY}_admin_a`)).toBe('true')
+      expect(localStorage.getItem(CLOUD_SYNC_STORAGE_KEY)).toBeNull()
 
-    expect(firestoreModule.getDoc).toHaveBeenCalledTimes(1)
-    expect(firestoreModule.getDoc).toHaveBeenCalledWith({ path: 'schedules/2026-10' })
-    expect(result).toEqual({
-      month: '2026-10',
-      assignments: { '2026-10-01': ['p1'] },
-      monthParticipants: { '2026-10': ['p1'] },
-      availabilities: undefined,
-      events: undefined,
-      dayShiftAssignments: undefined,
-      monthDailyShifts: undefined,
-      monthActiveShifts: undefined,
-      monthActiveRules: undefined,
-      updatedAt: undefined,
+      StorageService.setActiveUserId('admin_b')
+      expect(CloudSyncService.isSyncEnabled()).toBe(false)
     })
   })
 
-  it('NÃO deve salvar dados no Firestore se o toggle estiver DESLIGADO', async () => {
-    CloudSyncService.setSyncEnabled(false)
+  describe('admin check', () => {
+    it('reuses the cached role instead of reading Firestore on every write', async () => {
+      mockAuth.currentUser = { uid: 'u1' }
+      CloudSyncService.setCachedAdminStatus('u1', true)
 
-    const success = await CloudSyncService.saveMonthToCloud(
-      '2026-10',
-      { assignments: { '2026-10-01': ['p1'] } },
-      true,
-    )
+      expect(await CloudSyncService.isCurrentUserAdmin()).toBe(true)
+      expect(firestoreModule.getDoc).not.toHaveBeenCalled()
+    })
 
-    expect(firestoreModule.setDoc).not.toHaveBeenCalled()
-    expect(success).toBe(false)
+    it('reads the role from Firestore only once without a cache', async () => {
+      mockAuth.currentUser = { uid: 'u1' }
+
+      expect(await CloudSyncService.isCurrentUserAdmin()).toBe(true)
+      expect(await CloudSyncService.isCurrentUserAdmin()).toBe(true)
+      expect(firestoreModule.getDoc).toHaveBeenCalledTimes(1)
+    })
   })
 
-  it('NÃO deve salvar dados no Firestore se o usuário for não-admin', async () => {
-    CloudSyncService.setSyncEnabled(true)
+  describe('month doc helpers', () => {
+    it('lists every month referenced by the dataset', () => {
+      expect(getMonthsInScheduleData(fullDataset)).toEqual(['2026-10', '2026-11'])
+    })
 
-    const success = await CloudSyncService.saveMonthToCloud(
-      '2026-10',
-      { assignments: { '2026-10-01': ['p1'] } },
-      false,
-    )
+    it('extracts only the data of the given month', () => {
+      expect(sliceMonthScheduleData(fullDataset, '2026-11')).toEqual({
+        assignments: { '2026-11-03': ['p2'] },
+        dayShiftAssignments: {},
+        monthParticipants: { '2026-11': ['p2'] },
+        monthDailyShifts: { '2026-11': { shift_d12: [3] } },
+        monthActiveShifts: {},
+        monthActiveRules: {},
+        availabilities: [{ personId: 'p2', month: '2026-11', availableDays: [3] }],
+        events: [{ id: 'e2', date: '2026-11-20', title: 'Training' }],
+      })
+    })
 
-    expect(firestoreModule.setDoc).not.toHaveBeenCalled()
-    expect(success).toBe(false)
-  })
-
-  it('deve salvar dados no Firestore (setDoc) apenas ao salvar explicitamente com o toggle LIGADO e sendo admin', async () => {
-    CloudSyncService.setSyncEnabled(true)
-
-    const success = await CloudSyncService.saveMonthToCloud(
-      '2026-10',
-      { assignments: { '2026-10-05': ['p2'] } },
-      true,
-    )
-
-    expect(firestoreModule.setDoc).toHaveBeenCalledTimes(1)
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/2026-10' },
-      expect.objectContaining({
-        month: '2026-10',
-        assignments: { '2026-10-05': ['p2'] },
-        updatedAt: 'mock-server-timestamp',
-      }),
-      { merge: true },
-    )
-    expect(success).toBe(true)
-  })
-
-  it('deve realizar a busca consolidada com pullAllFromCloud no clique do botão em configurações', async () => {
-    CloudSyncService.setSyncEnabled(true)
-
-    const result = await CloudSyncService.pullAllFromCloud('2026-10', true)
-
-    expect(firestoreModule.getDoc).toHaveBeenCalled()
-    expect(result.monthData).toBeDefined()
-    expect(result.monthData?.month).toBe('2026-10')
-  })
-
-  it('deve sincronizar pessoas no Firestore via savePeopleToCloud quando o toggle estiver ativo', async () => {
-    CloudSyncService.setSyncEnabled(true)
-
-    const success = await CloudSyncService.savePeopleToCloud(
-      [{ id: 'p1', name: 'Dr. Teste', color: '#6366f1', active: true }],
-      true,
-    )
-
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/_master_people' },
-      expect.objectContaining({
-        persons: [{ id: 'p1', name: 'Dr. Teste', color: '#6366f1', active: true }],
-        updatedAt: 'mock-server-timestamp',
-      }),
-      { merge: true },
-    )
-    expect(success).toBe(true)
-  })
-
-  it('deve sincronizar endereços no Firestore via saveAddressesToCloud limpando propriedades undefined', async () => {
-    CloudSyncService.setSyncEnabled(true)
-
-    const success = await CloudSyncService.saveAddressesToCloud(
-      [
+    it('uses the newest legacy doc as the base and applies the new-format months over it', () => {
+      const merged = mergeMonthDocs([
         {
-          id: 'addr-1',
-          name: 'Consultório Central',
-          street: 'Av. Paulista',
-          number: '1000',
-          complement: undefined,
-          neighborhood: undefined,
-          city: 'São Paulo',
+          month: '2026-09',
+          updatedAt: timestamp(1),
+          assignments: { '2026-09-01': ['velho'] },
         },
-      ],
-      true,
-    )
-
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/_master_addresses' },
-      expect.objectContaining({
-        addresses: [
-          {
-            id: 'addr-1',
-            name: 'Consultório Central',
-            street: 'Av. Paulista',
-            number: '1000',
-            city: 'São Paulo',
-          },
-        ],
-        updatedAt: 'mock-server-timestamp',
-      }),
-      { merge: true },
-    )
-    expect(success).toBe(true)
-  })
-
-  it('deve realizar pullAllFromCloud com sucesso mesmo se o toggle de sync estiver DESLIGADO', async () => {
-    CloudSyncService.setSyncEnabled(false)
-
-    const result = await CloudSyncService.pullAllFromCloud('2026-10', true)
-
-    expect(firestoreModule.getDoc).toHaveBeenCalled()
-    expect(result.monthData).toBeDefined()
-    expect(result.monthData?.month).toBe('2026-10')
-    // Verifica que o toggle continua desligado
-    expect(CloudSyncService.isSyncEnabled()).toBe(false)
-  })
-
-  it('deve executar pushAllToCloud salvando dados locais no Firestore sem alterar nem exigir o toggle de sync', async () => {
-    CloudSyncService.setSyncEnabled(false)
-
-    const success = await CloudSyncService.pushAllToCloud(
-      '2026-10',
-      {
-        monthData: { assignments: { '2026-10-01': ['p1'] } },
-        persons: [{ id: 'p1', name: 'Dr. Teste', color: '#6366f1', active: true }],
-        addresses: [{ id: 'addr-1', name: 'Clínica', street: 'Rua 1', number: '10' }],
-      },
-      true,
-      true,
-    )
-
-    expect(success).toBe(true)
-    expect(firestoreModule.setDoc).toHaveBeenCalledTimes(3)
-    // O toggle de sync não pode ter sido alterado
-    expect(CloudSyncService.isSyncEnabled()).toBe(false)
-  })
-
-  it('deve sincronizar definições de turnos e regras no Firestore via saveShiftsToCloud e saveRulesToCloud', async () => {
-    CloudSyncService.setSyncEnabled(true)
-
-    const shiftsSuccess = await CloudSyncService.saveShiftsToCloud(
-      [
         {
-          id: 'shift-1',
-          name: 'Plantão Diurno',
-          code: 'D12',
-          startTime: '07:00',
-          durationHours: 12,
-          color: '#3b82f6',
-          enabledByDefault: true,
-          createdAt: '2026-10-20T00:00:00.000Z',
-          updatedAt: '2026-10-20T00:00:00.000Z',
+          month: '2026-10',
+          updatedAt: timestamp(2),
+          assignments: { '2026-09-01': ['p1'], '2026-10-01': ['p1'], '2026-10-02': ['p1'] },
+          monthParticipants: { '2026-09': ['p1'], '2026-10': ['p1'] },
         },
-      ],
-      true,
-    )
-    expect(shiftsSuccess).toBe(true)
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/_master_shifts' },
-      expect.objectContaining({
-        shifts: expect.any(Array),
-        updatedAt: 'mock-server-timestamp',
-      }),
-      { merge: true },
-    )
-
-    const rulesSuccess = await CloudSyncService.saveRulesToCloud(
-      [
         {
-          id: 'rule-1',
-          name: 'Descanso 11h',
-          description: 'Regra CLT',
-          type: 'MIN_REST_HOURS',
-          enabledByDefault: true,
-          severity: 'ERROR',
-          parameters: { minRestHours: 11 },
-          createdAt: '2026-10-20T00:00:00.000Z',
-          updatedAt: '2026-10-20T00:00:00.000Z',
+          month: '2026-10',
+          schemaVersion: MONTH_DOC_SCHEMA_VERSION,
+          assignments: { '2026-10-01': ['p2'] },
+          monthParticipants: { '2026-10': ['p2'] },
         },
-      ],
-      true,
-    )
-    expect(rulesSuccess).toBe(true)
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/_master_rules' },
-      expect.objectContaining({
-        rules: expect.any(Array),
-        updatedAt: 'mock-server-timestamp',
-      }),
-      { merge: true },
-    )
+      ])
+
+      // 2026-09 comes from the newest legacy doc; 2026-10 is fully replaced (day 02 was removed)
+      expect(merged?.assignments).toEqual({ '2026-09-01': ['p1'], '2026-10-01': ['p2'] })
+      expect(merged?.monthParticipants).toEqual({ '2026-09': ['p1'], '2026-10': ['p2'] })
+    })
+
+    it('returns null when there are no month docs', () => {
+      expect(mergeMonthDocs([])).toBeNull()
+    })
   })
 
-  it('deve incluir turnos e regras no pushAllToCloud quando fornecidos', async () => {
-    CloudSyncService.setSyncEnabled(false)
+  describe('writes', () => {
+    it('does not write to Firestore when the toggle is off', async () => {
+      const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, true)
+      expect(result).toBe(false)
+      expect(firestoreModule.setDoc).not.toHaveBeenCalled()
+    })
 
-    const success = await CloudSyncService.pushAllToCloud(
-      '2026-10',
-      {
-        monthData: {
-          assignments: { '2026-10-01': ['p1'] },
-          dayShiftAssignments: { '2026-10-01': { 's1': 'p1' } },
+    it('does not write to Firestore for non-admin users', async () => {
+      CloudSyncService.setSyncEnabled(true)
+      const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, false)
+      expect(result).toBe(false)
+      expect(firestoreModule.setDoc).not.toHaveBeenCalled()
+    })
+
+    it('replaces the month doc (no merge) with only that month data', async () => {
+      CloudSyncService.setSyncEnabled(true)
+
+      const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, true)
+
+      expect(result).toBe(true)
+      expect(firestoreModule.setDoc).toHaveBeenCalledTimes(1)
+      expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+        { path: 'schedules/2026-10' },
+        {
+          ...sliceMonthScheduleData(fullDataset, '2026-10'),
+          month: '2026-10',
+          schemaVersion: MONTH_DOC_SCHEMA_VERSION,
+          updatedAt: 'mock-server-timestamp',
         },
-        persons: [{ id: 'p1', name: 'Dr. Teste', color: '#6366f1', active: true }],
-        addresses: [],
-        shifts: [
-          {
-            id: 's1',
-            name: 'Diurno',
-            code: 'D',
-            startTime: '07:00',
-            durationHours: 12,
-            color: '#000',
-            enabledByDefault: true,
-            createdAt: '2026-10-20T00:00:00.000Z',
-            updatedAt: '2026-10-20T00:00:00.000Z',
-          },
-        ],
-        rules: [
-          {
-            id: 'r1',
-            name: 'Regra',
-            description: '',
-            type: 'CONSECUTIVE_DAYS_LIMIT',
-            enabledByDefault: true,
-            severity: 'WARNING',
-            parameters: { consecutiveDaysLimit: 3 },
-            createdAt: '2026-10-20T00:00:00.000Z',
-            updatedAt: '2026-10-20T00:00:00.000Z',
-          },
-        ],
-      },
-      true,
-      true,
-    )
+      )
+    })
 
-    expect(success).toBe(true)
-    expect(firestoreModule.setDoc).toHaveBeenCalledTimes(5)
+    it('syncs master lists without undefined properties', async () => {
+      CloudSyncService.setSyncEnabled(true)
+
+      const result = await CloudSyncService.saveAddressesToCloud(
+        [{ id: 'a1', label: 'Clinic', street: 'Main St', number: undefined } as never],
+        true,
+      )
+
+      expect(result).toBe(true)
+      expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+        { path: 'schedules/_master_addresses' },
+        {
+          addresses: [{ id: 'a1', label: 'Clinic', street: 'Main St' }],
+          updatedAt: 'mock-server-timestamp',
+        },
+      )
+    })
+
+    it('returns false when Firestore rejects the write', async () => {
+      CloudSyncService.setSyncEnabled(true)
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.mocked(firestoreModule.setDoc).mockRejectedValueOnce(new Error('permission-denied'))
+
+      expect(await CloudSyncService.savePeopleToCloud([], true)).toBe(false)
+    })
+
+    it('does not wait for the server while offline (the write stays queued)', async () => {
+      CloudSyncService.setSyncEnabled(true)
+      vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+      vi.mocked(firestoreModule.setDoc).mockReturnValueOnce(new Promise<void>(() => {}))
+
+      const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, true)
+
+      expect(result).toBe(true)
+      expect(firestoreModule.setDoc).toHaveBeenCalledTimes(1)
+    })
   })
 
-  it('deve salvar documentos na nuvem para todos os meses presentes em monthData (incluindo meses ainda não escalados) durante pushAllToCloud', async () => {
-    CloudSyncService.setSyncEnabled(false)
-
-    const success = await CloudSyncService.pushAllToCloud(
-      '2026-10',
-      {
-        monthData: {
-          assignments: {},
-          monthParticipants: { '2026-11': ['p1'] },
-          availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [2, 8] }],
-          monthDailyShifts: { '2026-11': { shift_d12: [2, 8] } },
+  describe('pullAllFromCloud', () => {
+    it('merges every month and the master lists read from the server, even with the toggle off', async () => {
+      mockScheduleDocs({
+        '2026-10': {
+          schemaVersion: MONTH_DOC_SCHEMA_VERSION,
+          ...sliceMonthScheduleData(fullDataset, '2026-10'),
         },
-        persons: [{ id: 'p1', name: 'Dra. Marina', color: '#10b981', active: true }],
-        addresses: [],
-      },
-      true,
-      true,
-    )
+        '2026-11': {
+          schemaVersion: MONTH_DOC_SCHEMA_VERSION,
+          ...sliceMonthScheduleData(fullDataset, '2026-11'),
+        },
+        _master_people: { persons: [{ id: 'p1', name: 'Dra. Marina', color: '#10b981' }] },
+        _master_addresses: { addresses: [] },
+        _master_shifts: { shifts: [{ id: 'shift_d12' }] },
+      })
 
-    expect(success).toBe(true)
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/2026-10' },
-      expect.objectContaining({
-        month: '2026-10',
-        monthParticipants: { '2026-11': ['p1'] },
-      }),
-      { merge: true },
-    )
-    expect(firestoreModule.setDoc).toHaveBeenCalledWith(
-      { path: 'schedules/2026-11' },
-      expect.objectContaining({
-        month: '2026-11',
-        monthParticipants: { '2026-11': ['p1'] },
-        monthDailyShifts: { '2026-11': { shift_d12: [2, 8] } },
-      }),
-      { merge: true },
-    )
+      const result = await CloudSyncService.pullAllFromCloud(true)
+
+      expect(result.status).toBe('ok')
+      expect(result.monthData?.assignments).toEqual(fullDataset.assignments)
+      expect(result.monthData?.events).toEqual(fullDataset.events)
+      expect(result.persons).toEqual([{ id: 'p1', name: 'Dra. Marina', color: '#10b981' }])
+      expect(result.addresses).toEqual([])
+      expect(result.shifts).toEqual([{ id: 'shift_d12' }])
+      expect(result.rules).toBeNull()
+      expect(firestoreModule.getDoc).not.toHaveBeenCalled()
+    })
+
+    it('does not read data for non-admin users', async () => {
+      const result = await CloudSyncService.pullAllFromCloud(false)
+      expect(result.status).toBe('unauthorized')
+      expect(firestoreModule.getDocsFromServer).not.toHaveBeenCalled()
+    })
+
+    it('returns offline without using the local cache when there is no connection', async () => {
+      vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+      const result = await CloudSyncService.pullAllFromCloud(true)
+
+      expect(result.status).toBe('offline')
+      expect(result.monthData).toBeNull()
+      expect(firestoreModule.getDocsFromServer).not.toHaveBeenCalled()
+    })
+
+    it('returns offline when the server is unavailable', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.mocked(firestoreModule.getDocsFromServer).mockRejectedValueOnce({ code: 'unavailable' })
+
+      const result = await CloudSyncService.pullAllFromCloud(true)
+      expect(result.status).toBe('offline')
+    })
+  })
+
+  describe('pushAllToCloud', () => {
+    it('writes every local month, clears cloud-only months and sends the master lists without the toggle', async () => {
+      mockScheduleDocs({ '2026-08': { assignments: { '2026-08-01': ['p9'] } }, _master_people: {} })
+
+      const success = await CloudSyncService.pushAllToCloud(
+        {
+          monthData: fullDataset,
+          persons: [{ id: 'p1', name: 'Dra. Marina', color: '#10b981', active: true }],
+          addresses: [],
+          shifts: [],
+          rules: [],
+        },
+        true,
+        true,
+        ['2026-12'],
+      )
+
+      expect(success).toBe(true)
+      const savedPaths = vi
+        .mocked(firestoreModule.setDoc)
+        .mock.calls.map(([ref]) => (ref as unknown as { path: string }).path)
+      expect(savedPaths.sort()).toEqual([
+        'schedules/2026-08',
+        'schedules/2026-10',
+        'schedules/2026-11',
+        'schedules/2026-12',
+        'schedules/_master_addresses',
+        'schedules/_master_people',
+        'schedules/_master_rules',
+        'schedules/_master_shifts',
+      ])
+      expect(firestoreModule.setDoc).toHaveBeenCalledWith(
+        { path: 'schedules/2026-08' },
+        expect.objectContaining({ assignments: {}, schemaVersion: MONTH_DOC_SCHEMA_VERSION }),
+      )
+      expect(CloudSyncService.isSyncEnabled()).toBe(false)
+    })
+
+    it('sends nothing for non-admin users', async () => {
+      const success = await CloudSyncService.pushAllToCloud(
+        { monthData: fullDataset, persons: [], addresses: [] },
+        false,
+      )
+      expect(success).toBe(false)
+      expect(firestoreModule.setDoc).not.toHaveBeenCalled()
+    })
   })
 })

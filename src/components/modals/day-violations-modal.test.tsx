@@ -5,7 +5,7 @@ import { DayViolationsModal } from './day-violations-modal'
 
 import type { ValidationError, Person, ShiftRule } from '../../types'
 
-describe('DayViolationsModal Component', () => {
+describe('DayViolationsModal', () => {
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila', color: '#3B82F6' },
   ]
@@ -36,7 +36,7 @@ describe('DayViolationsModal Component', () => {
     },
   ]
 
-  it('não deve renderizar nada quando isOpen for false', () => {
+  it('renders nothing when isOpen is false', () => {
     const { container } = render(
       <DayViolationsModal
         isOpen={false}
@@ -51,7 +51,7 @@ describe('DayViolationsModal Component', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('deve renderizar o título da data e a lista de violações detalhada', () => {
+  it('renders the date title and the detailed list of violations', () => {
     render(
       <DayViolationsModal
         isOpen={true}
@@ -72,7 +72,7 @@ describe('DayViolationsModal Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve disparar onClose ao clicar no botão fechar', () => {
+  it('calls onClose from the close button', () => {
     const onClose = vi.fn()
     render(
       <DayViolationsModal

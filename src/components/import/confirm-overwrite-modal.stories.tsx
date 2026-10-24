@@ -1,3 +1,5 @@
+import { fn } from 'storybook/test'
+
 import { ConfirmOverwriteModal } from './confirm-overwrite-modal'
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -12,8 +14,8 @@ const meta: Meta<typeof ConfirmOverwriteModal> = {
   args: {
     isOpen: true,
     isRestoring: false,
-    onConfirm: () => alert('Confirmado!'),
-    onCancel: () => alert('Cancelado!'),
+    onConfirm: fn(),
+    onCancel: fn(),
   },
 }
 

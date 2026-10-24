@@ -5,14 +5,14 @@ import { PersonCard } from './person-card'
 
 import type { Person } from '../../types'
 
-describe('PersonCard Component', () => {
+describe('PersonCard', () => {
   const mockPerson: Person = {
     id: 'p1',
     name: 'Dra. Camila Santos',
     color: '#3b82f6',
   }
 
-  it('deve renderizar nome, dias em que está trabalhando e contagem de dias disponíveis', () => {
+  it('renders the name, the working days and the available days count', () => {
     render(
       <PersonCard
         person={mockPerson}
@@ -31,7 +31,7 @@ describe('PersonCard Component', () => {
     expect(screen.getByText('12 disp.')).toBeInTheDocument()
   })
 
-  it('deve chamar onToggleHighlight ao clicar no botão de visibilidade', () => {
+  it('calls onToggleHighlight from the visibility button', () => {
     const handleToggle = vi.fn()
     render(
       <PersonCard
@@ -50,7 +50,23 @@ describe('PersonCard Component', () => {
     expect(handleToggle).toHaveBeenCalledTimes(1)
   })
 
-  it('deve chamar onEdit ao clicar no botão de edição', () => {
+  it('hides the highlight availability button on screens <= 640px', () => {
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={5}
+        isHighlighted={false}
+        isEditMode={false}
+        onToggleHighlight={vi.fn()}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    )
+
+    expect(screen.getByTitle('Destacar disponibilidade no calendário')).toHaveClass('mobile:hidden')
+  })
+
+  it('calls onEdit from the edit button', () => {
     const handleEdit = vi.fn()
     render(
       <PersonCard
@@ -69,7 +85,7 @@ describe('PersonCard Component', () => {
     expect(handleEdit).toHaveBeenCalledTimes(1)
   })
 
-  it('NÃO deve exibir o botão de inserir dias se não estiver no modo de edição', () => {
+  it('hides the insert days button outside edit mode', () => {
     render(
       <PersonCard
         person={mockPerson}
@@ -87,7 +103,7 @@ describe('PersonCard Component', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('NÃO deve exibir o botão se estiver no modo de edição mas availableDaysCount for 0', () => {
+  it('hides the insert days button in edit mode when availableDaysCount is 0', () => {
     render(
       <PersonCard
         person={mockPerson}
@@ -105,7 +121,7 @@ describe('PersonCard Component', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('DEVE exibir e chamar onInsertAllDays quando isEditMode for true E availableDaysCount > 0', () => {
+  it('calls onInsertAllDays in edit mode when availableDaysCount > 0', () => {
     const handleInsert = vi.fn()
     render(
       <PersonCard
@@ -126,7 +142,7 @@ describe('PersonCard Component', () => {
     expect(handleInsert).toHaveBeenCalledTimes(1)
   })
 
-  it('deve abrir balão de seleção quando a pessoa tiver mais de uma escala cadastrada com dias disponíveis', () => {
+  it('opens a shift picker when the person is available on more than one shift', () => {
     const handleInsert = vi.fn()
     const mockShifts = [
       {
@@ -188,7 +204,7 @@ describe('PersonCard Component', () => {
     expect(screen.queryByTestId('shift-selection-balloon')).not.toBeInTheDocument()
   })
 
-  it('permite selecionar "Todas as escalas" no balão de seleção', () => {
+  it('picks "Todas as escalas" in the shift picker', () => {
     const handleInsert = vi.fn()
     const mockShifts = [
       {
@@ -242,7 +258,7 @@ describe('PersonCard Component', () => {
     expect(screen.queryByTestId('shift-selection-balloon')).not.toBeInTheDocument()
   })
 
-  it('deve desabilitar o botão de olho e exibir mensagem de indisponibilidade quando a pessoa não tiver disponibilidade no mês', () => {
+  it('disables the eye button and shows a message when the person has no availability in the month', () => {
     const handleToggle = vi.fn()
     render(
       <PersonCard
@@ -265,7 +281,7 @@ describe('PersonCard Component', () => {
     expect(handleToggle).not.toHaveBeenCalled()
   })
 
-  it('deve chamar onToggleScheduledHighlight ao clicar no ícone de ver dias escalados quando workingDaysCount > 0', () => {
+  it('calls onToggleScheduledHighlight when workingDaysCount > 0', () => {
     const handleToggleScheduled = vi.fn()
     render(
       <PersonCard
@@ -290,7 +306,7 @@ describe('PersonCard Component', () => {
     expect(handleToggleScheduled).toHaveBeenCalledTimes(1)
   })
 
-  it('deve desabilitar o ícone de ver dias escalados quando a pessoa não estiver escalada em nenhum dia no mês', () => {
+  it('disables the scheduled days button when the person has no assigned day in the month', () => {
     const handleToggleScheduled = vi.fn()
     render(
       <PersonCard

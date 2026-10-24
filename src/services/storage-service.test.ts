@@ -4,18 +4,18 @@ import { StorageService } from './storage-service'
 
 import type { Person, CalendarEvent, MonthlyAvailability } from '../types'
 
-describe('StorageService - Persistência Local-First', () => {
+describe('StorageService - local-first persistence', () => {
   beforeEach(() => {
     localStorage.clear()
   })
 
-  it('deve retornar lista vazia caso o storage esteja vazio', () => {
+  it('returns an empty list when storage is empty', () => {
     const persons = StorageService.getPersons()
     expect(persons).toEqual([])
   })
 
 
-  it('deve salvar e recuperar pessoas atualizadas garantindo active padrão true', () => {
+  it('saves and loads people, defaulting active to true', () => {
     const newPersons: Person[] = [
       { id: 'custom-1', name: 'Dr. Teste Silva', color: '#ef4444', active: true },
     ]
@@ -26,38 +26,38 @@ describe('StorageService - Persistência Local-First', () => {
     expect(loaded[0].active).toBe(true)
   })
 
-  it('deve persistir e recuperar disponibilidades mensais', () => {
-    const sampleAvail: MonthlyAvailability[] = [
-      { personId: 'p1', month: '2026-10', availableDays: [5, 10, 15] },
-    ]
-    StorageService.saveAvailabilities(sampleAvail)
+  it.each([
+    {
+      label: 'monthly availabilities',
+      value: [{ personId: 'p1', month: '2026-10', availableDays: [5, 10, 15] }] as MonthlyAvailability[],
+      save: StorageService.saveAvailabilities,
+      load: StorageService.getAvailabilities,
+    },
+    {
+      label: 'calendar assignments',
+      value: { '2026-10-01': ['p1'], '2026-10-02': ['p2'] } as Record<string, string[]>,
+      save: StorageService.saveAssignments,
+      load: StorageService.getAssignments,
+    },
+    {
+      label: 'calendar events',
+      value: [{ id: 'ev-test', date: '2026-10-20', title: 'Schedule meeting' }] as CalendarEvent[],
+      save: StorageService.saveEvents,
+      load: StorageService.getEvents,
+    },
+    {
+      label: 'month participants',
+      value: { '2026-10': ['p1', 'p2'] } as Record<string, string[]>,
+      save: StorageService.saveMonthParticipants,
+      load: StorageService.getMonthParticipants,
+    },
+  ])('saves and loads $label', ({ value, save, load }) => {
+    ;(save as (v: typeof value) => void)(value)
 
-    const loaded = StorageService.getAvailabilities()
-    expect(loaded).toEqual(sampleAvail)
+    expect(load()).toEqual(value)
   })
 
-  it('deve persistir e recuperar escalas do calendário', () => {
-    const sampleAssignments: Record<string, string[]> = {
-      '2026-10-01': ['p1'],
-      '2026-10-02': ['p2'],
-    }
-    StorageService.saveAssignments(sampleAssignments)
-
-    const loaded = StorageService.getAssignments()
-    expect(loaded).toEqual(sampleAssignments)
-  })
-
-  it('deve persistir e recuperar eventos do calendário', () => {
-    const sampleEvents: CalendarEvent[] = [
-      { id: 'ev-test', date: '2026-10-20', title: 'Reunião de Escala' },
-    ]
-    StorageService.saveEvents(sampleEvents)
-
-    const loaded = StorageService.getEvents()
-    expect(loaded).toEqual(sampleEvents)
-  })
-
-  it('deve limpar dados ao chamar resetToDefault', () => {
+  it('clears the data on resetToDefault', () => {
     // Modify data
     StorageService.savePersons([{ id: 'tmp', name: 'Temporário', color: '#000000' }])
     expect(StorageService.getPersons()[0].name).toBe('Temporário')
@@ -70,7 +70,7 @@ describe('StorageService - Persistência Local-First', () => {
     expect(reloaded).toEqual([])
   })
 
-  it('deve limpar dados locais e o dataset do convidado ativo ao chamar clearAllLocalData', () => {
+  it('clearAllLocalData clears the local data and the active guest dataset', () => {
     StorageService.setActiveGuestId('guest_999')
     StorageService.savePersons([{ id: 'g_p1', name: 'Dr. Convidado', color: '#ff0000' }])
     StorageService.saveAddresses([{ id: 'g_a1', name: 'Endereço 1', street: 'Rua A', number: '10' }])
@@ -89,15 +89,7 @@ describe('StorageService - Persistência Local-First', () => {
   })
 
 
-  it('deve persistir e recuperar participantes mensais', () => {
-    const participants = { '2026-10': ['p1', 'p2'] }
-    StorageService.saveMonthParticipants(participants)
-
-    const loaded = StorageService.getMonthParticipants()
-    expect(loaded).toEqual(participants)
-  })
-
-  it('deve gerenciar perfis de convidados e datasets isolados', () => {
+  it('manages guest profiles and their isolated datasets', () => {
     const profiles = [
       {
         id: 'guest_1',
@@ -141,7 +133,7 @@ describe('StorageService - Persistência Local-First', () => {
     expect(StorageService.getActiveGuestId()).toBeNull()
   })
 
-  it('deve gerenciar datasets isolados de usuários autenticados com snapshotActiveSession', () => {
+  it('manages isolated datasets of signed-in users with snapshotActiveSession', () => {
     // 1. Define active user
     StorageService.setActiveUserId('user_admin_123')
     expect(StorageService.getActiveUserId()).toBe('user_admin_123')
@@ -175,6 +167,35 @@ describe('StorageService - Persistência Local-First', () => {
     StorageService.deleteUserDataset('user_admin_123')
     expect(StorageService.getUserDataset('user_admin_123')).toBeNull()
   })
+
+  it('saves list order per list and per guest / user profile', () => {
+    StorageService.setActiveGuestId('guest-a')
+    StorageService.saveListOrder('people', ['p2', 'p1'])
+    StorageService.saveListOrder('shifts', ['s1'])
+
+    StorageService.setActiveGuestId('guest-b')
+    expect(StorageService.getListOrder('people')).toEqual([])
+    StorageService.saveListOrder('people', ['p1'])
+
+    StorageService.setActiveGuestId('guest-a')
+    expect(StorageService.getListOrder('people')).toEqual(['p2', 'p1'])
+    expect(StorageService.getListOrder('shifts')).toEqual(['s1'])
+    expect(StorageService.getListOrderKey('people')).toBe('scale_manager_list_order_v1_people_guest_guest-a')
+    StorageService.setActiveGuestId(null)
+  })
+
+  it('keeps list order out of the dataset (backup / sync) and clears it with the local data', () => {
+    StorageService.saveListOrder('month-people', ['p1', 'p2'])
+    StorageService.saveListOrder('addresses', ['a1'])
+    expect(JSON.stringify(StorageService.getCurrentDataset())).not.toContain('list_order')
+
+    StorageService.clearAllLocalData()
+    expect(StorageService.getListOrder('month-people')).toEqual([])
+    expect(StorageService.getListOrder('addresses')).toEqual([])
+  })
+
+  it('ignores invalid saved list order values', () => {
+    localStorage.setItem(StorageService.getListOrderKey('rules'), '{"not":"an array"}')
+    expect(StorageService.getListOrder('rules')).toEqual([])
+  })
 })
-
-

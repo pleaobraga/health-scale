@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { CalendarGrid } from './calendar-grid'
 import { AuthProvider } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { useToastStore } from '../../store/use-toast-store'
 
 import type { AuthContextType } from '../../context/auth-context'
 import type { User } from 'firebase/auth'
@@ -27,8 +28,9 @@ const mockAdminAuth: AuthContextType = {
   deleteGuestProfile: vi.fn(),
 }
 
-describe('CalendarGrid Component', () => {
+describe('CalendarGrid', () => {
   beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
     useScheduleStore.setState({
       currentMonth: '2026-10',
       isEditMode: false,
@@ -42,7 +44,7 @@ describe('CalendarGrid Component', () => {
     })
   })
 
-  it('deve renderizar o cabeçalho do calendário e navegação de meses', () => {
+  it('renders the month title and the month navigation', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
@@ -54,10 +56,10 @@ describe('CalendarGrid Component', () => {
     expect(screen.getByText(/outubro/i)).toBeInTheDocument()
   })
 
-  it('deve renderizar o botão de puxar dados da nuvem no menu de opções e disparar pullCloudData ao clicar', async () => {
+  it('pulls cloud data from the actions menu and shows a success toast', async () => {
     const pullCloudDataMock = vi.fn().mockResolvedValue({
       success: true,
-      message: 'Dados sincronizados!',
+      message: 'Synced',
     })
     useScheduleStore.setState({ pullCloudData: pullCloudDataMock })
 
@@ -77,16 +79,16 @@ describe('CalendarGrid Component', () => {
 
     fireEvent.click(pullButton)
 
-    expect(pullCloudDataMock).toHaveBeenCalledWith('2026-10', true)
+    expect(pullCloudDataMock).toHaveBeenCalledWith(true)
 
-    // Reopen to verify feedback state
-    fireEvent.click(trigger)
     await waitFor(() => {
-      expect(screen.getByText(/atualizado!/i)).toBeInTheDocument()
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({ type: 'success', message: 'Dados da nuvem carregados neste dispositivo.' }),
+      ])
     })
   })
 
-  it('deve alternar entre modo de visualização e edição usando o botão único', () => {
+  it('toggles between view and edit mode with a single button', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
@@ -109,7 +111,7 @@ describe('CalendarGrid Component', () => {
     expect(screen.getByRole('button', { name: /edição/i })).toBeInTheDocument()
   })
 
-  it('deve abrir o menu de ações ao clicar no gatilho e exibir as opções agrupadas', () => {
+  it('opens the actions menu with all its options', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
@@ -148,7 +150,7 @@ describe('CalendarGrid Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve disparar tela cheia ao selecionar Tela Cheia no menu dropdown', () => {
+  it('opens the fullscreen calendar from the actions menu and closes the menu', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
@@ -169,7 +171,7 @@ describe('CalendarGrid Component', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('deve fechar o dropdown ao pressionar a tecla Escape', () => {
+  it('closes the actions menu on Escape', () => {
     render(
       <AuthProvider value={mockAdminAuth}>
         <CalendarGrid />
@@ -188,7 +190,7 @@ describe('CalendarGrid Component', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('deve garantir que o calendário inicializa no mês do dia atual quando currentMonth estiver vazio', () => {
+  it('falls back to the current month when currentMonth is empty', () => {
     useScheduleStore.setState({ currentMonth: '' })
 
     render(
@@ -199,5 +201,154 @@ describe('CalendarGrid Component', () => {
 
     const expectedMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
     expect(useScheduleStore.getState().currentMonth).toBe(expectedMonth)
+  })
+
+  it('in edit mode, hides the long notice on small screens and shows Salvar only when there are changes', () => {
+    const saveMock = vi.fn()
+    useScheduleStore.setState({
+      validateCurrentSchedule: () => [],
+      isEditMode: true,
+      hasUnsavedChanges: false,
+      saveSchedule: saveMock,
+    })
+
+    const { rerender } = render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    expect(screen.getByTestId('edit-notice')).toHaveClass('mobile:hidden')
+    expect(screen.queryByTestId('edit-notice-save-button')).not.toBeInTheDocument()
+
+    useScheduleStore.setState({ hasUnsavedChanges: true })
+    rerender(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const saveBtn = screen.getByTestId('edit-notice-save-button')
+    expect(saveBtn).toHaveTextContent(/^salvar$/i)
+    fireEvent.click(saveBtn)
+    expect(saveMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('scrolls to the calendar when a highlight is turned on in the stacked layout (< 1024px)', () => {
+    useScheduleStore.setState({
+      validateCurrentSchedule: () => [],
+      highlightedPersonId: null,
+      highlightedScheduledPersonId: null,
+    })
+    const scrollSpy = vi.fn()
+    Element.prototype.scrollIntoView = scrollSpy
+    const matchMediaSpy = vi.fn().mockReturnValue({ matches: false })
+    vi.stubGlobal('matchMedia', matchMediaSpy)
+
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+    expect(scrollSpy).not.toHaveBeenCalled()
+
+    act(() => useScheduleStore.setState({ highlightedPersonId: 'p1' }))
+    expect(matchMediaSpy).toHaveBeenCalledWith('(min-width: 1024px)')
+    expect(scrollSpy).toHaveBeenCalledTimes(1)
+
+    act(() =>
+      useScheduleStore.setState({ highlightedPersonId: null, highlightedScheduledPersonId: 'p1' }),
+    )
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+
+    // Turning the highlight off must not scroll
+    act(() => useScheduleStore.setState({ highlightedScheduledPersonId: null }))
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+
+    // Side-by-side layout (>= 1024px) never scrolls
+    matchMediaSpy.mockReturnValue({ matches: true })
+    act(() => useScheduleStore.setState({ highlightedPersonId: 'p1' }))
+    expect(scrollSpy).toHaveBeenCalledTimes(2)
+
+    vi.unstubAllGlobals()
+  })
+
+  it('hides the "(dias destacados em verde)" hint on small screens', () => {
+    useScheduleStore.setState({
+      validateCurrentSchedule: () => [],
+      highlightedPersonId: null,
+      highlightedScheduledPersonId: 'p1',
+    })
+
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const hint = screen.getByTestId('scheduled-days-highlighted-hint')
+    expect(hint).toHaveTextContent('(dias destacados em verde)')
+    expect(hint).toHaveClass('mobile:hidden')
+  })
+
+  it('asks for confirmation in a dialog before clearing the month', () => {
+    const clearMonthAssignmentsMock = vi.fn()
+    useScheduleStore.setState({ isEditMode: true, clearMonthAssignments: clearMonthAssignmentsMock })
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const clearButton = screen.getByRole('button', { name: /limpar mês/i })
+    expect(clearButton).toHaveTextContent(/^limpar$/i)
+
+    fireEvent.click(clearButton)
+    const dialog = screen.getByRole('alertdialog', { name: /limpar mês/i })
+    expect(dialog).toHaveTextContent(/outubro/i)
+    expect(clearMonthAssignmentsMock).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    expect(clearMonthAssignmentsMock).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: /limpar mês/i }))
+    fireEvent.click(screen.getByTestId('confirm-dialog-confirm'))
+    expect(clearMonthAssignmentsMock).toHaveBeenCalledWith('2026-10')
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
+  it('keeps the edit button on the title row below 1510px (hd), with its label except on <= 640px', () => {
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const editButton = screen.getByRole('button', { name: /^edição$/i })
+    expect(editButton).toHaveClass('max-hd:order-2')
+    // The label is hidden only on screens <= 640px
+    const label = editButton.querySelector('span')
+    expect(label).toHaveClass('mobile:hidden')
+    expect(label?.className).not.toMatch(/max-hd:hidden/)
+  })
+
+  it('shows only the icon and the number of violations on screens <= 640px', () => {
+    useScheduleStore.setState({
+      validationErrors: [
+        { id: 'v1', rule: 'empty_day', severity: 'error', message: 'Empty day', date: '2026-10-01' },
+        { id: 'v2', rule: 'empty_day', severity: 'error', message: 'Empty day', date: '2026-10-02' },
+      ],
+    })
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    expect(screen.getByTestId('audit-button-label')).toHaveTextContent('2 Violações')
+    expect(screen.getByTestId('audit-button-label')).toHaveClass('mobile:hidden')
+    expect(screen.getByTestId('audit-button-count')).toHaveTextContent(/^2$/)
+    expect(screen.getByTestId('audit-button-count')).toHaveClass('hidden', 'mobile:inline')
   })
 })

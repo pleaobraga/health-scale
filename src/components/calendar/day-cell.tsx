@@ -59,6 +59,9 @@ export function DayCell({
   const { t } = useTranslation(['calendar', 'common'])
   const { dayNumber, isCurrentMonth, isToday, dateStr } = dayInfo
   const hasEvents = events.length > 0
+  const eventsButtonLabel = hasEvents
+    ? t('calendar:dayCell.eventsTooltip', { count: events.length })
+    : t('calendar:dayCell.viewOrAddEvents')
   const personMap = new Map<string, Person>(allPersons.map((p) => [p.id, p]))
 
   const [isViolationsModalOpen, setIsViolationsModalOpen] = useState(false)
@@ -93,7 +96,7 @@ export function DayCell({
 
   return (
     <div
-      className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 dark:border-slate-800 p-2 flex flex-col justify-between transition-all relative ${
+      className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 dark:border-slate-800 p-2 mobile:p-0 flex flex-col justify-between transition-all relative ${
         !isCurrentMonth
           ? 'bg-slate-50/70 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600'
           : isTargetOfScheduledHighlight
@@ -106,13 +109,22 @@ export function DayCell({
       }`}
     >
       {/* Top Header of the Cell */}
-      <div className="flex items-center justify-between mb-1">
+      <div
+        className={`flex items-center justify-between mb-1 mobile:justify-center mobile:pt-1 mobile:pb-0.5 ${
+          hasEvents ? 'mobile:bg-red-50 mobile:dark:bg-red-950/60' : ''
+        }`}
+      >
         <div className="flex items-center gap-1.5">
-          {/* Day number: RED if has 1 or more events */}
-          <span
-            className={`text-sm font-semibold inline-flex items-center justify-center transition-colors ${
+          {/* Day number: RED if has 1 or more events. On small screens (<= 640px) it opens the events modal */}
+          <button
+            type="button"
+            onClick={onOpenEvents}
+            tabIndex={-1}
+            data-testid="day-number-button"
+            aria-label={eventsButtonLabel}
+            className={`pointer-events-none mobile:pointer-events-auto mobile:cursor-pointer text-sm font-semibold inline-flex items-center justify-center transition-colors ${
               hasEvents
-                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-6 h-6 rounded-full'
+                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-6 h-6 rounded-full mobile:bg-transparent mobile:dark:bg-transparent mobile:w-auto mobile:h-auto mobile:rounded-none'
                 : isToday
                 ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1'
                 : isCurrentMonth
@@ -121,7 +133,7 @@ export function DayCell({
             }`}
           >
             {dayNumber}
-          </span>
+          </button>
 
           {/* Highlight indicator */}
           {isTargetOfHighlight && (
@@ -137,7 +149,8 @@ export function DayCell({
           {/* Scheduled Highlight indicator */}
           {isTargetOfScheduledHighlight && (
             <span
-              className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full"
+              data-testid="scheduled-highlight-badge"
+              className="mobile:hidden inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-full"
               title={t('calendar:dayCell.scheduledPersonTooltip', { name: highlightedScheduledPerson.name })}
             >
               <CalendarCheck className="w-2.5 h-2.5" />
@@ -168,12 +181,8 @@ export function DayCell({
         <button
           type="button"
           onClick={onOpenEvents}
-          title={
-            hasEvents
-              ? t('calendar:dayCell.eventsTooltip', { count: events.length })
-              : t('calendar:dayCell.viewOrAddEvents')
-          }
-          className={`p-1 rounded-md text-xs transition flex items-center gap-0.5 ${
+          title={eventsButtonLabel}
+          className={`mobile:hidden p-1 rounded-md text-xs transition flex items-center gap-0.5 ${
             hasEvents
               ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 font-semibold'
               : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -209,13 +218,13 @@ export function DayCell({
                       <div
                         key={shift.id}
                         style={{ backgroundColor: person.color }}
-                        className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                        className="text-white text-xs font-semibold px-1.5 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between gap-1 truncate w-full"
                         title={`${shift.name}: ${person.name}`}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
                             data-testid={`shift-badge-${dateStr}-${shift.code}`}
-                            className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                            className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                             style={{
                               backgroundColor: shift.color || 'rgba(0,0,0,0.3)',
                               color: '#FFFFFF',
@@ -232,10 +241,10 @@ export function DayCell({
                   return (
                     <div
                       key={shift.id}
-                      className="flex items-center gap-1.5 px-1.5 py-0.5 rounded border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
+                      className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-sm border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
                     >
                       <span
-                        className="text-[9px] font-bold uppercase px-1 py-0.2 rounded shrink-0 opacity-70"
+                        className="text-[9px] font-bold uppercase px-1 py-0.2 rounded-sm shrink-0 opacity-70"
                         style={{
                           backgroundColor: shift.color || '#94A3B8',
                           color: '#FFFFFF',
@@ -263,14 +272,14 @@ export function DayCell({
                       <div
                         key={pId}
                         style={{ backgroundColor: p.color }}
-                        className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                        className="text-white text-xs font-semibold px-1.5 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between gap-1 truncate w-full"
                         title={pShift ? `${pShift.name}: ${p.name}` : p.name}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           {pShift && (
                             <span
                               data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                              className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                               style={{
                                 backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                                 color: '#FFFFFF',
@@ -303,14 +312,14 @@ export function DayCell({
                   <div
                     key={personId}
                     style={{ backgroundColor: person.color }}
-                    className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                    className="text-white text-xs font-semibold px-1.5 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between gap-1 truncate w-full"
                     title={pShift ? `${pShift.name}: ${person.name}` : person.name}
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       {pShift && (
                         <span
                           data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                          className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                          className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                           style={{
                             backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                             color: '#FFFFFF',
@@ -332,7 +341,7 @@ export function DayCell({
                 activeShifts.length <= 1 ||
                 !dayShiftMap ||
                 Object.keys(dayShiftMap).length <= 1) && (
-                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center">
+                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded-sm border border-rose-200 dark:border-rose-800 block text-center">
                   {t('calendar:dayCell.conflict', { count: assignedPersonIds.length })}
                 </span>
               )}
@@ -355,13 +364,13 @@ export function DayCell({
                       <div
                         key={shift.id}
                         style={{ backgroundColor: person.color }}
-                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 mobile:pl-1 pr-1 mobile:pr-0.5 py-0.5 rounded-md mobile:rounded-sm shadow-2xs transition-all w-full max-w-full"
                         title={`${shift.name}: ${person.name}`}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
                             data-testid={`shift-badge-${dateStr}-${shift.code}`}
-                            className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                            className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                             style={{
                               backgroundColor: shift.color || 'rgba(0,0,0,0.3)',
                               color: '#FFFFFF',
@@ -381,7 +390,7 @@ export function DayCell({
                             }
                           }}
                           title={t('calendar:dayCell.removePersonTooltip', { name: person.name })}
-                          className="w-4 h-4 rounded hover:bg-black/25 flex items-center justify-center shrink-0 transition cursor-pointer"
+                          className="w-4 h-4 rounded-sm hover:bg-black/25 flex items-center justify-center shrink-0 transition cursor-pointer"
                         >
                           <X className="w-3 h-3 stroke-[2.5]" />
                         </button>
@@ -401,14 +410,14 @@ export function DayCell({
                       <div
                         key={pId}
                         style={{ backgroundColor: p.color }}
-                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 mobile:pl-1 pr-1 mobile:pr-0.5 py-0.5 rounded-md mobile:rounded-sm shadow-2xs transition-all w-full max-w-full"
                         title={pShift ? `${pShift.name}: ${p.name}` : p.name}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           {pShift && (
                             <span
                               data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                              className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                               style={{
                                 backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                                 color: '#FFFFFF',
@@ -423,7 +432,7 @@ export function DayCell({
                           type="button"
                           onClick={() => onRemovePerson(pId)}
                           title={t('calendar:dayCell.removePersonTooltip', { name: p.name })}
-                          className="w-4 h-4 rounded hover:bg-black/20 flex items-center justify-center shrink-0 transition cursor-pointer"
+                          className="w-4 h-4 rounded-sm hover:bg-black/20 flex items-center justify-center shrink-0 transition cursor-pointer"
                         >
                           <X className="w-3 h-3 stroke-[2.5]" />
                         </button>
@@ -432,7 +441,7 @@ export function DayCell({
                   })}
 
                 {/* Single Add button opening modal for multi-shift days */}
-                <div className="pt-0.5 flex items-center justify-between">
+                <div className="pt-0.5 flex items-center justify-center">
                   <button
                     type="button"
                     onClick={() => setIsAddShiftModalOpen(true)}
@@ -458,14 +467,14 @@ export function DayCell({
                       <div
                         key={personId}
                         style={{ backgroundColor: person.color }}
-                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 mobile:pl-1 pr-1 mobile:pr-0.5 py-0.5 rounded-md mobile:rounded-sm shadow-2xs transition-all w-full max-w-full"
                         title={pShift ? `${pShift.name}: ${person.name}` : person.name}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           {pShift && (
                             <span
                               data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded shrink-0 shadow-xs"
+                              className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                               style={{
                                 backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                                 color: '#FFFFFF',
@@ -480,7 +489,7 @@ export function DayCell({
                           type="button"
                           onClick={() => onRemovePerson(personId)}
                           title={t('calendar:dayCell.removePersonTooltip', { name: person.name })}
-                          className="w-4 h-4 rounded hover:bg-black/20 flex items-center justify-center shrink-0 transition cursor-pointer"
+                          className="w-4 h-4 rounded-sm hover:bg-black/20 flex items-center justify-center shrink-0 transition cursor-pointer"
                         >
                           <X className="w-3 h-3 stroke-[2.5]" />
                         </button>
@@ -491,7 +500,7 @@ export function DayCell({
 
                 {/* Inline CandidatePicker for single shift / fallback */}
                 {activeShifts && activeShifts.length > 0 && (
-                  <div className="pt-0.5 flex items-center justify-between">
+                  <div className="pt-0.5 flex items-center justify-center">
                     <CandidatePicker
                       dateStr={dateStr}
                       dayNumber={dayNumber}

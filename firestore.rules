@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -26,9 +26,13 @@ service cloud.firestore {
     match /users/{userId} {
       // O próprio usuário pode ler seu doc, OU um admin pode ler o de qualquer um
       allow get: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      
-      // O usuário pode criar seu próprio registro inicial, ou admin pode criar
-      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+
+      // O usuário só pode criar o próprio registro inicial com role 'user'; admin pode criar qualquer um
+      allow create: if isAdmin() || (
+        isAuthenticated() &&
+        request.auth.uid == userId &&
+        request.resource.data.role == 'user'
+      );
 
       // Admin pode listar todos e fazer alterações/exclusões
       allow list, update, delete: if isAdmin();

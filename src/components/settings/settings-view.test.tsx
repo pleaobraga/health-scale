@@ -1,10 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SettingsView } from './settings-view'
 import { AuthProvider } from '../../context/auth-context'
+import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { useToastStore } from '../../store/use-toast-store'
 
 import type { AuthContextType } from '../../context/auth-context'
 import type { User } from 'firebase/auth'
@@ -19,8 +21,9 @@ const renderSettings = (authValue?: Partial<AuthContextType>) => {
   )
 }
 
-describe('SettingsView Component - Limpar Dados Locais', () => {
+describe('SettingsView - clear local data', () => {
   beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
     localStorage.clear()
     useScheduleStore.setState({
       persons: [{ id: 'p1', name: 'Dr. Silva', color: '#10b981', active: true }],
@@ -31,7 +34,7 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     })
   })
 
-  it('deve renderizar a seção de Redefinir Armazenamento Local com o botão visível e o resumo contendo turnos e endereços', () => {
+  it('renders the reset section with the clear button and a summary including shifts and addresses', () => {
     renderSettings()
 
     expect(screen.getByTestId('clear-local-data-card')).toBeInTheDocument()
@@ -47,29 +50,16 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve abrir o modal de confirmação ao clicar no botão de limpar dados locais', () => {
-    renderSettings()
-
-    const clearButton = screen.getByRole('button', {
-      name: /limpar todos os dados locais/i,
-    })
-    fireEvent.click(clearButton)
-
-    const modalTitle = screen.getByRole('heading', {
-      name: /limpar todos os dados locais/i,
-    })
-    expect(modalTitle).toBeInTheDocument()
-    expect(
-      screen.getByText(/tem certeza de que deseja apagar todos os dados locais\?/i),
-    ).toBeInTheDocument()
-  })
-
-  it('deve fechar o modal ao clicar em Cancelar sem remover os dados', () => {
+  it('asks for confirmation and keeps the data on Cancelar', () => {
     renderSettings()
 
     fireEvent.click(
       screen.getByRole('button', { name: /limpar todos os dados locais/i }),
     )
+
+    expect(
+      screen.getByText(/tem certeza de que deseja apagar todos os dados locais\?/i),
+    ).toBeInTheDocument()
 
     const cancelBtn = screen.getByRole('button', { name: /cancelar/i })
     fireEvent.click(cancelBtn)
@@ -77,12 +67,12 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     expect(
       screen.queryByRole('heading', { name: /limpar todos os dados locais/i }),
     ).not.toBeInTheDocument()
-    // Dados continuam na store
+    // The data is still in the store
     expect(useScheduleStore.getState().persons.length).toBe(1)
     expect(useScheduleStore.getState().addresses.length).toBe(1)
   })
 
-  it('deve limpar todos os dados locais e exibir mensagem de feedback ao confirmar no modal', async () => {
+  it('clears every local data and shows feedback after confirming', async () => {
     renderSettings()
 
     fireEvent.click(
@@ -98,7 +88,7 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
       ).toBeInTheDocument()
     })
 
-    // Verifica que a store foi completamente zerada (incluindo turnos e regras)
+    // The store is fully reset, shifts and rules included
     expect(useScheduleStore.getState().persons).toEqual([])
     expect(useScheduleStore.getState().assignments).toEqual({})
     expect(useScheduleStore.getState().events).toEqual([])
@@ -107,7 +97,7 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     expect(useScheduleStore.getState().shiftRules).toEqual([])
   })
 
-  it('deve exibir o botão de limpar dados locais tanto para administradores quanto para usuários comuns e convidados', () => {
+  it('shows the clear button to admins, regular users and guests', () => {
     const regularUserAuth: Partial<AuthContextType> = {
       user: {
         uid: 'user_123',
@@ -140,7 +130,7 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve alternar entre as abas Geral e Importar Dados e exibir o conteúdo de importação', () => {
+  it('switches between the Geral and Importar Dados tabs', () => {
     renderSettings()
 
     // Default tab is Geral
@@ -161,12 +151,81 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     expect(screen.getByTestId('clear-local-data-card')).toBeInTheDocument()
   })
 
-  it('deve alternar para a aba de importação ao clicar no botão Importar ou Restaurar', () => {
+  it('opens the import tab from Importar ou Restaurar', () => {
     renderSettings()
 
     const importButton = screen.getByRole('button', { name: /importar ou restaurar/i })
     fireEvent.click(importButton)
 
     expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+  })
+})
+
+describe('SettingsView - enable cloud sync', () => {
+  const adminAuth: Partial<AuthContextType> = {
+    user: { uid: 'admin_1' } as User,
+    role: 'admin',
+    isAdmin: true,
+  }
+
+  const { pullCloudData, forcePushCloudData } = useScheduleStore.getState()
+
+  beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    useScheduleStore.setState({ pullCloudData, forcePushCloudData })
+    vi.restoreAllMocks()
+  })
+
+  const handleOpenEnableModal = () => {
+    fireEvent.click(screen.getByTestId('toggle-sync-button'))
+    return screen.getByRole('dialog', { name: /ativar sincronização na nuvem/i })
+  }
+
+  it('asks which data wins before enabling, without sending anything', () => {
+    const pushSpy = vi.fn()
+    useScheduleStore.setState({ forcePushCloudData: pushSpy })
+    renderSettings(adminAuth)
+
+    handleOpenEnableModal()
+
+    expect(pushSpy).not.toHaveBeenCalled()
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: /^cancelar$/i }))
+    expect(screen.queryByRole('dialog', { name: /ativar sincronização/i })).not.toBeInTheDocument()
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+  })
+
+  it('enables sync after pulling the cloud data', async () => {
+    const pullSpy = vi.fn().mockResolvedValue({ success: true, code: 'success', message: '' })
+    useScheduleStore.setState({ pullCloudData: pullSpy })
+    renderSettings(adminAuth)
+
+    handleOpenEnableModal()
+    fireEvent.click(screen.getByTestId('enable-sync-pull'))
+
+    await waitFor(() => expect(CloudSyncService.isSyncEnabled()).toBe(true))
+    expect(pullSpy).toHaveBeenCalledWith(true)
+  })
+
+  it('keeps sync disabled when the push fails while offline', async () => {
+    const pushSpy = vi.fn().mockResolvedValue({ success: false, code: 'offline', message: '' })
+    useScheduleStore.setState({ forcePushCloudData: pushSpy })
+    renderSettings(adminAuth)
+
+    handleOpenEnableModal()
+    fireEvent.click(screen.getByTestId('enable-sync-push'))
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({ type: 'error', message: expect.stringMatching(/sem conexão/i) }),
+      ])
+    })
+    expect(pushSpy).toHaveBeenCalledWith(true)
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
   })
 })

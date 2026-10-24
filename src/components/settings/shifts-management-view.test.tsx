@@ -13,7 +13,7 @@ const renderShiftsView = () => {
   )
 }
 
-describe('ShiftsManagementView Component', () => {
+describe('ShiftsManagementView', () => {
   beforeEach(() => {
     localStorage.clear()
     useScheduleStore.setState({
@@ -33,7 +33,7 @@ describe('ShiftsManagementView Component', () => {
     })
   })
 
-  it('deve renderizar a listagem de turnos cadastrados com seus dados', () => {
+  it('lists the registered shifts with their data', () => {
     renderShiftsView()
 
     expect(screen.getByTestId('shifts-management-view')).toBeInTheDocument()
@@ -41,17 +41,7 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.getByText('D12')).toBeInTheDocument()
   })
 
-  it('deve abrir o modal para criação de novo turno ao clicar no botão', () => {
-    renderShiftsView()
-
-    const newBtn = screen.getByRole('button', { name: /novo turno/i })
-    fireEvent.click(newBtn)
-
-    expect(screen.getByRole('heading', { name: /novo turno/i })).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/Ex: Plantão Diurno 12h/i)).toBeInTheDocument()
-  })
-
-  it('deve permitir cadastrar um novo turno com sucesso', () => {
+  it('creates a new shift from the modal', () => {
     renderShiftsView()
 
     fireEvent.click(screen.getByRole('button', { name: /novo turno/i }))
@@ -69,7 +59,7 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.getByText('S06')).toBeInTheDocument()
   })
 
-  it('deve permitir duplicar um turno existente', () => {
+  it('duplicates a shift', () => {
     renderShiftsView()
 
     const duplicateBtn = screen.getByTitle(/duplicar/i)
@@ -78,7 +68,7 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.getByText(/Plantão Diurno 12h \(Cópia\)/i)).toBeInTheDocument()
   })
 
-  it('deve exibir modal de confirmação ao clicar em excluir e remover o turno', () => {
+  it('deletes a shift after confirmation', () => {
     renderShiftsView()
 
     const deleteBtn = screen.getByTitle(/excluir/i)
@@ -94,7 +84,7 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.queryByText('Plantão Diurno 12h')).not.toBeInTheDocument()
   })
 
-  it('deve filtrar os turnos de acordo com a busca', () => {
+  it('filters the shifts with the search', () => {
     renderShiftsView()
 
     expect(screen.getByText('Plantão Diurno 12h')).toBeInTheDocument()
@@ -106,7 +96,7 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.getByText(/nenhum turno encontrado/i)).toBeInTheDocument()
   })
 
-  it('deve permitir selecionar uma cor customizada via colorpicker no cadastro de turno', () => {
+  it('accepts a custom color from the color picker', () => {
     renderShiftsView()
 
     fireEvent.click(screen.getByRole('button', { name: /novo turno/i }))
@@ -128,5 +118,21 @@ describe('ShiftsManagementView Component', () => {
     expect(created).toBeDefined()
     expect(created?.color.toLowerCase()).toBe('#123456')
   })
-})
 
+  it('renders a drag handle to reorder the shifts', () => {
+    renderShiftsView()
+
+    expect(screen.getByTestId('sortable-item-shift_d12')).toBeInTheDocument()
+    expect(screen.getByTestId('drag-handle-shift_d12')).toHaveAccessibleName(/Arrastar para reordenar/)
+  })
+  it('uses the shared modal layout so the shift form actions stay at the bottom', () => {
+    renderShiftsView()
+    fireEvent.click(screen.getByRole('button', { name: /novo turno/i }))
+
+    const form = screen.getByTestId('shift-form')
+    expect(form).toHaveClass('modal-form')
+    expect(form.parentElement).toHaveClass('modal-panel')
+    expect(screen.getByTestId('shift-form-footer')).toHaveClass('modal-footer')
+    expect(screen.getByTestId('shift-form-footer').previousElementSibling).toHaveClass('modal-body')
+  })
+})

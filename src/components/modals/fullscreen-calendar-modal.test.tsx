@@ -19,7 +19,7 @@ describe('FullScreenCalendarModal', () => {
 
   it('does not render when isFullScreenModalOpen is false', () => {
     render(<FullScreenCalendarModal />)
-    expect(screen.queryByText(/outubro de 2026/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/outubro 2026/i)).not.toBeInTheDocument()
   })
 
   it('renders correctly with month and year and assignments when open', () => {
@@ -28,7 +28,7 @@ describe('FullScreenCalendarModal', () => {
 
     // Title should show month and year
     expect(
-      screen.getByRole('heading', { level: 2, name: /outubro de 2026/i }),
+      screen.getByRole('heading', { level: 2, name: /^outubro 2026$/i }),
     ).toBeInTheDocument()
 
     // Should render assigned person name
@@ -161,7 +161,7 @@ describe('FullScreenCalendarModal', () => {
     expect(screen.queryByTestId('print-events-section')).not.toBeInTheDocument()
   })
 
-  it('possui classes adequadas para garantir visualização correta no dark theme durante impressão', () => {
+  it('uses light print colors (dark:print) for the title and the events section', () => {
     useScheduleStore.setState({
       isFullScreenModalOpen: true,
       currentMonth: '2026-10',
@@ -184,9 +184,13 @@ describe('FullScreenCalendarModal', () => {
       name: /eventos do mês/i,
     })
     expect(title).toHaveClass('dark:text-slate-950', 'print:text-slate-950')
+
+    expect(screen.getByRole('heading', { level: 2, name: /^outubro 2026$/i })).toHaveClass(
+      'dark:print:text-slate-950',
+    )
   })
 
-  it('deve listar a coluna de Responsável do Serviço com a cor associada e não exibir Escala do Dia na impressão', () => {
+  it('prints the person in charge column with their color, without the day schedule column', () => {
     useScheduleStore.setState({
       isFullScreenModalOpen: true,
       currentMonth: '2026-10',
@@ -226,7 +230,7 @@ describe('FullScreenCalendarModal', () => {
     expect(responsibleBadge).toHaveStyle({ backgroundColor: '#10B981' })
   })
 
-  it('deve exibir a sigla da escala mesmo quando apenas 1 pessoa estiver escalada no dia', () => {
+  it('shows the shift code even when a single person is assigned to the day', () => {
     useScheduleStore.setState({
       isFullScreenModalOpen: true,
       currentMonth: '2026-10',
@@ -262,7 +266,7 @@ describe('FullScreenCalendarModal', () => {
     expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
   })
 
-  it('deve exibir a sigla da escala de cada profissional quando houver mais de 1 pessoa escalada no dia', () => {
+  it('shows the shift code of each professional when several people are assigned to the day', () => {
     useScheduleStore.setState({
       isFullScreenModalOpen: true,
       currentMonth: '2026-10',
@@ -319,7 +323,7 @@ describe('FullScreenCalendarModal', () => {
     expect(screen.getByTestId('shift-badge-2026-10-15-N12')).toHaveTextContent('N12')
   })
 
-  it('deve manter o documento com a classe dark durante o disparo da impressão para não alterar visualmente o modal na tela', () => {
+  it('keeps the dark class on the document while printing so the on-screen modal does not change', () => {
     document.documentElement.classList.add('dark')
     useScheduleStore.setState({ isFullScreenModalOpen: true, isDarkMode: true })
 
@@ -341,14 +345,38 @@ describe('FullScreenCalendarModal', () => {
     document.documentElement.classList.remove('dark')
   })
 
-  it('deve conter classes dark:print nos elementos do calendário para renderizar em light mode na impressão', () => {
-    useScheduleStore.setState({ isFullScreenModalOpen: true, isDarkMode: true })
+  it('on screens <= 640px hides the events tag and shift code, and the day number opens the events modal', () => {
+    useScheduleStore.setState({
+      isFullScreenModalOpen: true,
+      currentMonth: '2026-10',
+      selectedDateForEvents: null,
+      shiftDefinitions: [
+        {
+          id: 's_d12',
+          name: 'Plantão Diurno 12h',
+          code: 'D12',
+          startTime: '07:00',
+          durationHours: 12,
+          color: '#3B82F6',
+          enabledByDefault: true,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+      ],
+      dayShiftAssignments: {
+        '2026-10-15': { s_d12: 'p1' },
+      },
+    })
+
     render(<FullScreenCalendarModal />)
 
-    const modalContent = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i }).closest('#fullscreen-calendar-modal-container')
-    expect(modalContent).toBeInTheDocument()
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveClass('mobile:hidden')
+    expect(screen.getByTitle('Dia do Professor')).toHaveClass('mobile:hidden')
+    expect(screen.getAllByText('Dr. Roberto Alves')[0].closest('[title]')).toHaveClass('w-full', 'mobile:px-1')
 
-    const title = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i })
-    expect(title).toHaveClass('dark:print:text-slate-950')
+    const dayNumberBtn = screen.getByTestId('fullscreen-day-number-2026-10-15')
+    expect(dayNumberBtn).toHaveClass('pointer-events-none', 'mobile:pointer-events-auto')
+    fireEvent.click(dayNumberBtn)
+    expect(useScheduleStore.getState().selectedDateForEvents).toBe('2026-10-15')
   })
 })

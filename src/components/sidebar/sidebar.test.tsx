@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import { Sidebar } from './sidebar'
+import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
 const renderSidebar = () =>
@@ -12,7 +13,7 @@ const renderSidebar = () =>
     </MemoryRouter>
   )
 
-describe('Sidebar Component (Pessoas do Mês)', () => {
+describe('Sidebar (month panel)', () => {
   beforeEach(() => {
     useScheduleStore.setState({
       persons: [
@@ -34,7 +35,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     })
   })
 
-  it('deve listar APENAS as pessoas vinculadas ao mês corrente', () => {
+  it('lists only the people linked to the current month', () => {
     renderSidebar()
 
     // p1 and p2 are in the month
@@ -46,7 +47,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(screen.getByText(/2 vinculadas/i)).toBeInTheDocument()
   })
 
-  it('deve exibir estado vazio e botão "+ Adicionar Pessoas ao Mês" quando não houver participantes no mês', () => {
+  it('shows the empty state and the add people button when the month has no participants', () => {
     useScheduleStore.setState({
       monthParticipants: {
         '2026-10': [],
@@ -59,7 +60,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(screen.getByRole('button', { name: /\+ adicionar pessoas ao mês/i })).toBeInTheDocument()
   })
 
-  it('deve abrir modal de vinculação e adicionar nova pessoa ao mês', () => {
+  it('adds a person to the month from the link modal', () => {
     renderSidebar()
 
     const vincularBtn = screen.getByRole('button', { name: /vincular funcionários ao mês/i })
@@ -82,7 +83,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(screen.getByText('Enf. Beatriz Lima')).toBeInTheDocument()
   })
 
-  it('deve remover uma pessoa do mês sem excluí-la do cadastro geral de pessoas', () => {
+  it('removes a person from the month without deleting them from the people registry', () => {
     renderSidebar()
 
     const removeBtn = screen.getByRole('button', {
@@ -98,7 +99,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(useScheduleStore.getState().persons.some((p) => p.id === 'p1')).toBe(true)
   })
 
-  it('deve alternar entre recolhido e expandido ao clicar no botão de alternância e exibir o título Painel do Mês no cabeçalho mobile', () => {
+  it('collapses and expands the panel and shows the Painel do Mês title', () => {
     renderSidebar()
 
     expect(screen.getByText('Painel do Mês')).toBeInTheDocument()
@@ -116,7 +117,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(toggleBtn).toHaveTextContent(/recolher/i)
   })
 
-  it('deve expandir a seção de Regras de Validação e remover uma regra ativa do mês', () => {
+  it('expands the rules section and removes an active rule from the month', () => {
     renderSidebar()
 
     // Regras header is present
@@ -145,7 +146,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(updatedRuleState).not.toContain(ruleToToggle)
   })
 
-  it('não deve exibir violações ou diagnósticos na seção de Regras de Validação da Sidebar', () => {
+  it('does not show violations in the sidebar rules section', () => {
     // Simulates an error present in store for a rule
     useScheduleStore.setState({
       validationErrors: [
@@ -173,7 +174,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(screen.queryByText(/Infração de plantões diários/i)).not.toBeInTheDocument()
   })
 
-  it('deve abrir modal de vinculação de regras e adicionar regras ao mês', () => {
+  it('adds rules to the month from the rules modal', () => {
     // Start with empty rules for the month
     useScheduleStore.setState({
       monthActiveRules: { '2026-10': [] },
@@ -197,7 +198,7 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     expect(useScheduleStore.getState().getActiveRuleIds('2026-10')).toContain('rule_max_shifts_day')
   })
 
-  it('deve possuir botões de engrenagem para gerenciar pessoas e turnos no sidebar', () => {
+  it('has gear buttons to manage people and shifts', () => {
     renderSidebar()
 
     const managePeopleBtn = screen.getByRole('button', { name: /gerenciar pessoas/i })
@@ -212,5 +213,15 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     fireEvent.click(manageShiftsBtn)
     expect(useScheduleStore.getState().currentView).toBe('settings')
   })
-})
 
+  it('renders the cards in the locally saved order with a drag handle on each card', () => {
+    StorageService.saveListOrder('month-people', ['p2', 'p1'])
+    renderSidebar()
+
+    const cards = screen.getAllByTestId(/^sortable-item-/)
+    expect(cards.map((c) => c.dataset.testid)).toEqual(['sortable-item-p2', 'sortable-item-p1'])
+    expect(screen.getByTestId('drag-handle-p1')).toHaveAccessibleName(
+      'Arrastar para reordenar Dra. Camila Santos',
+    )
+  })
+})

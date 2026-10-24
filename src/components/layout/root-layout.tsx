@@ -6,6 +6,7 @@ import { hasExistingLocalData } from '../../services/backup-service'
 import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { ErrorBoundary } from '../common/error-boundary'
+import { ToastViewport } from '../common/toast-viewport'
 import { DayEventsModal } from '../modals/day-events-modal'
 import { FullScreenCalendarModal } from '../modals/fullscreen-calendar-modal'
 import { UnsavedChangesModal } from '../modals/unsaved-changes-modal'
@@ -79,7 +80,7 @@ export function RootLayout() {
   return (
     <div
       data-testid="root-layout"
-      className="min-h-screen lg:h-screen w-screen overflow-x-hidden lg:overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-colors pt-14 md:pt-0 md:pl-16"
+      className="min-h-screen lg:h-screen w-screen overflow-x-hidden lg:overflow-hidden bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-colors pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 md:pl-16"
     >
       {/* 1. Global Navigation: Hover Sidebar (Desktop fixed left / Mobile top header + fullscreen menu) */}
       <HoverSidebar />
@@ -95,6 +96,9 @@ export function RootLayout() {
       <DayEventsModal />
       <FullScreenCalendarModal />
       <UnsavedChangesModal />
+
+      {/* 4. Global Notifications */}
+      <ToastViewport />
     </div>
   )
 }

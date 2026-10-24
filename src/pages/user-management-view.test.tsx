@@ -15,7 +15,7 @@ vi.mock('firebase/firestore', async () => {
   }
 })
 
-describe('UserManagementView Component', () => {
+describe('UserManagementView', () => {
   const mockUsers = [
     {
       id: 'usr-1',
@@ -44,7 +44,7 @@ describe('UserManagementView Component', () => {
     } as unknown as firestore.QuerySnapshot)
   })
 
-  it('deve renderizar o header padrão, botões de ação e lista de usuários', async () => {
+  it('renders the header, the actions and the users list', async () => {
     render(<UserManagementView />)
 
     expect(screen.getByTestId('user-management-view')).toBeInTheDocument()
@@ -61,7 +61,7 @@ describe('UserManagementView Component', () => {
     expect(screen.getByRole('button', { name: /Recarregar lista/i })).toBeInTheDocument()
   })
 
-  it('deve filtrar os usuários através do campo de busca', async () => {
+  it('filters users with the search field', async () => {
     render(<UserManagementView />)
 
     await waitFor(() => {
@@ -75,7 +75,7 @@ describe('UserManagementView Component', () => {
     expect(screen.getByText('Enf. Juliana')).toBeInTheDocument()
   })
 
-  it('deve exibir mensagem de nenhum usuário encontrado quando a busca não tiver resultados', async () => {
+  it('shows an empty message when the search has no results', async () => {
     render(<UserManagementView />)
 
     await waitFor(() => {
@@ -88,7 +88,7 @@ describe('UserManagementView Component', () => {
     expect(screen.getByText(/Nenhum usuário encontrado/i)).toBeInTheDocument()
   })
 
-  it('deve abrir o modal de criação de usuário ao clicar no botão "Novo Usuário"', async () => {
+  it('opens the create user modal from "Novo Usuário"', async () => {
     render(<UserManagementView />)
 
     await waitFor(() => {

@@ -1,6 +1,43 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Dark mode is toggled by the `dark` class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Small screens (<= 640px): bottom tab bar & fullscreen modals */
+@custom-variant mobile (@media screen and (width <= 40rem));
+
+/* Extra breakpoint `hd` (1510px), between xl (1280px) and 2xl (1536px): enables `hd:` / `max-hd:` */
+@theme {
+  --breakpoint-hd: 94.375rem;
+}
+
+/*
+  Tailwind CSS v4 no longer sets `cursor: pointer` on buttons; keep the v3 behavior.
+*/
+@layer base {
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 @layer base {
   body {
@@ -22,6 +59,78 @@
 
 .animate-fadeIn {
   animation: fadeIn 0.15s ease-out forwards;
+}
+
+/*
+  Shared modal layout (same as MonthAvailabilityModal): the header and footer stay fixed and only
+  the body scrolls. Panel = .modal-panel > .modal-header + .modal-body + .modal-footer; a form that
+  wraps body + footer gets .modal-form.
+*/
+@layer components {
+  .modal-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: 92vh;
+    overflow: hidden;
+  }
+
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+  }
+
+  /* Keeps the footer at the bottom of a full-height panel even when there is no body */
+  .modal-footer {
+    margin-top: auto;
+  }
+
+  .modal-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* Small screens (<= 640px): modals take the full viewport and lock background scroll */
+@media screen and (max-width: 640px) {
+  html:has(.modal-overlay, [aria-modal='true']),
+  html:has(.modal-overlay, [aria-modal='true']) body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* `html` prefix outranks the overlay's own `p-*` / `items-center` utilities */
+  html .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  html .modal-overlay > :first-child {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border-width: 0;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+
+  /* Shared layout: the body scrolls between the fixed header and the footer pinned to the bottom */
+  html .modal-overlay > .modal-panel {
+    overflow: hidden;
+  }
+
+  html .modal-footer {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
 }
 
 /* Custom sleek scrollbar for the right side container */

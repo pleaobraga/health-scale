@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useScheduleStore } from './use-schedule-store'
+import { useToastStore } from './use-toast-store'
 import { CloudSyncService } from '../services/cloud-sync-service'
 
-describe('useScheduleStore - Gerenciamento de Estado Global', () => {
+describe('useScheduleStore', () => {
   beforeEach(() => {
     localStorage.clear()
     useScheduleStore.setState({
@@ -24,7 +25,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
   })
 
 
-  it('deve navegar entre meses (anterior, próximo e direto)', () => {
+  it('navigates between months (previous, next and direct)', () => {
     const store = useScheduleStore.getState()
     expect(store.currentMonth).toBe('2026-10')
 
@@ -38,7 +39,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().currentMonth).toBe('2027-05')
   })
 
-  it('deve alternar modo de edição e visualização', () => {
+  it('toggles between edit and view mode', () => {
     const store = useScheduleStore.getState()
     expect(store.isEditMode).toBe(false)
 
@@ -49,7 +50,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().isEditMode).toBe(false)
   })
 
-  it('deve alternar o destaque de disponibilidade de um membro', () => {
+  it('toggles the availability highlight of a person', () => {
     const store = useScheduleStore.getState()
     expect(store.highlightedPersonId).toBeNull()
 
@@ -61,7 +62,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().highlightedPersonId).toBeNull()
   })
 
-  it('deve adicionar, atualizar e excluir uma pessoa', () => {
+  it('adds, updates and deletes a person', () => {
     const store = useScheduleStore.getState()
     const initialCount = store.persons.length
 
@@ -82,7 +83,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(afterDelete.length).toBe(initialCount)
   })
 
-  it('deve proteger integridade referencial: bloquear exclusão se houver escala vinculada e permitir desativação/reativação', () => {
+  it('blocks deleting a person with assignments but allows deactivating and reactivating them', () => {
     const store = useScheduleStore.getState()
     const personId = store.persons[0].id
     const dateStr = '2026-10-10'
@@ -119,7 +120,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(store.canDeletePerson(personId)).toBe(true)
   })
 
-  it('deve manipular disponibilidades individuais e atalhos rápidos (pares, ímpares, limpar)', () => {
+  it('sets availability per day and through the even, odd and clear shortcuts', () => {
     const store = useScheduleStore.getState()
     const personId = store.persons[0].id
     const month = '2026-10'
@@ -153,7 +154,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(avail?.availableDays).toContain(15)
   })
 
-  it('deve adicionar e remover pessoa de um dia da escala', () => {
+  it('adds and removes a person from a day', () => {
     const store = useScheduleStore.getState()
     const dateStr = '2026-10-25'
 
@@ -164,7 +165,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().assignments[dateStr]).not.toContain('p1')
   })
 
-  it('deve adicionar e remover eventos do calendário', () => {
+  it('adds and removes calendar events', () => {
     const store = useScheduleStore.getState()
     const initialEventsCount = store.events.length
 
@@ -195,7 +196,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().events.length).toBe(initialEventsCount)
   })
 
-  it('deve disparar a validação e atualizar a lista de erros e status', () => {
+  it('runs the validation and updates the errors and status', () => {
     const store = useScheduleStore.getState()
     expect(store.hasValidated).toBe(false)
 
@@ -206,7 +207,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.validationErrors).toEqual(errors)
   })
 
-  it('deve limpar todas as escalas de um mês com clearMonthAssignments', () => {
+  it('clears every assignment of a month with clearMonthAssignments', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'
 
@@ -228,7 +229,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(assignmentsAfter['2026-11-01']).toBeDefined()
   })
 
-  it('deve inserir todos os dias de uma pessoa no calendário com insertAllPersonDaysToMonth', () => {
+  it('inserts every available day of a person with insertAllPersonDaysToMonth', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'
     const personId = store.persons[0].id
@@ -248,7 +249,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(assignments['2026-10-06']).toBeUndefined()
   })
 
-  it('deve inserir dias vinculados a uma escala específica com insertAllPersonDaysToMonth e shiftId', () => {
+  it('inserts only the days of a given shift with insertAllPersonDaysToMonth and a shiftId', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'
     const personId = store.persons[0].id
@@ -273,7 +274,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.dayShiftAssignments['2026-10-07']?.shift_d12).toBe(personId)
   })
 
-  it('deve reverter alterações no calendário ao sair do modo de edição sem salvar', () => {
+  it('asks before leaving edit mode with unsaved changes and reverts them on discard', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'
 
@@ -310,18 +311,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false)
   })
 
-  it('deve reverter alterações ao chamar discardChanges', () => {
-    const store = useScheduleStore.getState()
-    store.setEditMode(true)
-    store.addPersonToDay('2026-10-25', 'p1')
-    expect(useScheduleStore.getState().assignments['2026-10-25']).toEqual(['p1'])
-
-    store.discardChanges()
-    expect(useScheduleStore.getState().assignments['2026-10-25']).toBeUndefined()
-    expect(useScheduleStore.getState().hasUnsavedChanges).toBe(false)
-  })
-
-  it('deve efetivar e persistir alterações quando saveSchedule for acionado', () => {
+  it('commits and keeps the changes on saveSchedule', () => {
     const store = useScheduleStore.getState()
     store.setEditMode(true)
     store.addPersonToDay('2026-10-28', 'p1')
@@ -335,7 +325,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(useScheduleStore.getState().assignments['2026-10-28']).toEqual(['p1'])
   })
 
-  it('deve gerenciar endereços e propagar alterações/exclusões apenas para eventos futuros mantendo histórico dos passados', () => {
+  it('propagates address updates and deletions to future events only, keeping past events as history', () => {
     const store = useScheduleStore.getState()
 
     // 1. Add Address
@@ -408,24 +398,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(futureEvAfterDelete.addressId).toBeUndefined()
   })
 
-  it('deve executar pullCloudData com sucesso mesmo sem toggle de sincronização ativado', async () => {
-    localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
-    vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
-      monthData: { month: '2026-10', assignments: { '2026-10-01': ['p1'] } },
-      persons: [{ id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' }],
-      addresses: [],
-      shifts: null,
-      rules: null,
-    })
-    const store = useScheduleStore.getState()
-
-    const res = await store.pullCloudData('2026-10')
-    expect(res.success).toBe(true)
-    // O toggle de sincronização não pode ter sido alterado
-    expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
-  })
-
-  it('deve executar forcePushCloudData enviando dados para a nuvem sem alterar o toggle de sincronização', async () => {
+  it('force-pushes the data without changing the sync toggle', async () => {
     localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
     const pushSpy = vi.spyOn(CloudSyncService, 'pushAllToCloud').mockResolvedValueOnce(true)
     const store = useScheduleStore.getState()
@@ -433,7 +406,6 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const res = await store.forcePushCloudData(true)
     expect(res.success).toBe(true)
     expect(pushSpy).toHaveBeenCalledWith(
-      '2026-10',
       expect.objectContaining({
         monthData: expect.any(Object),
         persons: expect.any(Array),
@@ -441,15 +413,16 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       }),
       true,
       true,
+      expect.arrayContaining(['2026-10']),
     )
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
 
-  it('deve associar e desassociar profissional de um turno específico via assignPersonToShift e removePersonFromShift', () => {
+  it('assigns and removes a professional on a specific shift with assignPersonToShift and removePersonFromShift', () => {
     const store = useScheduleStore.getState()
     const dateStr = '2026-10-15'
 
-    // Atribui p1 ao turno shift_d12
+    // Assign p1 to shift_d12
     store.assignPersonToShift(dateStr, 'shift_d12', 'p1')
 
     let state = useScheduleStore.getState()
@@ -457,7 +430,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.assignments[dateStr]).toContain('p1')
     expect(state.hasUnsavedChanges).toBe(true)
 
-    // Atribui p2 ao turno shift_n12 no mesmo dia (2 pessoas em turnos de 12h distintos)
+    // Assign p2 to shift_n12 on the same day (2 people on different 12h shifts)
     store.assignPersonToShift(dateStr, 'shift_n12', 'p2')
 
     state = useScheduleStore.getState()
@@ -465,7 +438,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.dayShiftAssignments[dateStr]?.shift_n12).toBe('p2')
     expect(state.assignments[dateStr]).toEqual(['p1', 'p2'])
 
-    // Remove p1 do shift_d12
+    // Remove p1 from shift_d12
     store.removePersonFromShift(dateStr, 'shift_d12')
 
     state = useScheduleStore.getState()
@@ -473,26 +446,26 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.dayShiftAssignments[dateStr]?.shift_n12).toBe('p2')
     expect(state.assignments[dateStr]).toEqual(['p2'])
 
-    // Limpar mês deve limpar também dayShiftAssignments
+    // Clearing the month also clears dayShiftAssignments
     store.clearMonthAssignments('2026-10')
     state = useScheduleStore.getState()
     expect(state.dayShiftAssignments[dateStr]).toBeUndefined()
     expect(state.assignments[dateStr]).toBeUndefined()
   })
 
-  it('deve retornar lista vazia em getDayActiveShifts quando o mês não tiver plantão diário configurado', () => {
+  it('getDayActiveShifts returns an empty list when the month has no daily shifts', () => {
     const store = useScheduleStore.getState()
     const month = '2026-11'
     useScheduleStore.setState({
       monthDailyShifts: { [month]: {} },
     })
 
-    // Como não há plantões diários configurados para 2026-11, deve retornar vazio
+    // 2026-11 has no daily shifts configured, so the list is empty
     const activeShifts = store.getDayActiveShifts('2026-11-05')
     expect(activeShifts).toEqual([])
   })
 
-  it('deve retornar apenas os turnos alocados ao dia quando o mês tiver plantões configurados', () => {
+  it('getDayActiveShifts returns only the shifts set for that day', () => {
     const store = useScheduleStore.getState()
     const month = '2026-12'
     store.setMonthDailyShifts(month, {
@@ -500,25 +473,25 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       shift_n12: [3, 4, 5],
     })
 
-    // Dia 1: apenas shift_d12
+    // Day 1: shift_d12 only
     expect(store.getDayActiveShifts('2026-12-01').map((s) => s.id)).toEqual(['shift_d12'])
-    // Dia 3: shift_d12 e shift_n12
+    // Day 3: shift_d12 and shift_n12
     expect(store.getDayActiveShifts('2026-12-03').map((s) => s.id)).toEqual(['shift_d12', 'shift_n12'])
-    // Dia 10: nenhum turno alocado
+    // Day 10: no shift
     expect(store.getDayActiveShifts('2026-12-10')).toEqual([])
   })
 
-  it('deve remover a disponibilidade do calendário caso ela esteja vinculada e o usuário modifique a disponibilidade do mês', () => {
+  it('removes calendar assignments that no longer match a changed availability', () => {
     const store = useScheduleStore.getState()
     const month = '2026-10'
     const personId = 'p1'
 
-    // Define disponibilidade inicial e vincula no calendário (com turno e alocação diária)
+    // Initial availability, assigned on the calendar (with shift and day assignment)
     store.setPersonAvailability(personId, month, [5, 12], {
       shift_d12: [5, 12],
     })
     store.insertAllPersonDaysToMonth(personId, month, 'shift_d12')
-    // Adiciona outra pessoa no mesmo dia e o mesmo profissional em outro mês para garantir isolamento
+    // Another person on the same day and the same professional in another month, to check isolation
     store.assignPersonToShift('2026-10-05', 'shift_n12', 'p2')
     store.addPersonToDay('2026-11-05', personId)
 
@@ -528,25 +501,25 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     expect(state.dayShiftAssignments['2026-10-05']?.shift_d12).toBe(personId)
     expect(state.dayShiftAssignments['2026-10-12']?.shift_d12).toBe(personId)
 
-    // Modifica a disponibilidade do mês de p1 removendo o dia 12 e adicionando o dia 18
+    // Change p1 availability: remove day 12 and add day 18
     store.setPersonAvailability(personId, month, [5, 18], {
       shift_d12: [5, 18],
     })
 
     state = useScheduleStore.getState()
-    // O dia 5 (mantido na disponibilidade) permanece no calendário, enquanto o dia 12 (removido) é desvinculado
+    // Day 5 (still available) stays on the calendar, day 12 (removed) is unassigned
     expect(state.assignments['2026-10-05']).toContain(personId)
     expect(state.dayShiftAssignments['2026-10-05']?.shift_d12).toBe(personId)
     expect(state.assignments['2026-10-12']).not.toContain(personId)
     expect(state.dayShiftAssignments['2026-10-12']?.shift_d12).toBeUndefined()
 
-    // Outra pessoa (p2) no mesmo dia e o mesmo profissional em outro mês (2026-11) permanecem intactos
+    // The other person (p2) and the same professional in another month (2026-11) are untouched
     expect(state.assignments['2026-10-05']).toContain('p2')
     expect(state.dayShiftAssignments['2026-10-05']?.shift_n12).toBe('p2')
     expect(state.assignments['2026-11-05']).toContain(personId)
   })
 
-  it('deve sincronizar automaticamente turnos, participantes do mês, disponibilidades e plantões diários de um mês ainda não escalado quando o Firebase sync estiver ativo', () => {
+  it('with sync on, auto-syncs shifts, rules, participants, availability and daily shifts of a month without assignments', () => {
     CloudSyncService.setSyncEnabled(true)
     const saveShiftsSpy = vi.spyOn(CloudSyncService, 'saveShiftsToCloud').mockResolvedValue(true)
     const saveRulesSpy = vi.spyOn(CloudSyncService, 'saveRulesToCloud').mockResolvedValue(true)
@@ -555,7 +528,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const store = useScheduleStore.getState()
     const unscheduledMonth = '2026-11'
 
-    // 1. Cadastra turno de trabalho
+    // 1. Create a shift
     const newShift = store.addShiftDefinition({
       name: 'Plantão Noturno Extra',
       code: 'N12E',
@@ -568,7 +541,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       expect.arrayContaining([expect.objectContaining({ id: newShift.id, name: 'Plantão Noturno Extra' })]),
     )
 
-    // 2. Cadastra regra
+    // 2. Create a rule
     const newRule = store.addShiftRule({
       name: 'Regra Teste',
       description: 'Descanso mínimo de 11h',
@@ -581,7 +554,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       expect.arrayContaining([expect.objectContaining({ id: newRule.id, name: 'Regra Teste' })]),
     )
 
-    // 3. Configura plantões diários para o mês não escalado (2026-11)
+    // 3. Set the daily shifts of the month without assignments (2026-11)
     saveMonthSpy.mockClear()
     store.setMonthDailyShifts(unscheduledMonth, {
       [newShift.id]: [1, 2, 10],
@@ -595,7 +568,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       }),
     )
 
-    // 4. Vincula profissionais ao mês não escalado (2026-11)
+    // 4. Link professionals to that month (2026-11)
     saveMonthSpy.mockClear()
     store.addPersonsToMonth(['p1', 'p2'], unscheduledMonth)
     expect(saveMonthSpy).toHaveBeenCalledWith(
@@ -607,7 +580,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       }),
     )
 
-    // 5. Define disponibilidade para p1 no mês não escalado (2026-11)
+    // 5. Set p1 availability in that month (2026-11)
     saveMonthSpy.mockClear()
     store.setPersonAvailability('p1', unscheduledMonth, [1, 10], {
       [newShift.id]: [1, 10],
@@ -626,33 +599,139 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     )
   })
 
-  it('deve fazer fallback para buscar dados de outro mês na nuvem em pullCloudData quando o documento do mês alvo ainda não existir', async () => {
+  it('pullCloudData replaces the whole local schedule with the cloud data, removed days included', async () => {
+    useScheduleStore.setState({
+      assignments: { '2026-10-01': ['p1'], '2026-10-02': ['p1'] },
+      savedAssignments: { '2026-10-01': ['p1'], '2026-10-02': ['p1'] },
+      dayShiftAssignments: { '2026-10-02': { shift_d12: 'p1' } },
+      savedDayShiftAssignments: { '2026-10-02': { shift_d12: 'p1' } },
+    })
     vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
-      monthData: null,
+      status: 'ok',
+      monthData: {
+        assignments: { '2026-10-01': ['p1'] },
+        monthParticipants: { '2026-11': ['p1'] },
+        availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [5, 15] }],
+        monthDailyShifts: { '2026-11': { shift_d12: [5, 15] } },
+      },
       persons: [{ id: 'p1', name: 'Dra. Helena', color: '#10b981' }],
       addresses: [],
       shifts: [],
       rules: [],
     })
-    const fetchFallbackSpy = vi.spyOn(CloudSyncService, 'fetchMonthFromCloud').mockResolvedValueOnce({
-      month: '2026-10',
-      assignments: {},
-      monthParticipants: { '2026-11': ['p1'] },
-      availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [5, 15] }],
-      monthDailyShifts: { '2026-11': { shift_d12: [5, 15] } },
-    })
 
-    const store = useScheduleStore.getState()
-    const res = await store.pullCloudData('2026-11', true)
+    localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
+    const res = await useScheduleStore.getState().pullCloudData(true)
 
     expect(res.success).toBe(true)
-    expect(fetchFallbackSpy).toHaveBeenCalled()
+    // An on-demand pull never changes the sync toggle
+    expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
     const state = useScheduleStore.getState()
-    expect(state.monthParticipants['2026-11']).toEqual(['p1'])
+    expect(state.assignments).toEqual({ '2026-10-01': ['p1'] })
+    expect(state.savedAssignments).toEqual({ '2026-10-01': ['p1'] })
+    expect(state.dayShiftAssignments).toEqual({})
+    expect(state.monthParticipants).toEqual({ '2026-11': ['p1'] })
     expect(state.availabilities).toEqual([
       { personId: 'p1', month: '2026-11', availableDays: [5, 15] },
     ])
     expect(state.monthDailyShifts['2026-11']).toEqual({ shift_d12: [5, 15] })
+  })
+
+  it('keeps the local data when the pull fails while offline', async () => {
+    vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
+      status: 'offline',
+      monthData: null,
+      persons: null,
+      addresses: null,
+      shifts: null,
+      rules: null,
+    })
+
+    const res = await useScheduleStore.getState().pullCloudData(true)
+
+    expect(res).toEqual(expect.objectContaining({ success: false, code: 'offline' }))
+    expect(useScheduleStore.getState().persons).toEqual([
+      { id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' },
+    ])
+  })
+
+  it('does not force-push while offline', async () => {
+    const pushSpy = vi.spyOn(CloudSyncService, 'pushAllToCloud')
+    pushSpy.mockClear()
+    vi.spyOn(CloudSyncService, 'isOnline').mockReturnValueOnce(false)
+
+    const res = await useScheduleStore.getState().forcePushCloudData(true)
+
+    expect(res).toEqual(expect.objectContaining({ success: false, code: 'offline' }))
+    expect(pushSpy).not.toHaveBeenCalled()
+  })
+
+  it('never sends the edit mode draft to the cloud when auto-syncing', () => {
+    CloudSyncService.setSyncEnabled(true)
+    const saveMonthSpy = vi.spyOn(CloudSyncService, 'saveMonthToCloud').mockResolvedValue(true)
+    useScheduleStore.setState({
+      assignments: { '2026-10-01': ['p1'] },
+      savedAssignments: { '2026-10-01': ['p1'] },
+    })
+
+    const store = useScheduleStore.getState()
+    store.setEditMode(true)
+    store.addPersonToDay('2026-10-02', 'p1')
+    store.addEvent({ date: '2026-10-03', title: 'Reunião' })
+
+    expect(saveMonthSpy).toHaveBeenCalledWith(
+      '2026-10',
+      expect.objectContaining({ assignments: { '2026-10-01': ['p1'] } }),
+    )
+    expect(useScheduleStore.getState().assignments['2026-10-02']).toEqual(['p1'])
+  })
+
+  it('removes the person from the month in the draft and the saved schedule, without persisting the draft', () => {
+    useScheduleStore.setState({
+      assignments: { '2026-10-01': ['p1'] },
+      savedAssignments: { '2026-10-01': ['p1'] },
+    })
+
+    const store = useScheduleStore.getState()
+    store.setEditMode(true)
+    store.addPersonToDay('2026-10-05', 'p2')
+    store.removePersonFromMonth('p1', '2026-10')
+
+    const state = useScheduleStore.getState()
+    expect(state.assignments).toEqual({ '2026-10-01': [], '2026-10-05': ['p2'] })
+    expect(state.savedAssignments).toEqual({ '2026-10-01': [] })
+    expect(JSON.parse(localStorage.getItem('scale_manager_assignments_v1') ?? '{}')).toEqual({
+      '2026-10-01': [],
+    })
+  })
+  it('shows a success toast on local save, and no toast for schedule violations', async () => {
+    useToastStore.setState({ toasts: [] })
+    // Days with nobody assigned produce validation violations
+    await useScheduleStore.getState().saveSchedule()
+
+    expect(useToastStore.getState().toasts).toEqual([
+      expect.objectContaining({ type: 'success', message: 'Escala salva neste dispositivo.' }),
+    ])
+    expect(useScheduleStore.getState().isSaving).toBe(false)
+  })
+
+  it('shows an error toast when the local save works but the cloud fails', async () => {
+    useToastStore.setState({ toasts: [] })
+    CloudSyncService.setSyncEnabled(true)
+    vi.spyOn(CloudSyncService, 'saveMonthsToCloud').mockResolvedValueOnce(false)
+    vi.spyOn(CloudSyncService, 'savePeopleToCloud').mockResolvedValueOnce(true)
+    vi.spyOn(CloudSyncService, 'saveAddressesToCloud').mockResolvedValueOnce(true)
+    vi.spyOn(CloudSyncService, 'saveShiftsToCloud').mockResolvedValueOnce(true)
+    vi.spyOn(CloudSyncService, 'saveRulesToCloud').mockResolvedValueOnce(true)
+
+    await useScheduleStore.getState().saveSchedule()
+
+    expect(useToastStore.getState().toasts).toEqual([
+      expect.objectContaining({
+        type: 'error',
+        message: 'Escala salva neste dispositivo, mas não foi possível sincronizar com a nuvem.',
+      }),
+    ])
   })
 })
 

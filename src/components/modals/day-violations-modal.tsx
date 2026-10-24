@@ -61,15 +61,15 @@ export function DayViolationsModal({
       role="dialog"
       aria-modal="true"
       data-testid="day-violations-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full shadow-2xl space-y-4 my-8"
+        className="modal-panel bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="modal-header flex items-start justify-between px-6 pt-6 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-900/60">
               <ShieldAlert className="w-5 h-5" />
@@ -103,7 +103,7 @@ export function DayViolationsModal({
         </div>
 
         {/* Violations List */}
-        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+        <div className="modal-body space-y-3 px-6 py-4 custom-scrollbar">
           {violations.map((violation) => {
             const isError = violation.severity === 'error'
             const person = violation.personId ? personMap.get(violation.personId) : undefined
@@ -167,7 +167,7 @@ export function DayViolationsModal({
         </div>
 
         {/* Guidance Footer */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="modal-footer px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs text-slate-500">
           <div className="flex items-center gap-1.5">
             <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{t('calendar:validation.dayViolationsModal.howToFixText')}</span>

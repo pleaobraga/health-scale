@@ -11,6 +11,7 @@ import {
   AuthContext,
   useAuth,
 } from './auth-context-base'
+import { CloudSyncService } from '../services/cloud-sync-service'
 import { auth, db } from '../services/firebase'
 import { isGuestDataEmpty, loadGuestSeedData } from '../services/seed/guestSeedLoader'
 import { StorageService } from '../services/storage-service'
@@ -36,10 +37,22 @@ const createGuestUser = (profile: GuestProfile): User => {
   } as unknown as User
 }
 
-async function restoreUserDataOrCloud(
-  uid: string,
-  isAdmin = false,
-): Promise<void> {
+// login() and onAuthStateChanged both restore the same account right after sign-in;
+// sharing the in-flight restore avoids pulling from the cloud twice.
+const restoresInFlight = new Map<string, Promise<void>>()
+
+function restoreUserDataOrCloud(uid: string, isAdmin = false): Promise<void> {
+  const inFlight = restoresInFlight.get(uid)
+  if (inFlight) return inFlight
+
+  const restore = runUserDataRestore(uid, isAdmin).finally(() => {
+    restoresInFlight.delete(uid)
+  })
+  restoresInFlight.set(uid, restore)
+  return restore
+}
+
+async function runUserDataRestore(uid: string, isAdmin: boolean): Promise<void> {
   StorageService.setActiveUserId(uid)
   const userDataset = StorageService.getUserDataset(uid)
   const hasLocalData =
@@ -62,10 +75,7 @@ async function restoreUserDataOrCloud(
   } else {
     // If local dataset is missing or empty, attempt pulling data from Firestore cloud
     try {
-      const currentMonth = getCurrentMonth()
-      const cloudResult = await useScheduleStore
-        .getState()
-        .pullCloudData(currentMonth, isAdmin)
+      const cloudResult = await useScheduleStore.getState().pullCloudData(isAdmin)
       if (cloudResult.success) {
         StorageService.snapshotActiveUser(uid)
       } else if (userDataset) {
@@ -169,6 +179,7 @@ export function AuthProvider({
 
           if (userDoc.exists()) {
             userIsAdmin = userDoc.data()?.role === 'admin'
+            CloudSyncService.setCachedAdminStatus(currentUser.uid, userIsAdmin)
             setRole(userIsAdmin ? 'admin' : 'user')
           } else {
             // Se o documento ainda não existir, cria o registro inicial com role 'user'
@@ -236,6 +247,7 @@ export function AuthProvider({
       const userDoc = await getDoc(doc(db, 'users', authenticatedUser.uid))
       if (userDoc.exists()) {
         userIsAdmin = userDoc.data()?.role === 'admin'
+        CloudSyncService.setCachedAdminStatus(authenticatedUser.uid, userIsAdmin)
       }
     } catch {
       // offline fallback
@@ -372,6 +384,7 @@ export function AuthProvider({
     useScheduleStore.getState().reloadFromStorage()
     useScheduleStore.setState({ currentMonth: getCurrentMonth() })
 
+    CloudSyncService.clearCachedAdminStatus()
     await signOut(auth)
     setUser(null)
     setRole(null)

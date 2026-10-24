@@ -35,9 +35,9 @@ export function ConfirmClearLocalDataModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="clear-local-data-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-slate-900 dark:text-slate-100 relative">
+      <div className="modal-panel bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full text-slate-900 dark:text-slate-100 relative">
         <button
           type="button"
           onClick={onClose}
@@ -48,7 +48,7 @@ export function ConfirmClearLocalDataModal({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-start gap-4">
+        <div className="modal-body flex items-start gap-4 p-6 pr-12">
           <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-200/80 dark:border-rose-800/80">
             <AlertTriangle className="w-6 h-6 stroke-[2.2]" />
           </div>
@@ -67,7 +67,7 @@ export function ConfirmClearLocalDataModal({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="modal-footer flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={onClose}

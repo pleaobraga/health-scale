@@ -15,7 +15,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { TAILWIND_PALETTE } from '../../constants/tailwind-colors'
+import { useListOrder } from '../../hooks/use-list-order'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { sortByListOrder } from '../../utils/list-order'
+import { SortableList } from '../common/sortable-list'
 
 import type { ShiftDefinition } from '../../types'
 
@@ -42,7 +45,9 @@ export function ShiftsManagementView() {
   const [color, setColor] = useState('#3B82F6')
   const [enabledByDefault, setEnabledByDefault] = useState(true)
 
-  const filteredShifts = shiftDefinitions.filter((shift) => {
+  const { order: shiftOrder, handleReorder } = useListOrder('shifts')
+  const sortedShifts = sortByListOrder(shiftDefinitions, shiftOrder)
+  const filteredShifts = sortedShifts.filter((shift) => {
     const q = searchQuery.toLowerCase().trim()
     if (!q) return true
     return (
@@ -147,7 +152,7 @@ export function ShiftsManagementView() {
             placeholder={t('settings:shifts.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
           />
         </div>
 
@@ -183,83 +188,93 @@ export function ShiftsManagementView() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredShifts.map((shift) => (
-            <div
-              key={shift.id}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between gap-4 transition hover:border-slate-300 dark:hover:border-slate-700"
-            >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <span
-                    style={{ backgroundColor: shift.color }}
-                    className="px-2.5 py-1 rounded-lg text-white font-extrabold text-xs shadow-2xs"
-                  >
-                    {shift.code}
-                  </span>
+          <SortableList
+            items={filteredShifts}
+            layout="grid"
+            getItemLabel={(shift) => `${shift.code} – ${shift.name}`}
+            onReorder={(activeId, overId) =>
+              handleReorder(sortedShifts.map((item) => item.id), activeId, overId)
+            }
+            renderItem={(shift, dragHandle) => (
+              <div
+                className="h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between gap-4 transition hover:border-slate-300 dark:hover:border-slate-700"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      {dragHandle}
+                      <span
+                        style={{ backgroundColor: shift.color }}
+                        className="px-2.5 py-1 rounded-lg text-white font-extrabold text-xs shadow-2xs"
+                      >
+                        {shift.code}
+                      </span>
+                    </div>
 
-                  {/* Enabled By Default Badge */}
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                      shift.enabledByDefault
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    {shift.enabledByDefault ? t('common:status.defaultActive') : t('common:status.defaultInactive')}
-                  </span>
-                </div>
+                    {/* Enabled By Default Badge */}
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        shift.enabledByDefault
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                      }`}
+                    >
+                      {shift.enabledByDefault ? t('common:status.defaultActive') : t('common:status.defaultInactive')}
+                    </span>
+                  </div>
 
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    {shift.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    <span>{t('settings:shifts.startTime')}: <strong>{shift.startTime}</strong></span>
-                    <span>•</span>
-                    <span>{t('settings:shifts.durationHours')}: <strong>{t('settings:shifts.hoursBadge', { hours: shift.durationHours })}</strong></span>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      {shift.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
+                      <span>{t('settings:shifts.startTime')}: <strong>{shift.startTime}</strong></span>
+                      <span>•</span>
+                      <span>{t('settings:shifts.durationHours')}: <strong>{t('settings:shifts.hoursBadge', { hours: shift.durationHours })}</strong></span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Actions Footer */}
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(shift)}
+                    title={t('settings:shifts.edit')}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => duplicateShiftDefinition(shift.id)}
+                    title={t('settings:shifts.duplicate')}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirmId(shift.id)}
+                    title={t('settings:shifts.delete')}
+                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-
-              {/* Actions Footer */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-end gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEditModal(shift)}
-                  title={t('settings:shifts.edit')}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => duplicateShiftDefinition(shift.id)}
-                  title={t('settings:shifts.duplicate')}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setDeleteConfirmId(shift.id)}
-                  title={t('settings:shifts.delete')}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
+            )}
+          />
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
+        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
+          <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
+            <div className="modal-header flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 shadow-2xs">
                   <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
@@ -285,7 +300,7 @@ export function ShiftsManagementView() {
               </button>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+            <div className="modal-footer px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDeleteConfirmId(null)}
@@ -308,9 +323,9 @@ export function ShiftsManagementView() {
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col transition-colors max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
+        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
+          <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg transition-colors">
+            <div className="modal-header flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-2xs">
                   <Clock className="w-5 h-5 stroke-[2.2]" />
@@ -336,123 +351,94 @@ export function ShiftsManagementView() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveShift} className="p-6 space-y-4">
-              {/* Name & Code */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {t('settings:shifts.name')} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={t('settings:shifts.namePlaceholder')}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {t('settings:shifts.code')} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.toUpperCase())}
-                    placeholder={t('settings:shifts.codePlaceholder')}
-                    className="w-full px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white uppercase"
-                  />
-                </div>
-              </div>
-
-              {/* Start Time & Duration */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {t('settings:shifts.startTime')} *
-                  </label>
-                  <input
-                    type="time"
-                    required
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    {t('settings:shifts.durationHours')} *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    max={72}
-                    value={durationHours}
-                    onChange={(e) => setDurationHours(Number(e.target.value))}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Color Swatches */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <Palette className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                    <span>{t('settings:shifts.color')}</span>
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-                      {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === color.toLowerCase())?.name || t('settings:shifts.customColor')}
-                    </span>
-                    <label
-                      title={t('settings:shifts.customColor')}
-                      className="relative flex items-center gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 transition"
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full border border-black/10 shrink-0"
-                        style={{ backgroundColor: color }}
-                      />
-                      <span className="text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300">
-                        {color.toUpperCase()}
-                      </span>
-                      <Pipette className="w-3 h-3 text-slate-400" />
-                      <input
-                        type="color"
-                        value={color}
-                        onChange={(e) => setColor(e.target.value)}
-                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                        aria-label={t('settings:shifts.customColor')}
-                      />
+            <form onSubmit={handleSaveShift} data-testid="shift-form" className="modal-form">
+              <div className="modal-body p-6 space-y-4 custom-scrollbar">
+                {/* Name & Code */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {t('settings:shifts.name')} *
                     </label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={t('settings:shifts.namePlaceholder')}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {t('settings:shifts.code')} *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.toUpperCase())}
+                      placeholder={t('settings:shifts.codePlaceholder')}
+                      className="w-full px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white uppercase"
+                    />
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-1.5 max-h-32 overflow-y-auto p-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                  {/* Native Colorpicker Tile */}
-                  {(() => {
-                    const isCustom = !TAILWIND_PALETTE.some(
-                      (c) => c.hex.toLowerCase() === color.toLowerCase(),
-                    )
-                    return (
+                {/* Start Time & Duration */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {t('settings:shifts.startTime')} *
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {t('settings:shifts.durationHours')} *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      max={72}
+                      value={durationHours}
+                      onChange={(e) => setDurationHours(Number(e.target.value))}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Color Swatches */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                      <span>{t('settings:shifts.color')}</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                        {TAILWIND_PALETTE.find((c) => c.hex.toLowerCase() === color.toLowerCase())?.name || t('settings:shifts.customColor')}
+                      </span>
                       <label
                         title={t('settings:shifts.customColor')}
-                        aria-label={t('settings:shifts.customColor')}
-                        className={`relative w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs group ${
-                          isCustom ? 'ring-2 ring-indigo-500 scale-105' : ''
-                        }`}
-                        style={{
-                          background: isCustom
-                            ? color
-                            : 'linear-gradient(135deg, #f43f5e 0%, #eab308 50%, #3b82f6 100%)',
-                        }}
+                        className="relative flex items-center gap-1.5 cursor-pointer bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-0.5 rounded-sm border border-slate-200 dark:border-slate-700 transition"
                       >
+                        <span
+                          className="w-3 h-3 rounded-full border border-black/10 shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                        <span className="text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300">
+                          {color.toUpperCase()}
+                        </span>
+                        <Pipette className="w-3 h-3 text-slate-400" />
                         <input
                           type="color"
                           value={color}
@@ -460,62 +446,97 @@ export function ShiftsManagementView() {
                           className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                           aria-label={t('settings:shifts.customColor')}
                         />
-                        {isCustom ? (
-                          <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-xs" />
-                        ) : (
-                          <Pipette className="w-3 h-3 text-white drop-shadow-xs group-hover:scale-110 transition-transform" />
-                        )}
                       </label>
-                    )
-                  })()}
+                    </div>
+                  </div>
 
-                  {TAILWIND_PALETTE.map((pal) => (
-                    <button
-                      key={pal.hex}
-                      type="button"
-                      onClick={() => setColor(pal.hex)}
-                      style={{ backgroundColor: pal.hex }}
-                      className="w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer"
-                      title={pal.name}
-                      aria-label={pal.name}
-                    >
-                      {color.toLowerCase() === pal.hex.toLowerCase() && (
-                        <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                  <div className="flex flex-wrap items-center gap-1.5 max-h-32 overflow-y-auto p-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                    {/* Native Colorpicker Tile */}
+                    {(() => {
+                      const isCustom = !TAILWIND_PALETTE.some(
+                        (c) => c.hex.toLowerCase() === color.toLowerCase(),
+                      )
+                      return (
+                        <label
+                          title={t('settings:shifts.customColor')}
+                          aria-label={t('settings:shifts.customColor')}
+                          className={`relative w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer shadow-2xs group ${
+                            isCustom ? 'ring-2 ring-indigo-500 scale-105' : ''
+                          }`}
+                          style={{
+                            background: isCustom
+                              ? color
+                              : 'linear-gradient(135deg, #f43f5e 0%, #eab308 50%, #3b82f6 100%)',
+                          }}
+                        >
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => setColor(e.target.value)}
+                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            aria-label={t('settings:shifts.customColor')}
+                          />
+                          {isCustom ? (
+                            <Check className="w-3.5 h-3.5 text-white stroke-3 drop-shadow-xs" />
+                          ) : (
+                            <Pipette className="w-3 h-3 text-white drop-shadow-xs group-hover:scale-110 transition-transform" />
+                          )}
+                        </label>
+                      )
+                    })()}
 
-              {/* Enabled By Default Toggle */}
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {t('settings:shifts.enabledByDefault')}
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    {t('settings:shifts.enabledByDefaultDesc')}
-                  </p>
+                    {TAILWIND_PALETTE.map((pal) => (
+                      <button
+                        key={pal.hex}
+                        type="button"
+                        onClick={() => setColor(pal.hex)}
+                        style={{ backgroundColor: pal.hex }}
+                        className="w-6 h-6 rounded-lg transition-transform hover:scale-110 flex items-center justify-center shrink-0 cursor-pointer"
+                        title={pal.name}
+                        aria-label={pal.name}
+                      >
+                        {color.toLowerCase() === pal.hex.toLowerCase() && (
+                          <Check className="w-3.5 h-3.5 text-white stroke-3" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={enabledByDefault}
-                  onClick={() => setEnabledByDefault(!enabledByDefault)}
-                  className={`w-10 h-6 rounded-full transition-colors relative shrink-0 focus:outline-hidden ${
-                    enabledByDefault ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
-                  }`}
-                >
-                  <span
-                    className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${
-                      enabledByDefault ? 'left-5' : 'left-1'
+
+                {/* Enabled By Default Toggle */}
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {t('settings:shifts.enabledByDefault')}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      {t('settings:shifts.enabledByDefaultDesc')}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={enabledByDefault}
+                    onClick={() => setEnabledByDefault(!enabledByDefault)}
+                    className={`w-10 h-6 rounded-full transition-colors relative shrink-0 focus:outline-hidden ${
+                      enabledByDefault ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'
                     }`}
-                  />
-                </button>
+                  >
+                    <span
+                      className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${
+                        enabledByDefault ? 'left-5' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div
+                data-testid="shift-form-footer"
+                className="modal-footer flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-100 dark:border-slate-800"
+              >
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

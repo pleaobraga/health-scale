@@ -20,6 +20,13 @@
     "settings": "Settings",
     "users": "User Management"
   },
+  "navShort": {
+    "calendar": "Schedule",
+    "people": "People",
+    "shifts": "Shifts",
+    "settings": "Settings",
+    "more": "More"
+  },
   "actions": {
     "save": "Save",
     "saving": "Saving...",
@@ -33,10 +40,8 @@
     "pullCloud": "Pull Data from Cloud",
     "pullCloudTooltip": "Fetch updated data from the cloud (Firestore)",
     "pullingCloud": "Pulling...",
-    "pullSuccess": "Updated!",
     "forceCloud": "Force Data to Cloud",
     "forcingCloud": "Forcing...",
-    "forceSuccess": "Forced!",
     "copy": "Copy",
     "copied": "Copied!",
     "clearLocal": "Clear All Local Data",
@@ -69,6 +74,26 @@
   "status": {
     "defaultActive": "Default Active",
     "defaultInactive": "Default Inactive"
+  },
+  "reorder": {
+    "handle": "Drag to reorder {{name}}",
+    "instructions": "To reorder, press space or Enter on the handle, use the arrow keys to move and press space or Enter again to drop. Press Esc to cancel.",
+    "start": "Picked up {{name}}.",
+    "over": "{{name}} moved to the position of {{target}}.",
+    "end": "{{name}} dropped at the position of {{target}}.",
+    "cancel": "Reordering {{name}} was cancelled."
+  },
+  "toast": {
+    "pullSuccess": "Cloud data loaded on this device.",
+    "pullNoData": "No data found in the cloud.",
+    "pullOffline": "No internet connection. Local data was not changed.",
+    "pullUnauthorized": "Only administrators can fetch cloud data.",
+    "pullError": "Could not fetch cloud data.",
+    "pushSuccess": "This device's data was sent to the cloud.",
+    "pushOffline": "No internet connection. Connect to send data to the cloud.",
+    "pushError": "Could not send data to the cloud. Check your permissions.",
+    "saveLocal": "Schedule saved on this device.",
+    "saveCloud": "Schedule saved and synced with the cloud.",
+    "saveCloudError": "Schedule saved on this device, but it could not be synced with the cloud."
   }
 }
-

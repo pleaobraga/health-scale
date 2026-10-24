@@ -4,14 +4,14 @@ import { describe, it, expect, vi } from 'vitest'
 import { ConfirmOverwriteModal } from './confirm-overwrite-modal'
 
 describe('ConfirmOverwriteModal Component', () => {
-  it('não deve renderizar quando isOpen for false', () => {
+  it('renders nothing when isOpen is false', () => {
     const { container } = render(
       <ConfirmOverwriteModal isOpen={false} onConfirm={vi.fn()} onCancel={vi.fn()} />
     )
     expect(container.firstChild).toBeNull()
   })
 
-  it('deve exibir mensagem de perigo sobre a sobrescrita irreversível de dados', () => {
+  it('warns that overwriting the data cannot be undone', () => {
     render(<ConfirmOverwriteModal isOpen={true} onConfirm={vi.fn()} onCancel={vi.fn()} />)
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
@@ -25,7 +25,7 @@ describe('ConfirmOverwriteModal Component', () => {
     expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument()
   })
 
-  it('deve chamar onConfirm ao clicar no botão destrutivo', () => {
+  it('calls onConfirm from the destructive button', () => {
     const onConfirmMock = vi.fn()
     render(
       <ConfirmOverwriteModal isOpen={true} onConfirm={onConfirmMock} onCancel={vi.fn()} />
@@ -35,7 +35,7 @@ describe('ConfirmOverwriteModal Component', () => {
     expect(onConfirmMock).toHaveBeenCalledTimes(1)
   })
 
-  it('deve chamar onCancel ao clicar em Cancelar ou no botão de fechar', () => {
+  it('calls onCancel from Cancelar and from the close button', () => {
     const onCancelMock = vi.fn()
     render(
       <ConfirmOverwriteModal isOpen={true} onConfirm={vi.fn()} onCancel={onCancelMock} />
@@ -48,7 +48,7 @@ describe('ConfirmOverwriteModal Component', () => {
     expect(onCancelMock).toHaveBeenCalledTimes(2)
   })
 
-  it('deve desabilitar botões quando estiver restaurando', () => {
+  it('disables the buttons while restoring', () => {
     render(
       <ConfirmOverwriteModal
         isOpen={true}

@@ -1,6 +1,5 @@
 import { CalendarGrid } from './calendar-grid'
 import { Sidebar } from '../sidebar/sidebar'
-import { ValidationPanel } from '../validation/validation-panel'
 
 export function CalendarView() {
   return (
@@ -8,15 +7,14 @@ export function CalendarView() {
       data-testid="calendar-view"
       className="flex-1 flex flex-col lg:flex-row gap-5 p-3 sm:p-4 md:p-5 lg:overflow-hidden max-w-[2000px] w-full mx-auto min-h-0"
     >
-      {/* Left Month Sidebar: Monthly Participants */}
-      <div className="w-full lg:w-[21rem] shrink-0 lg:h-full flex flex-col">
+      {/* Left Month Sidebar: Monthly Participants (below the calendar while the layout is stacked, < lg) */}
+      <div className="w-full lg:w-84 shrink-0 lg:h-full flex flex-col max-lg:order-2">
         <Sidebar />
       </div>
 
-      {/* Central / Right Area: Calendar & Validation */}
-      <div className="flex-1 lg:h-full lg:overflow-y-auto pr-0 lg:pr-1 flex flex-col gap-5 min-w-0 pb-6 custom-scrollbar">
+      {/* Central / Right Area: Calendar */}
+      <div className="flex-1 lg:h-full lg:overflow-y-auto pr-0 lg:pr-1 flex flex-col gap-5 min-w-0 pb-6 max-lg:pb-0 custom-scrollbar max-lg:order-1">
         <CalendarGrid />
-        <ValidationPanel />
       </div>
     </main>
   )

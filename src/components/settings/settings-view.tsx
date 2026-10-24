@@ -1,5 +1,4 @@
 import {
-  AlertCircle,
   Calendar,
   Check,
   Clock,
@@ -24,12 +23,17 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { ConfirmClearLocalDataModal } from './confirm-clear-local-data-modal'
+import { EnableCloudSyncModal } from './enable-cloud-sync-modal'
 import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { showErrorToast, showSuccessToast } from '../../store/use-toast-store'
+import { notifyPullResult, notifyPushResult } from '../../utils/cloud-feedback'
 import { LanguageSelector } from '../common/language-selector'
 import { ImportView } from '../import/import-view'
+
+import type { EnableCloudSyncChoice } from './enable-cloud-sync-modal'
 
 export function SettingsView() {
   const { t } = useTranslation(['settings', 'common'])
@@ -48,10 +52,6 @@ export function SettingsView() {
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
   const [isPulling, setIsPulling] = useState(false)
-  const [pullFeedback, setPullFeedback] = useState<{
-    type: 'success' | 'error'
-    message: string
-  } | null>(null)
   const [isClearModalOpen, setIsClearModalOpen] = useState(false)
   const [isClearingLocalData, setIsClearingLocalData] = useState(false)
   const [clearFeedback, setClearFeedback] = useState<string | null>(null)
@@ -76,48 +76,62 @@ export function SettingsView() {
   const [syncEnabled, setSyncEnabled] = useState<boolean>(() =>
     CloudSyncService.isSyncEnabled(),
   )
+  const [isEnableSyncModalOpen, setIsEnableSyncModalOpen] = useState(false)
+  const [pendingSyncChoice, setPendingSyncChoice] = useState<EnableCloudSyncChoice | null>(null)
 
   const totalAssignedDays = Object.keys(assignments).filter(
     (k) => (assignments[k] || []).length > 0,
   ).length
 
+
+  // Enabling sync asks which side wins, so a stale device never silently overwrites the cloud
   const handleToggleSync = () => {
-    const nextState = !syncEnabled
-    setSyncEnabled(nextState)
-    CloudSyncService.setSyncEnabled(nextState)
-    if (nextState) {
-      forcePushCloudData(isAdmin).catch((err) => {
-        console.error('Failed to push local data after enabling sync:', err)
-      })
+    if (syncEnabled) {
+      setSyncEnabled(false)
+      CloudSyncService.setSyncEnabled(false)
+      return
+    }
+    setIsEnableSyncModalOpen(true)
+  }
+
+  const handleChooseSyncSource = async (choice: EnableCloudSyncChoice) => {
+    setPendingSyncChoice(choice)
+    try {
+      if (choice === 'pull') {
+        const result = await pullCloudData(isAdmin)
+        // An empty cloud is fine to start syncing from: the next saves will fill it
+        if (result.success || result.code === 'no_data') {
+          setSyncEnabled(true)
+          CloudSyncService.setSyncEnabled(true)
+          showSuccessToast(t('settings:cloudSyncSection.enabledFromCloud'))
+        } else {
+          notifyPullResult(result)
+        }
+      } else {
+        const result = await forcePushCloudData(isAdmin)
+        if (result.success) {
+          setSyncEnabled(true)
+          CloudSyncService.setSyncEnabled(true)
+          showSuccessToast(t('settings:cloudSyncSection.pushSuccess'))
+        } else {
+          notifyPushResult(result)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to enable cloud sync:', err)
+      showErrorToast(t('settings:cloudSyncSection.pushError'))
+    } finally {
+      setPendingSyncChoice(null)
+      setIsEnableSyncModalOpen(false)
     }
   }
 
   const handlePullCloudData = async () => {
     try {
       setIsPulling(true)
-      setPullFeedback(null)
-
-      const result = await pullCloudData(undefined, isAdmin)
-      let feedbackMessage = result.message
-      if (result.success) {
-        feedbackMessage = t('cloudSyncSection.pullSuccess')
-      } else if (result.code === 'no_data') {
-        feedbackMessage = t('cloudSyncSection.noCloudData')
-      } else {
-        feedbackMessage = t('cloudSyncSection.pullError')
-      }
-
-      setPullFeedback({
-        type: result.success ? 'success' : 'error',
-        message: feedbackMessage,
-      })
-      setTimeout(() => setPullFeedback(null), 5000)
+      notifyPullResult(await pullCloudData(isAdmin))
     } catch {
-      setPullFeedback({
-        type: 'error',
-        message: t('cloudSyncSection.pullError'),
-      })
-      setTimeout(() => setPullFeedback(null), 5000)
+      showErrorToast(t('common:toast.pullError'))
     } finally {
       setIsPulling(false)
     }
@@ -158,7 +172,7 @@ export function SettingsView() {
       <div className="w-full max-w-4xl space-y-6 pb-12">
         {/* Header */}
         <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200 dark:border-slate-800">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
             {activeTab === 'import' ? (
               <Upload className="w-5 h-5" />
             ) : (
@@ -311,7 +325,7 @@ export function SettingsView() {
                 aria-checked={syncEnabled}
                 onClick={handleToggleSync}
                 data-testid="toggle-sync-button"
-                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
+                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
                   syncEnabled
                     ? 'bg-indigo-600'
                     : 'bg-slate-300 dark:bg-slate-700'
@@ -356,24 +370,6 @@ export function SettingsView() {
                   </span>
                 </button>
               </div>
-
-              {pullFeedback && (
-                <div
-                  data-testid="pull-feedback-banner"
-                  className={`flex items-center gap-2 p-3 rounded-xl text-xs font-medium ${
-                    pullFeedback.type === 'success'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-900/60'
-                      : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-900/60'
-                  }`}
-                >
-                  {pullFeedback.type === 'success' ? (
-                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-                  )}
-                  <span>{pullFeedback.message}</span>
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -633,6 +629,12 @@ export function SettingsView() {
       </div>
 
       {/* Confirmation Modal */}
+      <EnableCloudSyncModal
+        isOpen={isEnableSyncModalOpen}
+        onClose={() => setIsEnableSyncModalOpen(false)}
+        onChoose={handleChooseSyncSource}
+        pendingChoice={pendingSyncChoice}
+      />
       <ConfirmClearLocalDataModal
         isOpen={isClearModalOpen}
         onClose={() => setIsClearModalOpen(false)}

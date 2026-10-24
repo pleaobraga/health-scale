@@ -43,7 +43,7 @@ vi.mock('firebase/firestore', async (importOriginal) => {
   }
 })
 
-describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', () => {
+describe('AuthContext - multiple guests with isolated local data', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.clearAllMocks()
@@ -57,7 +57,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     <AuthProvider>{children}</AuthProvider>
   )
 
-  it('deve inicializar com estado de convidado inativo quando não houver sessão', async () => {
+  it('starts with no guest session when nothing is stored', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await waitFor(() => {
@@ -71,7 +71,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
   })
 
 
-  it('deve criar um novo perfil de convidado com privilégios não-admin', async () => {
+  it('creates a new guest profile without admin privileges', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await act(async () => {
@@ -88,10 +88,10 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(StorageService.getActiveGuestId()).toBe(result.current.guestProfiles[0].id)
   })
 
-  it('deve alternar entre contas de convidados restaurando os dados isolados', async () => {
+  it('switches between guest accounts and restores each isolated dataset', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    // 1. Convidado 1 entra e salva dados
+    // 1. Guest 1 signs in and saves data
     await act(async () => {
       await result.current.loginAsGuest('Dr. Primeiro')
     })
@@ -101,7 +101,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
       { id: 'p-1', name: 'Paciente A', color: '#3b82f6', active: true },
     ])
 
-    // 2. Convidado 1 desloga
+    // 2. Guest 1 signs out
     await act(async () => {
       await result.current.logout()
     })
@@ -109,10 +109,10 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(result.current.user).toBeNull()
     expect(result.current.isGuest).toBe(false)
     expect(StorageService.getActiveGuestId()).toBeNull()
-    // Dados ativos são limpos para evitar vazamento
+    // The active data is cleared so nothing leaks
     expect(StorageService.getPersons()).toEqual([])
 
-    // 3. Convidado 2 entra e salva outros dados
+    // 3. Guest 2 signs in and saves other data
     await act(async () => {
       await result.current.loginAsGuest('Dra. Segunda')
     })
@@ -123,27 +123,27 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
       { id: 'p-2', name: 'Paciente B', color: '#10b981', active: true },
     ])
 
-    // 4. Convidado 2 desloga
+    // 4. Guest 2 signs out
     await act(async () => {
       await result.current.logout()
     })
 
     expect(StorageService.getPersons()).toEqual([])
 
-    // 5. Convidado 1 é selecionado novamente da lista
+    // 5. Guest 1 is picked again from the list
     await act(async () => {
       await result.current.loginAsGuest('', guest1Id)
     })
 
     expect(result.current.user?.displayName).toBe('Dr. Primeiro')
     expect(result.current.isGuest).toBe(true)
-    // Dados do Convidado 1 foram restaurados com sucesso!
+    // Guest 1 data is restored
     const restoredPersons = StorageService.getPersons()
     expect(restoredPersons).toHaveLength(1)
     expect(restoredPersons[0].name).toBe('Paciente A')
   })
 
-  it('deve excluir perfil de convidado e seu dataset associado', async () => {
+  it('deletes a guest profile and its dataset', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await act(async () => {
@@ -164,7 +164,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(StorageService.getGuestDataset(guestId)).toBeNull()
   })
 
-  it('deve preservar os dados de Admin ao deslogar, entrar como guest e logar novamente via login()', async () => {
+  it('keeps the admin data across logout, a guest session and a new login()', async () => {
     const mockUser = {
       uid: 'admin-uid-1',
       email: 'admin@healthscale.com',
@@ -177,7 +177,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
 
     const { result } = renderHook(() => useAuth(), { wrapper })
 
-    // 1. Admin faz login
+    // 1. Admin signs in
     await act(async () => {
       await result.current.login('admin@healthscale.com', 'admin123')
     })
@@ -185,7 +185,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(result.current.user?.uid).toBe('admin-uid-1')
     expect(result.current.isGuest).toBe(false)
 
-    // 2. Admin cadastra pessoa, endereço e atribuição no calendário
+    // 2. Admin adds a person, an address and an assignment
     act(() => {
       useScheduleStore.getState().addPerson('Dra. Maria Plantonista', '#10b981')
       useScheduleStore.getState().addAddress({
@@ -212,13 +212,13 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(useScheduleStore.getState().assignments['2026-10-15']).toEqual([createdPerson.id])
     expect(useScheduleStore.getState().addresses).toHaveLength(1)
 
-    // Snapshot isolado do Admin no localStorage deve estar preenchido
+    // The admin snapshot in localStorage is filled
     const adminSnapshotBefore = StorageService.getUserDataset('admin-uid-1')
     expect(adminSnapshotBefore?.persons).toHaveLength(1)
     expect(adminSnapshotBefore?.addresses).toHaveLength(1)
     expect(adminSnapshotBefore?.assignments['2026-10-15']).toEqual([createdPerson.id])
 
-    // 3. Admin faz logout
+    // 3. Admin signs out
     await act(async () => {
       await result.current.logout()
     })
@@ -228,7 +228,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(useScheduleStore.getState().addresses).toEqual([])
     expect(useScheduleStore.getState().assignments).toEqual({})
 
-    // 4. Usuário acessa como Guest
+    // 4. The user enters as a guest
     await act(async () => {
       await result.current.loginAsGuest('Visitante Clínico')
     })
@@ -236,7 +236,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(result.current.isGuest).toBe(true)
     expect(StorageService.getActiveGuestId()).not.toBeNull()
 
-    // 5. Guest faz logout
+    // 5. The guest signs out
     await act(async () => {
       await result.current.logout()
     })
@@ -244,7 +244,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(result.current.user).toBeNull()
     expect(useScheduleStore.getState().persons).toEqual([])
 
-    // 6. Admin faz login novamente via login()
+    // 6. Admin signs in again through login()
     await act(async () => {
       await result.current.login('admin@healthscale.com', 'admin123')
     })
@@ -252,7 +252,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(result.current.user?.uid).toBe('admin-uid-1')
     expect(result.current.isGuest).toBe(false)
 
-    // 7. Dados do Admin foram completamente restaurados na store e no localStorage!
+    // 7. The admin data is fully restored in the store and in localStorage
     const restoredPersons = useScheduleStore.getState().persons
     const restoredAddresses = useScheduleStore.getState().addresses
     const restoredAssignments = useScheduleStore.getState().assignments
@@ -268,7 +268,7 @@ describe('AuthContext - Suporte a Múltiplos Convidados com Isolamento Local', (
     expect(StorageService.getAssignments()['2026-10-15']).toEqual([createdPerson.id])
   })
 
-  it('deve buscar dados da nuvem no login se o dataset local do usuário estiver vazio', async () => {
+  it('pulls cloud data on login when the local user dataset is empty', async () => {
     const mockUser = {
       uid: 'admin-new-device',
       email: 'novo-admin@healthscale.com',

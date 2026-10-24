@@ -6,7 +6,7 @@ import { DayCell } from './day-cell'
 import type { Person, CalendarEvent } from '../../types'
 import type { CalendarDayInfo } from '../../utils/date-utils'
 
-describe('DayCell Component', () => {
+describe('DayCell', () => {
   const mockDayInfo: CalendarDayInfo = {
     date: new Date(2026, 9, 15),
     dateStr: '2026-10-15',
@@ -21,7 +21,7 @@ describe('DayCell Component', () => {
     { id: 'p2', name: 'Dr. Lucas', color: '#10b981' },
   ]
 
-  it('deve exibir o número do dia com cor padrão quando NÃO houver eventos', () => {
+  it('renders the day number in the default color when the day has no events', () => {
     render(
       <DayCell
         dayInfo={mockDayInfo}
@@ -44,9 +44,9 @@ describe('DayCell Component', () => {
     expect(dayNumber.className).not.toContain('text-red-600 font-extrabold')
   })
 
-  it('deve exibir o número do dia em VERMELHO DE DESTAQUE quando houver 1 ou mais eventos', () => {
+  it('renders the day number in red when the day has events', () => {
     const mockEvents: CalendarEvent[] = [
-      { id: 'ev-1', date: '2026-10-15', title: 'Reunião Geral' },
+      { id: 'ev-1', date: '2026-10-15', title: 'Team meeting' },
     ]
 
     render(
@@ -71,7 +71,7 @@ describe('DayCell Component', () => {
     expect(dayNumber.className).toContain('text-red-600 font-extrabold')
   })
 
-  it('deve disparar abertura de eventos ao clicar no botão de calendário', () => {
+  it('opens the day events when the calendar icon is clicked', () => {
     const handleOpenEvents = vi.fn()
     render(
       <DayCell
@@ -95,7 +95,35 @@ describe('DayCell Component', () => {
     expect(handleOpenEvents).toHaveBeenCalledTimes(1)
   })
 
-  it('no Modo Leitura, exibe badge com o nome da pessoa alocada', () => {
+  it('opens the day events when the day number is tapped on small screens', () => {
+    const handleOpenEvents = vi.fn()
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={[]}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={handleOpenEvents}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    const dayNumberBtn = screen.getByTestId('day-number-button')
+    expect(dayNumberBtn).toHaveTextContent('15')
+    expect(dayNumberBtn).toHaveClass('pointer-events-none', 'mobile:pointer-events-auto')
+    expect(screen.getByTitle(/Ver ou adicionar eventos/i)).toHaveClass('mobile:hidden')
+
+    fireEvent.click(dayNumberBtn)
+    expect(handleOpenEvents).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the assigned person name in view mode', () => {
     render(
       <DayCell
         dayInfo={mockDayInfo}
@@ -116,7 +144,7 @@ describe('DayCell Component', () => {
     expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
   })
 
-  it('no Modo Edição, exibe tags com botão ✕ para remoção', () => {
+  it('shows removable person tags in edit mode', () => {
     const handleRemove = vi.fn()
     render(
       <DayCell
@@ -143,7 +171,7 @@ describe('DayCell Component', () => {
     expect(handleRemove).toHaveBeenCalledWith('p1')
   })
 
-  it('exibe badge de disponibilidade quando o profissional está selecionado para destaque', () => {
+  it('shows the availability badge for the highlighted professional', () => {
     render(
       <DayCell
         dayInfo={mockDayInfo}
@@ -164,7 +192,7 @@ describe('DayCell Component', () => {
     expect(screen.getByText('Disp.')).toBeInTheDocument()
   })
 
-  it('deve destacar o dia atual com background diferenciado na DayCell sem criar círculo ao redor do número do dia', () => {
+  it('highlights today with a cell background, without a circle around the day number', () => {
     const todayInfo: CalendarDayInfo = {
       ...mockDayInfo,
       isToday: true,
@@ -195,7 +223,7 @@ describe('DayCell Component', () => {
     expect(dayNumber.className).toContain('text-indigo-600')
   })
 
-  it('renderiza múltiplos turnos no mesmo dia e permite associar 2 pessoas a turnos de 12h distintos', () => {
+  it('renders several shifts on the same day with a different person on each 12h shift', () => {
     const activeShifts = [
       {
         id: 'shift_d12',
@@ -253,9 +281,13 @@ describe('DayCell Component', () => {
 
     // Should NOT show conflict error because they are allocated in distinct 12h shifts covering the day
     expect(screen.queryByText(/Conflito/i)).not.toBeInTheDocument()
+
+    // Small screens (<= 640px): shift code is hidden and the name chip spans the full width
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveClass('mobile:hidden')
+    expect(screen.getByText('Dra. Camila').closest('[title]')).toHaveClass('w-full', 'mobile:px-1')
   })
 
-  it('no modo de edição com mais de 1 turno ativo, exibe botão único de adicionar que abre o modal de escala', () => {
+  it('in edit mode with several active shifts, the add button opens the shift assignment modal', () => {
     const activeShifts = [
       {
         id: 'shift_d12',
@@ -327,7 +359,7 @@ describe('DayCell Component', () => {
     expect(screen.getByText(/2\. Selecione o\(a\) Profissional/i)).toBeInTheDocument()
   })
 
-  it('no modo de edição com apenas 1 turno ativo, exibe botão único de adicionar inline direto', () => {
+  it('in edit mode with a single active shift, the add button opens the inline picker', () => {
     const singleShift = [
       {
         id: 'shift_p24',
@@ -371,7 +403,7 @@ describe('DayCell Component', () => {
     expect(screen.queryByText(/1\. Selecione o Plantão \/ Escala/i)).not.toBeInTheDocument()
   })
 
-  it('deve exibir sempre a sigla da escala na visualização normal (DayCell), tanto em modo leitura quanto edição', () => {
+  it('always shows the shift code badge, in view and edit mode', () => {
     const singleShift = [
       {
         id: 'shift_d12',
@@ -436,7 +468,7 @@ describe('DayCell Component', () => {
     expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveTextContent('D12')
   })
 
-  it('não deve mostrar nada (nem Vago nem picker) quando o dia não tem plantão definido e não tem ninguém escalado', () => {
+  it('renders neither "Vago" nor a picker when the day has no shift and nobody assigned', () => {
     // Read mode
     const { unmount } = render(
       <DayCell
@@ -483,5 +515,51 @@ describe('DayCell Component', () => {
     expect(screen.queryByText(/vago/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /escalar pessoa/i })).not.toBeInTheDocument()
   })
-})
 
+  it('hides the "Escalado" tag on small screens when highlighting scheduled days', () => {
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={['p1']}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        highlightedScheduledPerson={mockPersons[0]}
+        isHighlightedPersonScheduled
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    expect(screen.getByTestId('scheduled-highlight-badge')).toHaveClass('mobile:hidden')
+  })
+
+  it('on small screens, a day with events gets a red background on the whole number row, without a circle', () => {
+    const events: CalendarEvent[] = [{ id: 'e1', date: '2026-10-15', title: 'Meeting' }]
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={[]}
+        allPersons={mockPersons}
+        events={events}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    const dayNumberBtn = screen.getByTestId('day-number-button')
+    expect(dayNumberBtn).toHaveClass('mobile:rounded-none', 'mobile:bg-transparent', 'mobile:w-auto')
+    expect(dayNumberBtn.parentElement?.parentElement).toHaveClass('mobile:bg-red-50')
+  })
+})

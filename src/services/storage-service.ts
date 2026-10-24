@@ -31,7 +31,12 @@ const STORAGE_KEYS = {
   ACTIVE_USER_ID: 'scale_manager_active_user_id_v1',
   USER_DATA_PREFIX: 'scale_manager_user_data_v1_',
   ONBOARDING_CHECKED: 'health-schedule:onboarding-checked',
+  LIST_ORDER_PREFIX: 'scale_manager_list_order_v1_',
 }
+
+/** Lists whose display order can be rearranged with drag and drop */
+export const LIST_ORDER_IDS = ['month-people', 'people', 'addresses', 'shifts', 'rules'] as const
+export type ListOrderId = (typeof LIST_ORDER_IDS)[number]
 
 let isRestoringDataset = false
 
@@ -357,6 +362,45 @@ export class StorageService {
   }
 
   /**
+   * Drag-and-drop display order of lists (device-local preference, never synced to the cloud).
+   * Scoped per active guest profile / user so each dataset keeps its own order.
+   */
+  static getListOrderScope(): string {
+    const activeGuestId = StorageService.getActiveGuestId()
+    if (activeGuestId) return `guest_${activeGuestId}`
+    const activeUserId = StorageService.getActiveUserId()
+    if (activeUserId) return `user_${activeUserId}`
+    return 'local'
+  }
+
+  static getListOrderKey(listId: ListOrderId): string {
+    return `${STORAGE_KEYS.LIST_ORDER_PREFIX}${listId}_${StorageService.getListOrderScope()}`
+  }
+
+  static getListOrder(listId: ListOrderId): string[] {
+    try {
+      const data = localStorage.getItem(StorageService.getListOrderKey(listId))
+      const parsed: unknown = data ? JSON.parse(data) : []
+      return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+    } catch (err) {
+      console.error('Failed to load list order from localStorage:', err)
+      return []
+    }
+  }
+
+  static saveListOrder(listId: ListOrderId, order: string[]): void {
+    try {
+      localStorage.setItem(StorageService.getListOrderKey(listId), JSON.stringify(order))
+    } catch (err) {
+      console.error('Failed to save list order to localStorage:', err)
+    }
+  }
+
+  static clearListOrders(): void {
+    LIST_ORDER_IDS.forEach((listId) => localStorage.removeItem(StorageService.getListOrderKey(listId)))
+  }
+
+  /**
    * Reset all active storage keys
    */
   static resetToDefault(): void {
@@ -379,6 +423,7 @@ export class StorageService {
    * If an active guest session is present, also removes the guest's saved dataset snapshot.
    */
   static clearAllLocalData(): void {
+    StorageService.clearListOrders()
     const activeGuestId = StorageService.getActiveGuestId()
     if (activeGuestId) {
       StorageService.deleteGuestDataset(activeGuestId)

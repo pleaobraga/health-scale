@@ -35,6 +35,7 @@ export function FullScreenCalendarModal() {
     monthActiveShifts = {},
     events,
     getDayActiveShifts,
+    setSelectedDateForEvents,
   } = useScheduleStore()
 
   const weekdays = [
@@ -130,19 +131,19 @@ export function FullScreenCalendarModal() {
   return createPortal(
     <div
       id="fullscreen-calendar-modal-container"
-      className="fixed inset-0 z-[110] flex items-center justify-center p-0 m-0 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn print:p-0 print:m-0 print:static print:bg-transparent print:backdrop-blur-none print:z-auto"
+      className="modal-overlay fixed inset-0 z-110 flex items-center justify-center p-0 m-0 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn print:p-0 print:m-0 print:static print:bg-transparent print:backdrop-blur-none print:z-auto"
     >
       <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none sm:rounded-2xl md:rounded-3xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors print:rounded-none print:border-none print:shadow-none print:bg-white print:text-slate-900 print:h-auto print:overflow-visible dark:print:bg-white dark:print:text-slate-900">
         {/* Fullscreen Header */}
         <div className="px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-2 sm:gap-3 shrink-0 print:px-2 print:py-2 print:border-b-2 print:border-slate-800 print:bg-white dark:print:bg-white dark:print:border-slate-800">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0 print:hidden">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0 print:hidden">
               <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <h2 className="text-sm sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-white print:text-slate-950 dark:print:text-slate-950 print:text-2xl tracking-tight truncate">
-                  {formatMonthYear(currentMonth, i18n.language)}
+                  {formatMonthYear(currentMonth, i18n.language, { compact: true })}
                 </h2>
 
                 {/* Month Navigation */}
@@ -256,7 +257,7 @@ export function FullScreenCalendarModal() {
               return (
                 <div
                   key={dayInfo.dateStr}
-                  className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 dark:print:border-slate-300 print:bg-white dark:print:bg-white ${
+                  className={`border-b border-r border-slate-200 dark:border-slate-800 p-2 mobile:p-0 md:p-3 flex flex-col justify-between transition-colors min-h-[90px] print:min-h-[105px] print:p-1.5 print:border-slate-300 dark:print:border-slate-300 print:bg-white dark:print:bg-white ${
                     !dayInfo.isCurrentMonth
                       ? 'bg-slate-100/60 dark:bg-slate-950/50 text-slate-400 dark:text-slate-600 print:bg-slate-100/70 dark:print:bg-slate-100/70 print:text-slate-400 dark:print:text-slate-400'
                       : dayInfo.isToday
@@ -265,11 +266,25 @@ export function FullScreenCalendarModal() {
                   }`}
                 >
                   {/* Cell Top Header */}
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span
-                      className={`text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
+                  <div
+                    className={`flex items-center justify-between mb-1.5 mobile:justify-center mobile:pt-1 mobile:pb-0.5 ${
+                      hasEvents ? 'mobile:bg-red-50 mobile:dark:bg-red-950/60' : ''
+                    }`}
+                  >
+                    {/* Day number: on small screens (<= 640px) it opens the events modal */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDateForEvents(dayInfo.dateStr)}
+                      tabIndex={-1}
+                      data-testid={`fullscreen-day-number-${dayInfo.dateStr}`}
+                      aria-label={
                         hasEvents
-                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full print:w-6 print:h-6 print:bg-red-100 dark:print:bg-red-100 print:text-red-700 dark:print:text-red-700'
+                          ? t('calendar:dayCell.eventsTooltip', { count: dayEvents.length })
+                          : t('calendar:dayCell.viewOrAddEvents')
+                      }
+                      className={`pointer-events-none mobile:pointer-events-auto mobile:cursor-pointer text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
+                        hasEvents
+                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full mobile:bg-transparent mobile:dark:bg-transparent mobile:w-auto mobile:h-auto mobile:rounded-none print:w-6 print:h-6 print:bg-red-100 dark:print:bg-red-100 print:text-red-700 dark:print:text-red-700'
                           : dayInfo.isToday
                             ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1 print:text-slate-900 dark:print:text-slate-900'
                             : dayInfo.isCurrentMonth
@@ -278,12 +293,12 @@ export function FullScreenCalendarModal() {
                       }`}
                     >
                       {dayInfo.dayNumber}
-                    </span>
+                    </button>
 
                     {/* Events Count Tag */}
                     {hasEvents && (
                       <span
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded-md print:bg-red-50 dark:print:bg-red-50 print:border print:border-red-300 dark:print:border-red-300 print:text-red-700 dark:print:text-red-700"
+                        className="mobile:hidden inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.5 rounded-md print:bg-red-50 dark:print:bg-red-50 print:border print:border-red-300 dark:print:border-red-300 print:text-red-700 dark:print:text-red-700"
                         title={dayEvents.map((e) => e.title).join(' | ')}
                       >
                         <CalendarIcon className="w-3 h-3" />
@@ -318,7 +333,7 @@ export function FullScreenCalendarModal() {
                               WebkitPrintColorAdjust: 'exact',
                               printColorAdjust: 'exact',
                             }}
-                            className="text-white text-xs md:text-sm font-semibold px-2 py-1 rounded-lg shadow-2xs flex items-center justify-between truncate print:text-white print:font-bold print:border-2 print:rounded-md print:px-2 print:py-0.5 print:shadow-none print-person-chip"
+                            className="text-white text-xs md:text-sm font-semibold px-2 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between truncate w-full print:text-white print:font-bold print:border-2 print:rounded-md print:px-2 print:py-0.5 print:shadow-none print-person-chip"
                             title={
                               personShift
                                 ? `${personShift.name}: ${person.name}`
@@ -335,7 +350,7 @@ export function FullScreenCalendarModal() {
                                     WebkitPrintColorAdjust: 'exact',
                                     printColorAdjust: 'exact',
                                   }}
-                                  className="text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded shrink-0 shadow-xs print:text-[8px] print:px-1"
+                                  className="mobile:hidden text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded-sm shrink-0 shadow-xs print:text-[8px] print:px-1"
                                 >
                                   {personShift.code}
                                 </span>
@@ -352,7 +367,7 @@ export function FullScreenCalendarModal() {
                         activeShifts.length <= 1 ||
                         !dayShiftMap ||
                         Object.keys(dayShiftMap).length <= 1) && (
-                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 dark:print:bg-rose-100 print:text-rose-800 dark:print:text-rose-800 print:border-rose-300 dark:print:border-rose-300">
+                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded-sm border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 dark:print:bg-rose-100 print:text-rose-800 dark:print:text-rose-800 print:border-rose-300 dark:print:border-rose-300">
                           {t('calendar:dayCell.conflict', {
                             count: assigned.length,
                           })}
@@ -470,7 +485,7 @@ export function FullScreenCalendarModal() {
                               WebkitPrintColorAdjust: 'exact',
                               printColorAdjust: 'exact',
                             }}
-                            className="inline-block px-2 py-0.5 rounded text-[11px] font-bold text-white print:text-white print-person-chip shadow-2xs"
+                            className="inline-block px-2 py-0.5 rounded-sm text-[11px] font-bold text-white print:text-white print-person-chip shadow-2xs"
                           >
                             {servicePerson.name}
                           </span>

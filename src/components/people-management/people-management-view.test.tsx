@@ -1,10 +1,11 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import { PeopleManagementView } from './people-management-view'
+import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
-describe('PeopleManagementView Component', () => {
+describe('PeopleManagementView', () => {
   beforeEach(() => {
     useScheduleStore.setState({
       persons: [
@@ -21,7 +22,7 @@ describe('PeopleManagementView Component', () => {
     })
   })
 
-  it('deve listar todos os funcionários cadastrados globalmente', () => {
+  it('lists every registered employee', () => {
     render(<PeopleManagementView />)
 
     expect(screen.getByText('Cadastro Geral de Funcionários')).toBeInTheDocument()
@@ -30,7 +31,7 @@ describe('PeopleManagementView Component', () => {
     expect(screen.getByText('Total Cadastrado: 2')).toBeInTheDocument()
   })
 
-  it('deve filtrar funcionários pelo campo de busca', () => {
+  it('filters employees with the search field', () => {
     render(<PeopleManagementView />)
 
     const searchInput = screen.getByPlaceholderText(/buscar funcionários por nome/i)
@@ -40,7 +41,7 @@ describe('PeopleManagementView Component', () => {
     expect(screen.queryByText('Dr. Lucas Oliveira')).not.toBeInTheDocument()
   })
 
-  it('deve abrir o modal e cadastrar um novo funcionário global com active: true', () => {
+  it('creates a new employee with active: true from the modal', () => {
     render(<PeopleManagementView />)
 
     const newBtn = screen.getByRole('button', { name: /novo funcionário/i })
@@ -59,7 +60,7 @@ describe('PeopleManagementView Component', () => {
     expect(created?.active).toBe(true)
   })
 
-  it('deve permitir escolher uma cor customizada via colorpicker no cadastro de funcionário', () => {
+  it('accepts a custom color from the color picker', () => {
     render(<PeopleManagementView />)
 
     const newBtn = screen.getByRole('button', { name: /novo funcionário/i })
@@ -80,11 +81,11 @@ describe('PeopleManagementView Component', () => {
     expect(created?.color.toLowerCase()).toBe('#ff00aa')
   })
 
-  it('deve permitir editar um funcionário existente', () => {
+  it('edits an existing employee', () => {
     render(<PeopleManagementView />)
 
-    const editBtns = screen.getAllByRole('button', { name: /editar/i })
-    fireEvent.click(editBtns[0]) // Dra. Camila
+    const camilaCard = screen.getByTestId('person-card-p1')
+    fireEvent.click(within(camilaCard).getByRole('button', { name: /editar/i }))
 
     expect(screen.getByText('Editar Funcionário')).toBeInTheDocument()
 
@@ -99,7 +100,7 @@ describe('PeopleManagementView Component', () => {
     )
   })
 
-  it('deve interceptar exclusão de pessoa com histórico em escala e exibir modal de desativação', () => {
+  it('offers deactivation instead of deletion for a person with schedule history', () => {
     render(<PeopleManagementView />)
 
     // Dra. Camila (p1) has assignments history ('2026-10-05')
@@ -128,7 +129,7 @@ describe('PeopleManagementView Component', () => {
     expect(useScheduleStore.getState().assignments['2026-10-05']).toContain('p1')
   })
 
-  it('deve abrir o modal de desativação ao clicar no botão Desativar do card e desativar o profissional', () => {
+  it('deactivates a professional from the card Desativar button', () => {
     render(<PeopleManagementView />)
 
     const deactivateBtn = screen.getByRole('button', {
@@ -150,7 +151,7 @@ describe('PeopleManagementView Component', () => {
     expect(camila?.active).toBe(false)
   })
 
-  it('deve exibir badge "Inativo" e permitir reativar um funcionário inativo', () => {
+  it('shows the "Inativo" badge and reactivates an inactive employee', () => {
     useScheduleStore.setState({
       persons: [
         { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6', active: false },
@@ -169,7 +170,7 @@ describe('PeopleManagementView Component', () => {
     expect(camila?.active).toBe(true)
   })
 
-  it('deve abrir diálogo de confirmação tradicional e excluir funcionário definitivamente quando ele NÃO tiver histórico de escala', () => {
+  it('deletes an employee without schedule history after confirmation', () => {
     render(<PeopleManagementView />)
 
     // Dr. Lucas (p2) does not have any assignments
@@ -187,5 +188,25 @@ describe('PeopleManagementView Component', () => {
     fireEvent.click(confirmDeleteBtn)
 
     expect(useScheduleStore.getState().persons.some((p) => p.id === 'p2')).toBe(false)
+  })
+
+  it('sorts cards alphabetically by default and follows the order saved by drag and drop', () => {
+    useScheduleStore.setState({
+      persons: [
+        { id: 'p1', name: 'Carla Souza', color: '#3b82f6', active: true },
+        { id: 'p2', name: 'ana Lima', color: '#10b981', active: true },
+        { id: 'p3', name: 'Bruno Alves', color: '#8b5cf6', active: true },
+      ],
+    })
+    const { unmount } = render(<PeopleManagementView />)
+
+    const getOrder = () => screen.getAllByTestId(/^sortable-item-/).map((el) => el.dataset.testid)
+    expect(getOrder()).toEqual(['sortable-item-p2', 'sortable-item-p3', 'sortable-item-p1'])
+    expect(screen.getByTestId('drag-handle-p1')).toHaveAccessibleName('Arrastar para reordenar Carla Souza')
+    unmount()
+
+    StorageService.saveListOrder('people', ['p1', 'p2'])
+    render(<PeopleManagementView />)
+    expect(getOrder()).toEqual(['sortable-item-p1', 'sortable-item-p2', 'sortable-item-p3'])
   })
 })

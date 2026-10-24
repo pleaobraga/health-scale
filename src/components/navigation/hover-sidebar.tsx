@@ -9,7 +9,6 @@ import {
   Download,
   LogOut,
   MapPin,
-  Menu,
   Moon,
   Settings,
   ShieldCheck,
@@ -23,11 +22,15 @@ import React, { use, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, useInRouterContext } from 'react-router-dom'
 
+import { MobileBottomNav } from './mobile-bottom-nav'
 import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { showErrorToast } from '../../store/use-toast-store'
+import { notifyPullResult, notifyPushResult } from '../../utils/cloud-feedback'
 import { LanguageSelector } from '../common/language-selector'
+
 
 import type { NavigationTab } from '../../types'
 
@@ -47,9 +50,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
   const [isPullingCloud, setIsPullingCloud] = useState(false)
-  const [pullSuccess, setPullSuccess] = useState(false)
   const [isForcingCloud, setIsForcingCloud] = useState(false)
-  const [forceSuccess, setForceSuccess] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { t } = useTranslation(['common', 'auth'])
   const inRouter = useInRouterContext()
@@ -141,13 +142,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const handlePullCloud = async () => {
     try {
       setIsPullingCloud(true)
-      const res = await pullCloudData(undefined, isAdmin)
-      if (res.success) {
-        setPullSuccess(true)
-        setTimeout(() => setPullSuccess(false), 2500)
-      }
+      notifyPullResult(await pullCloudData(isAdmin))
     } catch (err) {
       console.error('Erro ao puxar dados da nuvem:', err)
+      showErrorToast(t('common:toast.pullError'))
     } finally {
       setIsPullingCloud(false)
     }
@@ -156,13 +154,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const handleForceCloud = async () => {
     try {
       setIsForcingCloud(true)
-      const res = await forcePushCloudData(isAdmin)
-      if (res.success) {
-        setForceSuccess(true)
-        setTimeout(() => setForceSuccess(false), 2500)
-      }
+      notifyPushResult(await forcePushCloudData(isAdmin))
     } catch (err) {
       console.error('Erro ao forçar dados na nuvem:', err)
+      showErrorToast(t('common:toast.pushError'))
     } finally {
       setIsForcingCloud(false)
     }
@@ -178,61 +173,48 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
     }
   }
 
+  const bottomNavItems = [
+    {
+      id: 'calendar' as const,
+      path: '/',
+      label: t('common:navShort.calendar'),
+      icon: CalendarDays,
+      end: true,
+    },
+    {
+      id: 'people' as const,
+      path: '/pessoas',
+      label: t('common:navShort.people'),
+      icon: Users,
+    },
+    {
+      id: 'shifts' as const,
+      path: '/turnos',
+      label: t('common:navShort.shifts'),
+      icon: Clock,
+    },
+    {
+      id: 'settings' as const,
+      path: '/configuracoes',
+      label: t('common:navShort.settings'),
+      icon: Settings,
+    },
+  ]
+
   return (
     <>
-      {/* 1. Mobile Top Header (Screens smaller than 768px: < md) */}
-      <header
-        data-testid="mobile-header"
-        className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40 shadow-xs md:hidden select-none transition-colors"
-      >
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
-            <CalendarDays className="w-4 h-4 stroke-[2.2]" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight">
-              {t('common:appName')}
-            </h1>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-              {t('common:appSubtitle')}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <span
-              title={
-                isSyncEnabled
-                  ? t('common:sync.cloudActive')
-                  : t('common:sync.localOnly')
-              }
-              className={`p-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 ${
-                isSyncEnabled
-                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
-                  : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-              }`}
-            >
-              {isSyncEnabled ? (
-                <Cloud className="w-3.5 h-3.5" />
-              ) : (
-                <CloudOff className="w-3.5 h-3.5" />
-              )}
-            </span>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setIsMobileMenuOpen(true)}
-            title={t('common:actions.openMenu')}
-            aria-label={t('common:actions.openMenu')}
-            data-testid="mobile-menu-button"
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        </div>
-      </header>
+      {/* 1. Mobile Bottom Tab Bar (Screens < 768px, replaces the old top header) */}
+      <MobileBottomNav
+        items={bottomNavItems}
+        currentView={currentView}
+        isMenuOpen={isMobileMenuOpen}
+        syncStatus={isAdmin ? (isSyncEnabled ? 'cloud' : 'local') : null}
+        onNavigate={(id) => {
+          setCurrentView(id)
+          setIsMobileMenuOpen(false)
+        }}
+        onOpenMenu={() => setIsMobileMenuOpen(true)}
+      />
 
       {/* 2. Mobile Full-Screen Menu Overlay */}
       {isMobileMenuOpen && (
@@ -247,7 +229,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0">
                   <CalendarDays className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
@@ -383,20 +365,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 text-sm font-bold shadow-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
-                {pullSuccess ? (
-                  <Check className="w-5 h-5 text-emerald-500" />
-                ) : (
-                  <CloudDownload
-                    className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
-                  />
-                )}
+                <CloudDownload
+                  className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
+                />
               </div>
               <span>
-                {pullSuccess
-                  ? t('common:actions.pullSuccess')
-                  : isPullingCloud
-                    ? t('common:actions.pullingCloud')
-                    : t('common:actions.pullCloud')}
+                {isPullingCloud
+                  ? t('common:actions.pullingCloud')
+                  : t('common:actions.pullCloud')}
               </span>
             </button>
 
@@ -411,20 +387,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 text-sm font-bold shadow-xs hover:bg-amber-100 dark:hover:bg-amber-900/50 transition disabled:opacity-50"
               >
                 <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
-                  {forceSuccess ? (
-                    <Check className="w-5 h-5 text-emerald-500" />
-                  ) : (
-                    <CloudUpload
-                      className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
-                    />
-                  )}
+                  <CloudUpload
+                    className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
+                  />
                 </div>
                 <span>
-                  {forceSuccess
-                    ? t('common:actions.forceSuccess')
-                    : isForcingCloud
-                      ? t('common:actions.forcingCloud')
-                      : t('common:actions.forceCloud')}
+                  {isForcingCloud
+                    ? t('common:actions.forcingCloud')
+                    : t('common:actions.forceCloud')}
                 </span>
               </button>
             )}
@@ -513,12 +483,12 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
       {/* 3. Desktop / Tablet Fixed Hover Sidebar (Screens >= 768px: md+) */}
       <aside
         data-testid="hover-sidebar"
-        className="group/sidebar fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-sm overflow-hidden select-none"
+        className="group/sidebar fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-xs overflow-hidden select-none"
       >
         {/* Top: Logo & App Branding */}
         <div>
           <div className="flex items-center gap-3 px-3.5 py-4 border-b border-slate-100 dark:border-slate-800/80">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0">
               <CalendarDays className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
@@ -659,20 +629,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-indigo-200/80 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/30 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
           >
             <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
-              {pullSuccess ? (
-                <Check className="w-5 h-5 text-emerald-500" />
-              ) : (
-                <CloudDownload
-                  className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
-                />
-              )}
+              <CloudDownload
+                className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
+              />
             </div>
             <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-              {pullSuccess
-                ? t('common:actions.pullSuccess')
-                : isPullingCloud
-                  ? t('common:actions.pullingCloud')
-                  : t('common:actions.pullCloud')}
+              {isPullingCloud
+                ? t('common:actions.pullingCloud')
+                : t('common:actions.pullCloud')}
             </span>
           </button>
 
@@ -687,20 +651,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
-                {forceSuccess ? (
-                  <Check className="w-4 h-4 text-emerald-500" />
-                ) : (
-                  <CloudUpload
-                    className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
-                  />
-                )}
+                <CloudUpload
+                  className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
+                />
               </div>
               <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-                {forceSuccess
-                  ? t('common:actions.forceSuccess')
-                  : isForcingCloud
-                    ? t('common:actions.forcingCloud')
-                    : t('common:actions.forceCloud')}
+                {isForcingCloud
+                  ? t('common:actions.forcingCloud')
+                  : t('common:actions.forceCloud')}
               </span>
             </button>
           )}

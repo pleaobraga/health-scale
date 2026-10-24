@@ -6,7 +6,7 @@ import type { MonthlyAvailability } from '../types'
 
 describe('shift-rate-utils', () => {
   describe('parseNumericRate', () => {
-    it('deve converter valores numéricos em vários formatos', () => {
+    it('parses numeric values in several formats', () => {
       expect(parseNumericRate('1500')).toBe(1500)
       expect(parseNumericRate('1500,50')).toBe(1500.5)
       expect(parseNumericRate('1.500,00')).toBe(1500)
@@ -42,29 +42,29 @@ describe('shift-rate-utils', () => {
       },
     ]
 
-    it('deve retornar a taxa exata de shiftId e dia quando encontrada', () => {
+    it('returns the exact rate for the shiftId and day', () => {
       const rate = getPersonShiftRate(baseAvail, 'p1', '2026-10', 'shift_d12', 1)
       expect(rate).toBe(1500)
     })
 
-    it('deve usar taxa da escala para escala legada (sem shiftId especificado)', () => {
+    it('uses the shift rate for legacy assignments without a shiftId', () => {
       // p1 has shift_d12 rates, but is assigned without shiftId
       const rate = getPersonShiftRate(baseAvail, 'p1', '2026-10', undefined, 1)
       expect(rate).toBe(1500)
     })
 
-    it('deve usar taxa default quando shiftId solicitado não existir mas houver default', () => {
+    it('uses the default rate when the requested shiftId has none', () => {
       const rate = getPersonShiftRate(baseAvail, 'p2', '2026-10', 'shift_random', 1)
       expect(rate).toBe(1200)
     })
 
-    it('deve recorrer à taxa base da escala quando o dia específico não tiver taxa configurada', () => {
+    it('falls back to the shift base rate when the day has no rate', () => {
       // p1 on day 10 (not in days 1, 2)
       const rate = getPersonShiftRate(baseAvail, 'p1', '2026-10', 'shift_d12', 10)
       expect(rate).toBe(1400)
     })
 
-    it('deve retornar 0 quando o profissional não tiver taxas configuradas', () => {
+    it('returns 0 when the professional has no rates', () => {
       const rate = getPersonShiftRate(baseAvail, 'p_unknown', '2026-10', 'shift_d12', 1)
       expect(rate).toBe(0)
     })

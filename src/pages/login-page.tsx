@@ -217,7 +217,7 @@ export function LoginPage() {
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl p-6 sm:p-8 space-y-6">
         {/* Branding header */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 mb-1">
+          <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 mb-1">
             <CalendarDays className="w-8 h-8 stroke-[2.2]" />
           </div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -266,7 +266,7 @@ export function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('auth:emailPlaceholder')}
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition disabled:opacity-60"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition disabled:opacity-60"
               />
             </div>
           </div>
@@ -292,7 +292,7 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('auth:passwordPlaceholder')}
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition disabled:opacity-60"
+                className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition disabled:opacity-60"
               />
               <button
                 type="button"
@@ -316,7 +316,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
@@ -366,11 +366,11 @@ export function LoginPage() {
           aria-modal="true"
           aria-labelledby="guest-modal-title"
           data-testid="guest-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+          className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
         >
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl p-6 sm:p-7 space-y-5 animate-in zoom-in-95 duration-150">
+          <div className="modal-panel w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl animate-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-start justify-between">
+            <div className="modal-header flex items-start justify-between px-6 sm:px-7 pt-6 sm:pt-7 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                   <UserCheck className="w-5 h-5" />
@@ -397,91 +397,94 @@ export function LoginPage() {
               </button>
             </div>
 
-            {/* Guest Error Banner */}
-            {guestError && (
-              <div
-                role="alert"
-                data-testid="guest-error-banner"
-                className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200 text-xs"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
-                <span>{guestError}</span>
-              </div>
-            )}
+            {/* Scrolling body (hidden when empty) */}
+            <div className="modal-body px-6 sm:px-7 pb-5 space-y-5 empty:hidden">
+              {/* Guest Error Banner */}
+              {guestError && (
+                <div
+                  role="alert"
+                  data-testid="guest-error-banner"
+                  className="flex items-start gap-2.5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200 text-xs"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
+                  <span>{guestError}</span>
+                </div>
+              )}
 
-            {/* List of existing saved guest profiles */}
-            {guestProfiles.length > 0 && (
-              <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                  {t('auth:savedAccounts')}
-                </label>
-                <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
-                  {guestProfiles.map((profile) => (
-                    <div
-                      key={profile.id}
-                      data-testid={`guest-profile-${profile.id}`}
-                      className="group flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:border-indigo-300 dark:hover:border-indigo-700 transition"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleSelectExistingGuest(profile.id)}
-                        disabled={isGuestSubmitting}
-                        className="flex items-center gap-3 text-left flex-1 min-w-0"
+              {/* List of existing saved guest profiles */}
+              {guestProfiles.length > 0 && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    {t('auth:savedAccounts')}
+                  </label>
+                  <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
+                    {guestProfiles.map((profile) => (
+                      <div
+                        key={profile.id}
+                        data-testid={`guest-profile-${profile.id}`}
+                        className="group flex items-center justify-between p-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:border-indigo-300 dark:hover:border-indigo-700 transition"
                       >
-                        <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0">
-                          {profile.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                            {profile.name}
-                          </p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>
-                              {formatLastActive(
-                                profile.lastActiveAt,
-                                i18n.language,
-                                t,
-                              )}
-                            </span>
-                          </p>
-                        </div>
-                      </button>
-
-                      <div className="flex items-center gap-1 ml-2">
                         <button
                           type="button"
                           onClick={() => handleSelectExistingGuest(profile.id)}
                           disabled={isGuestSubmitting}
-                          data-testid={`select-guest-${profile.id}`}
-                          aria-label={t('auth:enterAs', { name: profile.name })}
-                          className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs"
+                          className="flex items-center gap-3 text-left flex-1 min-w-0"
                         >
-                          {t('auth:access')}
+                          <div className="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-xs flex items-center justify-center shrink-0">
+                            {profile.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                              {profile.name}
+                            </p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {formatLastActive(
+                                  profile.lastActiveAt,
+                                  i18n.language,
+                                  t,
+                                )}
+                              </span>
+                            </p>
+                          </div>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteGuestProfile(profile.id)}
-                          data-testid={`delete-guest-${profile.id}`}
-                          aria-label={t('auth:deleteProfileOf', {
-                            name: profile.name,
-                          })}
-                          title={t('auth:deleteGuestTitle')}
-                          className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+
+                        <div className="flex items-center gap-1 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSelectExistingGuest(profile.id)}
+                            disabled={isGuestSubmitting}
+                            data-testid={`select-guest-${profile.id}`}
+                            aria-label={t('auth:enterAs', { name: profile.name })}
+                            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs"
+                          >
+                            {t('auth:access')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteGuestProfile(profile.id)}
+                            data-testid={`delete-guest-${profile.id}`}
+                            aria-label={t('auth:deleteProfileOf', {
+                              name: profile.name,
+                            })}
+                            title={t('auth:deleteGuestTitle')}
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Create new guest form */}
             <form
               onSubmit={handleCreateNewGuest}
-              className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800"
+              className="modal-footer space-y-3 px-6 sm:px-7 py-4 border-t border-slate-100 dark:border-slate-800"
             >
               <label
                 htmlFor="new-guest-name"
@@ -501,7 +504,7 @@ export function LoginPage() {
                   onChange={(e) => setGuestName(e.target.value)}
                   placeholder={t('auth:guestNamePlaceholder')}
                   disabled={isGuestSubmitting}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-60"
                 />
               </div>
 
@@ -509,7 +512,7 @@ export function LoginPage() {
                 type="submit"
                 disabled={isGuestSubmitting || !guestName.trim()}
                 data-testid="create-guest-submit-btn"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm shadow-md transition disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm shadow-md transition disabled:opacity-50"
               >
                 {isGuestSubmitting ? (
                   <>

@@ -14,9 +14,9 @@ describe('AdminRoute Guard', () => {
         <MemoryRouter initialEntries={initialEntries}>
           <Routes>
             <Route path="/login" element={<div data-testid="login-page">Tela de Login</div>} />
-            <Route path="/calendario" element={<div data-testid="calendar-fallback">Calendário Principal</div>} />
+            <Route path="/calendario" element={<div data-testid="calendar-fallback">Main calendar</div>} />
             <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<div data-testid="admin-content">Painel de Administração</div>} />
+              <Route path="/admin" element={<div data-testid="admin-content">Admin panel</div>} />
             </Route>
           </Routes>
         </MemoryRouter>
@@ -24,7 +24,7 @@ describe('AdminRoute Guard', () => {
     )
   }
 
-  it('deve exibir indicador de loading enquanto estiver verificando permissões', () => {
+  it('shows a loading indicator while permissions are being checked', () => {
     renderAdminRoute({
       loading: true,
       user: null,
@@ -35,7 +35,7 @@ describe('AdminRoute Guard', () => {
     expect(screen.queryByTestId('admin-content')).not.toBeInTheDocument()
   })
 
-  it('deve redirecionar para a tela de login quando o usuário não estiver autenticado', () => {
+  it('redirects to the login screen when the user is not authenticated', () => {
     renderAdminRoute({
       loading: false,
       user: null,
@@ -46,7 +46,7 @@ describe('AdminRoute Guard', () => {
     expect(screen.queryByTestId('admin-content')).not.toBeInTheDocument()
   })
 
-  it('deve redirecionar usuários comuns (não-admin) para /calendario', () => {
+  it('redirects regular (non-admin) users to /calendario', () => {
     renderAdminRoute({
       loading: false,
       user: { uid: 'user-regular', email: 'regular@hospital.com' } as unknown as AuthContextType['user'],
@@ -58,7 +58,7 @@ describe('AdminRoute Guard', () => {
     expect(screen.queryByTestId('admin-content')).not.toBeInTheDocument()
   })
 
-  it('deve renderizar o conteúdo administrativo quando o usuário for admin', () => {
+  it('renders the admin content when the user is an admin', () => {
     renderAdminRoute({
       loading: false,
       user: { uid: 'admin-root', email: 'pleao.braga@gmail.com' } as unknown as AuthContextType['user'],

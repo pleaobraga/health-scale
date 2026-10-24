@@ -20,6 +20,13 @@
     "settings": "Configurações",
     "users": "Gestão de Usuários"
   },
+  "navShort": {
+    "calendar": "Escala",
+    "people": "Pessoas",
+    "shifts": "Turnos",
+    "settings": "Ajustes",
+    "more": "Mais"
+  },
   "actions": {
     "save": "Salvar",
     "saving": "Salvando...",
@@ -33,10 +40,8 @@
     "pullCloud": "Puxar Dados da Nuvem",
     "pullCloudTooltip": "Buscar dados atualizados da nuvem (Firestore)",
     "pullingCloud": "Puxando...",
-    "pullSuccess": "Atualizado!",
     "forceCloud": "Forçar Dados na Nuvem",
     "forcingCloud": "Forçando...",
-    "forceSuccess": "Forçado!",
     "copy": "Copiar",
     "copied": "Copiado!",
     "clearLocal": "Limpar Todos os Dados Locais",
@@ -69,6 +74,26 @@
   "status": {
     "defaultActive": "Padrão Ativo",
     "defaultInactive": "Padrão Inativo"
+  },
+  "reorder": {
+    "handle": "Arrastar para reordenar {{name}}",
+    "instructions": "Para reordenar, pressione espaço ou Enter na alça, use as setas para mover e pressione espaço ou Enter novamente para soltar. Pressione Esc para cancelar.",
+    "start": "{{name}} selecionado para reordenar.",
+    "over": "{{name}} movido para a posição de {{target}}.",
+    "end": "{{name}} solto na posição de {{target}}.",
+    "cancel": "Reordenação de {{name}} cancelada."
+  },
+  "toast": {
+    "pullSuccess": "Dados da nuvem carregados neste dispositivo.",
+    "pullNoData": "Nenhum dado encontrado na nuvem.",
+    "pullOffline": "Sem conexão com a internet. Os dados locais não foram alterados.",
+    "pullUnauthorized": "Apenas administradores podem buscar dados da nuvem.",
+    "pullError": "Não foi possível buscar os dados da nuvem.",
+    "pushSuccess": "Dados deste dispositivo enviados para a nuvem.",
+    "pushOffline": "Sem conexão com a internet. Conecte-se para enviar os dados para a nuvem.",
+    "pushError": "Não foi possível enviar os dados para a nuvem. Verifique suas permissões.",
+    "saveLocal": "Escala salva neste dispositivo.",
+    "saveCloud": "Escala salva e sincronizada com a nuvem.",
+    "saveCloudError": "Escala salva neste dispositivo, mas não foi possível sincronizar com a nuvem."
   }
 }
-

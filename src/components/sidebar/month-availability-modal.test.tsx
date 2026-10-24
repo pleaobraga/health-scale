@@ -5,7 +5,7 @@ import { MonthAvailabilityModal } from './month-availability-modal'
 
 import type { Person, ShiftDefinition } from '../../types'
 
-describe('MonthAvailabilityModal Component', () => {
+describe('MonthAvailabilityModal', () => {
   const mockPerson: Person = {
     id: 'p1',
     name: 'Dr. Roberto',
@@ -37,7 +37,7 @@ describe('MonthAvailabilityModal Component', () => {
     },
   ]
 
-  it('permite alternar entre escalas do mês e definir dias específicos para cada uma (ex: pares na 24h e 3, 5, 7 na 12h)', () => {
+  it('sets specific days per shift of the month (e.g. even days on 24h and 3, 5, 7 on 12h)', () => {
     const handleSave = vi.fn()
 
     render(
@@ -98,7 +98,7 @@ describe('MonthAvailabilityModal Component', () => {
     expect(unionDays).toContain(7)
   })
 
-  it('funciona no modo clássico de dias gerais quando não há escalas ativas no mês', () => {
+  it('falls back to plain days when the month has no active shifts', () => {
     const handleSave = vi.fn()
 
     render(
@@ -122,7 +122,7 @@ describe('MonthAvailabilityModal Component', () => {
     expect(handleSave).toHaveBeenCalledWith('p1', [10, 15], undefined, {})
   })
 
-  it('permite definir valores cobrados por plantão e dias específicos dentro da mesma escala', () => {
+  it('sets a shift rate for specific days of the same shift', () => {
     const handleSave = vi.fn()
 
     render(
@@ -165,7 +165,7 @@ describe('MonthAvailabilityModal Component', () => {
     expect(shiftRates.shift_p24[4]).toBe(350)
   })
 
-  it('deve exibir aviso de remoção do calendário apenas quando remover uma disponibilidade salva anteriormente e ocultar ao readicioná-la', () => {
+  it('warns about calendar removal only when a saved day is removed, and hides it when re-added', () => {
     render(
       <MonthAvailabilityModal
         isOpen={true}
@@ -178,19 +178,19 @@ describe('MonthAvailabilityModal Component', () => {
       />
     )
 
-    // Sem modificação inicial, o aviso não deve aparecer
+    // No warning before any change
     expect(
       screen.queryByTestId('availability-calendar-removal-warning')
     ).not.toBeInTheDocument()
 
-    // Ao ADICIONAR um novo dia (20), o aviso NÃO deve ser exibido
+    // Adding a new day (20) does not show the warning
     const day20Btn = screen.getByRole('button', { name: /^20$/ })
     fireEvent.click(day20Btn)
     expect(
       screen.queryByTestId('availability-calendar-removal-warning')
     ).not.toBeInTheDocument()
 
-    // Ao REMOVER um dia salvo anteriormente (10), o aviso deve ser exibido
+    // Removing a saved day (10) shows the warning
     const day10Btn = screen.getByRole('button', { name: /^10$/ })
     fireEvent.click(day10Btn)
 
@@ -200,7 +200,7 @@ describe('MonthAvailabilityModal Component', () => {
       /se a disponibilidade já estiver vinculada ao calendário, ela será removida/i
     )
 
-    // Ao readicionar o dia 10 que havia sido removido, o aviso desaparece (mesmo com o dia 20 adicionado)
+    // Re-adding day 10 hides the warning again (even with day 20 added)
     fireEvent.click(day10Btn)
     expect(
       screen.queryByTestId('availability-calendar-removal-warning')

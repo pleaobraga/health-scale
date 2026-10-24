@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { AddressManagementView } from './address-management-view'
+import { StorageService } from '../services/storage-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 
 import type { Address } from '../types'
@@ -33,7 +34,7 @@ describe('AddressManagementView', () => {
     })
   })
 
-  it('deve renderizar o título, nomes e listagem de endereços cadastrados', () => {
+  it('renders the title and the registered addresses', () => {
     render(<AddressManagementView />)
 
     expect(screen.getByRole('heading', { name: /Gerenciar Endereços/i })).toBeInTheDocument()
@@ -45,7 +46,7 @@ describe('AddressManagementView', () => {
     expect(screen.getByText('Jardins - São Paulo')).toBeInTheDocument()
   })
 
-  it('não deve conter nenhum campo de CEP no formulário nem na tela', () => {
+  it('renders the address form fields, without a CEP field', () => {
     render(<AddressManagementView />)
 
     // Open Add Modal
@@ -63,7 +64,7 @@ describe('AddressManagementView', () => {
     expect(screen.queryByPlaceholderText(/cep/i)).not.toBeInTheDocument()
   })
 
-  it('deve filtrar endereços pela busca de texto por nome ou logradouro', () => {
+  it('filters addresses by name or street', () => {
     render(<AddressManagementView />)
 
     const searchInput = screen.getByPlaceholderText(/Buscar por nome, logradouro, bairro.../i)
@@ -73,7 +74,7 @@ describe('AddressManagementView', () => {
     expect(screen.getByText('Clínica Paulista')).toBeInTheDocument()
   })
 
-  it('deve cadastrar um novo endereço com nome e dados completos com sucesso', () => {
+  it('creates a new address with all its fields', () => {
     render(<AddressManagementView />)
 
     fireEvent.click(screen.getByRole('button', { name: /Novo Endereço/i }))
@@ -108,7 +109,7 @@ describe('AddressManagementView', () => {
     ).toBe(true)
   })
 
-  it('deve validar obrigatoriedade do nome do local ao tentar cadastrar', () => {
+  it('requires the place name', () => {
     render(<AddressManagementView />)
 
     fireEvent.click(screen.getByRole('button', { name: /Novo Endereço/i }))
@@ -126,7 +127,7 @@ describe('AddressManagementView', () => {
     expect(useScheduleStore.getState().addresses).toHaveLength(2)
   })
 
-  it('deve editar um endereço existente incluindo o nome', () => {
+  it('edits an existing address, name included', () => {
     render(<AddressManagementView />)
 
     const editBtn = screen.getByRole('button', { name: /Editar endereço Residência Flores/i })
@@ -148,7 +149,7 @@ describe('AddressManagementView', () => {
     expect(edited?.street).toBe('Rua das Orquídeas')
   })
 
-  it('deve excluir um endereço após confirmação no modal', () => {
+  it('deletes an address after confirmation', () => {
     render(<AddressManagementView />)
 
     const deleteBtn = screen.getByRole('button', { name: /Excluir endereço Residência Flores/i })
@@ -166,7 +167,7 @@ describe('AddressManagementView', () => {
     expect(storeAddresses.find((a) => a.id === 'addr-1')).toBeUndefined()
   })
 
-  it('deve exibir estado vazio quando não houver endereços', () => {
+  it('shows the empty state when there are no addresses', () => {
     useScheduleStore.setState({ addresses: [] })
     render(<AddressManagementView />)
 
@@ -174,7 +175,7 @@ describe('AddressManagementView', () => {
     expect(screen.getByRole('button', { name: /Adicionar Primeiro Endereço/i })).toBeInTheDocument()
   })
 
-  it('deve copiar o endereço para a área de transferência ao clicar em Copiar', async () => {
+  it('copies the address to the clipboard', async () => {
     const writeTextMock = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: writeTextMock },
@@ -193,9 +194,12 @@ describe('AddressManagementView', () => {
     expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
 
-  it('não deve exibir botão de puxar dados da nuvem na gestão de endereços', () => {
+  it('renders the cards in the locally saved drag-and-drop order', () => {
+    StorageService.saveListOrder('addresses', ['addr-2', 'addr-1'])
     render(<AddressManagementView />)
 
-    expect(screen.queryByRole('button', { name: /Puxar dados da nuvem/i })).not.toBeInTheDocument()
+    const order = screen.getAllByTestId(/^sortable-item-/).map((el) => el.dataset.testid)
+    expect(order).toEqual(['sortable-item-addr-2', 'sortable-item-addr-1'])
+    expect(screen.getByTestId('drag-handle-addr-1')).toHaveAccessibleName(/Arrastar para reordenar/)
   })
 })
