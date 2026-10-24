@@ -315,14 +315,14 @@ export function PersonCard({
           <CalendarCheck className="w-3.5 h-3.5" />
         </button>
 
-        {/* Toggle View Availability */}
+        {/* Toggle View Availability (hidden on small screens) */}
         <button
           type="button"
           disabled={!hasAvailability}
           onClick={onToggleHighlight}
           title={highlightTooltip}
           aria-label={highlightTooltip}
-          className={`p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
+          className={`mobile:hidden p-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 ${
             !hasAvailability
               ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
               : isHighlighted

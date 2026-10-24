@@ -50,6 +50,22 @@ describe('PersonCard Component', () => {
     expect(handleToggle).toHaveBeenCalledTimes(1)
   })
 
+  it('deve ocultar o botão de destacar disponibilidade em telas pequenas (<= 640px)', () => {
+    render(
+      <PersonCard
+        person={mockPerson}
+        availableDaysCount={5}
+        isHighlighted={false}
+        isEditMode={false}
+        onToggleHighlight={vi.fn()}
+        onEdit={vi.fn()}
+        onInsertAllDays={vi.fn()}
+      />
+    )
+
+    expect(screen.getByTitle('Destacar disponibilidade no calendário')).toHaveClass('mobile:hidden')
+  })
+
   it('deve chamar onEdit ao clicar no botão de edição', () => {
     const handleEdit = vi.fn()
     render(
