@@ -31,6 +31,7 @@ const STORAGE_KEYS = {
   ACTIVE_USER_ID: 'scale_manager_active_user_id_v1',
   USER_DATA_PREFIX: 'scale_manager_user_data_v1_',
   ONBOARDING_CHECKED: 'health-schedule:onboarding-checked',
+  PERSON_ORDER_PREFIX: 'scale_manager_person_order_v1_',
 }
 
 let isRestoringDataset = false
@@ -357,6 +358,37 @@ export class StorageService {
   }
 
   /**
+   * Person card display order (device-local preference, never synced to the cloud).
+   * Scoped per active guest profile / user so each dataset keeps its own order.
+   */
+  static getPersonOrderKey(): string {
+    const activeGuestId = StorageService.getActiveGuestId()
+    if (activeGuestId) return `${STORAGE_KEYS.PERSON_ORDER_PREFIX}guest_${activeGuestId}`
+    const activeUserId = StorageService.getActiveUserId()
+    if (activeUserId) return `${STORAGE_KEYS.PERSON_ORDER_PREFIX}user_${activeUserId}`
+    return `${STORAGE_KEYS.PERSON_ORDER_PREFIX}local`
+  }
+
+  static getPersonOrder(): string[] {
+    try {
+      const data = localStorage.getItem(StorageService.getPersonOrderKey())
+      const parsed: unknown = data ? JSON.parse(data) : []
+      return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
+    } catch (err) {
+      console.error('Failed to load person order from localStorage:', err)
+      return []
+    }
+  }
+
+  static savePersonOrder(order: string[]): void {
+    try {
+      localStorage.setItem(StorageService.getPersonOrderKey(), JSON.stringify(order))
+    } catch (err) {
+      console.error('Failed to save person order to localStorage:', err)
+    }
+  }
+
+  /**
    * Reset all active storage keys
    */
   static resetToDefault(): void {
@@ -379,6 +411,7 @@ export class StorageService {
    * If an active guest session is present, also removes the guest's saved dataset snapshot.
    */
   static clearAllLocalData(): void {
+    localStorage.removeItem(StorageService.getPersonOrderKey())
     const activeGuestId = StorageService.getActiveGuestId()
     if (activeGuestId) {
       StorageService.deleteGuestDataset(activeGuestId)

@@ -25,6 +25,8 @@ export interface PersonCardProps {
   onEdit: () => void
   onInsertAllDays: (shiftId?: string) => void
   onRemoveFromMonth?: () => void
+  /** Optional drag handle rendered before the color dot (used for reordering) */
+  dragHandle?: React.ReactNode
 }
 
 export function PersonCard({
@@ -40,6 +42,7 @@ export function PersonCard({
   onEdit,
   onInsertAllDays,
   onRemoveFromMonth,
+  dragHandle,
 }: PersonCardProps) {
   const { t } = useTranslation(['people', 'common'])
   const [justInserted, setJustInserted] = useState(false)
@@ -163,8 +166,9 @@ export function PersonCard({
           : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xs'
       }`}
     >
-      {/* Left: Color dot & Name & Days info */}
+      {/* Left: Drag handle, Color dot & Name & Days info */}
       <div className="flex items-center gap-2.5 min-w-0">
+        {dragHandle}
         <span
           className="w-3.5 h-3.5 rounded-full shrink-0 shadow-xs"
           style={{ backgroundColor: person.color }}

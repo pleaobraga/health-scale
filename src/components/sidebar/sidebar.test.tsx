@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import { Sidebar } from './sidebar'
+import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 
 const renderSidebar = () =>
@@ -212,5 +213,15 @@ describe('Sidebar Component (Pessoas do Mês)', () => {
     fireEvent.click(manageShiftsBtn)
     expect(useScheduleStore.getState().currentView).toBe('settings')
   })
-})
 
+  it('deve exibir os cards na ordem salva localmente e uma alça de arrastar em cada card', () => {
+    StorageService.savePersonOrder(['p2', 'p1'])
+    renderSidebar()
+
+    const cards = screen.getAllByTestId(/^sortable-person-/)
+    expect(cards.map((c) => c.dataset.testid)).toEqual(['sortable-person-p2', 'sortable-person-p1'])
+    expect(screen.getByTestId('person-drag-handle-p1')).toHaveAccessibleName(
+      'Arrastar para reordenar Dra. Camila Santos',
+    )
+  })
+})

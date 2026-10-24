@@ -143,7 +143,15 @@
     "paramMaxHours": "{{scope}} • Max: {{hours}}h",
     "paramMinRest": "Min. rest: {{hours}}h",
     "paramConsecutiveDays": "Max: {{days}} continuous days",
-    "paramMaxPeople": "Max: {{count}} person(s) per shift"
+    "paramMaxPeople": "Max: {{count}} person(s) per shift",
+    "reorder": {
+      "handle": "Drag to reorder {{name}}",
+      "instructions": "To reorder, press space or Enter on the handle, use the arrow keys to move and press space or Enter again to drop. Press Esc to cancel.",
+      "start": "Picked up {{name}}.",
+      "over": "{{name}} moved to the position of {{target}}.",
+      "end": "{{name}} dropped at the position of {{target}}.",
+      "cancel": "Reordering {{name}} was cancelled."
+    }
   },
   "card": {
     "workingDays": "{{count}} working",

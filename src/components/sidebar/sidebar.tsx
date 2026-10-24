@@ -20,6 +20,8 @@ import { AddMonthParticipantsModal } from './add-month-participants-modal'
 import { AddMonthRulesModal } from './add-month-rules-modal'
 import { MonthAvailabilityModal } from './month-availability-modal'
 import { PersonCard } from './person-card'
+import { SortablePersonList } from './sortable-person-list'
+import { sortByPersonOrder, usePersonOrder } from './use-person-order'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear } from '../../utils/date-utils'
 import { MonthShiftConfigModal } from '../modals/month-shift-config-modal'
@@ -90,8 +92,10 @@ export function Sidebar() {
 
   // Active items for current month
   const currentParticipantIds = monthParticipants[currentMonth] || []
-  const monthPersons = persons.filter((p) =>
-    currentParticipantIds.includes(p.id),
+  const { personOrder, handleReorder } = usePersonOrder()
+  const monthPersons = sortByPersonOrder(
+    persons.filter((p) => currentParticipantIds.includes(p.id)),
+    personOrder,
   )
   const activeShiftIds = getActiveShiftIds(currentMonth)
   const activeShifts = shiftDefinitions.filter((s) =>
@@ -503,56 +507,66 @@ export function Sidebar() {
                     </button>
                   </div>
                 ) : (
-                  filteredPersons.map((person) => {
-                    const availDays = getPersonAvailableDays(person.id)
-                    const workingDays = getPersonWorkingDaysCount(person.id)
-                    const personAvail = availabilities.find(
-                      (a) =>
-                        a.personId === person.id && a.month === currentMonth,
-                    )
-                    const availableShifts = activeShifts
-                      .filter(
-                        (s) =>
-                          (personAvail?.shiftAvailability?.[s.id]?.length ||
-                            0) > 0,
+                  <SortablePersonList
+                    persons={filteredPersons}
+                    onReorder={(activeId, overId) =>
+                      handleReorder(
+                        monthPersons.map((p) => p.id),
+                        activeId,
+                        overId,
                       )
-                      .map((s) => ({
-                        shift: s,
-                        daysCount: personAvail!.shiftAvailability![s.id].length,
-                      }))
+                    }
+                    renderPerson={(person, dragHandle) => {
+                      const availDays = getPersonAvailableDays(person.id)
+                      const workingDays = getPersonWorkingDaysCount(person.id)
+                      const personAvail = availabilities.find(
+                        (a) =>
+                          a.personId === person.id && a.month === currentMonth,
+                      )
+                      const availableShifts = activeShifts
+                        .filter(
+                          (s) =>
+                            (personAvail?.shiftAvailability?.[s.id]?.length ||
+                              0) > 0,
+                        )
+                        .map((s) => ({
+                          shift: s,
+                          daysCount: personAvail!.shiftAvailability![s.id].length,
+                        }))
 
-                    return (
-                      <PersonCard
-                        key={person.id}
-                        person={person}
-                        availableDaysCount={availDays.length}
-                        workingDaysCount={workingDays}
-                        availableShifts={availableShifts}
-                        isHighlighted={highlightedPersonId === person.id}
-                        isScheduledHighlighted={
-                          highlightedScheduledPersonId === person.id
-                        }
-                        isEditMode={isEditMode}
-                        onToggleHighlight={() =>
-                          setHighlightedPersonId(person.id)
-                        }
-                        onToggleScheduledHighlight={() =>
-                          setHighlightedScheduledPersonId(person.id)
-                        }
-                        onEdit={() => setPersonForAvailability(person)}
-                        onInsertAllDays={(shiftId) =>
-                          insertAllPersonDaysToMonth(
-                            person.id,
-                            currentMonth,
-                            shiftId,
-                          )
-                        }
-                        onRemoveFromMonth={() =>
-                          removePersonFromMonth(person.id, currentMonth)
-                        }
-                      />
-                    )
-                  })
+                      return (
+                        <PersonCard
+                          person={person}
+                          availableDaysCount={availDays.length}
+                          workingDaysCount={workingDays}
+                          availableShifts={availableShifts}
+                          isHighlighted={highlightedPersonId === person.id}
+                          isScheduledHighlighted={
+                            highlightedScheduledPersonId === person.id
+                          }
+                          isEditMode={isEditMode}
+                          onToggleHighlight={() =>
+                            setHighlightedPersonId(person.id)
+                          }
+                          onToggleScheduledHighlight={() =>
+                            setHighlightedScheduledPersonId(person.id)
+                          }
+                          onEdit={() => setPersonForAvailability(person)}
+                          onInsertAllDays={(shiftId) =>
+                            insertAllPersonDaysToMonth(
+                              person.id,
+                              currentMonth,
+                              shiftId,
+                            )
+                          }
+                          onRemoveFromMonth={() =>
+                            removePersonFromMonth(person.id, currentMonth)
+                          }
+                          dragHandle={dragHandle}
+                        />
+                      )
+                    }}
+                  />
                 )}
               </div>
             </div>
