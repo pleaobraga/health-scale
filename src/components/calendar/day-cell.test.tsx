@@ -281,6 +281,10 @@ describe('DayCell Component', () => {
 
     // Should NOT show conflict error because they are allocated in distinct 12h shifts covering the day
     expect(screen.queryByText(/Conflito/i)).not.toBeInTheDocument()
+
+    // Small screens (<= 640px): shift code is hidden and the name chip spans the full width
+    expect(screen.getByTestId('shift-badge-2026-10-15-D12')).toHaveClass('mobile:hidden')
+    expect(screen.getByText('Dra. Camila').closest('[title]')).toHaveClass('w-full', 'mobile:px-1')
   })
 
   it('no modo de edição com mais de 1 turno ativo, exibe botão único de adicionar que abre o modal de escala', () => {

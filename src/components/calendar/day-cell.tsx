@@ -96,7 +96,7 @@ export function DayCell({
 
   return (
     <div
-      className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 dark:border-slate-800 p-2 flex flex-col justify-between transition-all relative ${
+      className={`min-h-[110px] md:min-h-[125px] border-b border-r border-slate-200 dark:border-slate-800 p-2 mobile:p-0 flex flex-col justify-between transition-all relative ${
         !isCurrentMonth
           ? 'bg-slate-50/70 dark:bg-slate-950/40 text-slate-400 dark:text-slate-600'
           : isTargetOfScheduledHighlight
@@ -109,7 +109,7 @@ export function DayCell({
       }`}
     >
       {/* Top Header of the Cell */}
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-1 mobile:justify-center mobile:pt-1">
         <div className="flex items-center gap-1.5">
           {/* Day number: RED if has 1 or more events. On small screens (<= 640px) it opens the events modal */}
           <button
@@ -213,13 +213,13 @@ export function DayCell({
                       <div
                         key={shift.id}
                         style={{ backgroundColor: person.color }}
-                        className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                        className="text-white text-xs font-semibold px-1.5 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between gap-1 truncate w-full"
                         title={`${shift.name}: ${person.name}`}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
                             data-testid={`shift-badge-${dateStr}-${shift.code}`}
-                            className="text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
+                            className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                             style={{
                               backgroundColor: shift.color || 'rgba(0,0,0,0.3)',
                               color: '#FFFFFF',
@@ -267,14 +267,14 @@ export function DayCell({
                       <div
                         key={pId}
                         style={{ backgroundColor: p.color }}
-                        className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                        className="text-white text-xs font-semibold px-1.5 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between gap-1 truncate w-full"
                         title={pShift ? `${pShift.name}: ${p.name}` : p.name}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           {pShift && (
                             <span
                               data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
+                              className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                               style={{
                                 backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                                 color: '#FFFFFF',
@@ -307,14 +307,14 @@ export function DayCell({
                   <div
                     key={personId}
                     style={{ backgroundColor: person.color }}
-                    className="text-white text-xs font-semibold px-1.5 py-1 rounded-lg shadow-2xs flex items-center justify-between gap-1 truncate"
+                    className="text-white text-xs font-semibold px-1.5 mobile:px-1 py-1 rounded-lg mobile:rounded-sm shadow-2xs flex items-center justify-between gap-1 truncate w-full"
                     title={pShift ? `${pShift.name}: ${person.name}` : person.name}
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       {pShift && (
                         <span
                           data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                          className="text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
+                          className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                           style={{
                             backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                             color: '#FFFFFF',
@@ -359,13 +359,13 @@ export function DayCell({
                       <div
                         key={shift.id}
                         style={{ backgroundColor: person.color }}
-                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 mobile:pl-1 pr-1 mobile:pr-0.5 py-0.5 rounded-md mobile:rounded-sm shadow-2xs transition-all w-full max-w-full"
                         title={`${shift.name}: ${person.name}`}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
                             data-testid={`shift-badge-${dateStr}-${shift.code}`}
-                            className="text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
+                            className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                             style={{
                               backgroundColor: shift.color || 'rgba(0,0,0,0.3)',
                               color: '#FFFFFF',
@@ -405,14 +405,14 @@ export function DayCell({
                       <div
                         key={pId}
                         style={{ backgroundColor: p.color }}
-                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 mobile:pl-1 pr-1 mobile:pr-0.5 py-0.5 rounded-md mobile:rounded-sm shadow-2xs transition-all w-full max-w-full"
                         title={pShift ? `${pShift.name}: ${p.name}` : p.name}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           {pShift && (
                             <span
                               data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
+                              className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                               style={{
                                 backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                                 color: '#FFFFFF',
@@ -436,7 +436,7 @@ export function DayCell({
                   })}
 
                 {/* Single Add button opening modal for multi-shift days */}
-                <div className="pt-0.5 flex items-center justify-between">
+                <div className="pt-0.5 flex items-center justify-center">
                   <button
                     type="button"
                     onClick={() => setIsAddShiftModalOpen(true)}
@@ -462,14 +462,14 @@ export function DayCell({
                       <div
                         key={personId}
                         style={{ backgroundColor: person.color }}
-                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 pr-1 py-0.5 rounded-md shadow-2xs transition-all max-w-full"
+                        className="group flex items-center justify-between gap-1 text-white text-[11px] font-semibold pl-1.5 mobile:pl-1 pr-1 mobile:pr-0.5 py-0.5 rounded-md mobile:rounded-sm shadow-2xs transition-all w-full max-w-full"
                         title={pShift ? `${pShift.name}: ${person.name}` : person.name}
                       >
                         <div className="flex items-center gap-1.5 min-w-0">
                           {pShift && (
                             <span
                               data-testid={`shift-badge-${dateStr}-${pShift.code}`}
-                              className="text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
+                              className="mobile:hidden text-[9px] font-black uppercase px-1 py-0.2 rounded-sm shrink-0 shadow-xs"
                               style={{
                                 backgroundColor: pShift.color || 'rgba(0,0,0,0.3)',
                                 color: '#FFFFFF',
@@ -495,7 +495,7 @@ export function DayCell({
 
                 {/* Inline CandidatePicker for single shift / fallback */}
                 {activeShifts && activeShifts.length > 0 && (
-                  <div className="pt-0.5 flex items-center justify-between">
+                  <div className="pt-0.5 flex items-center justify-center">
                     <CandidatePicker
                       dateStr={dateStr}
                       dayNumber={dayNumber}
