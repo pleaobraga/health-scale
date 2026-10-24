@@ -76,5 +76,12 @@ describe('UnsavedChangesModal', () => {
     expect(useScheduleStore.getState().isUnsavedModalOpen).toBe(false)
     expect(useScheduleStore.getState().isEditMode).toBe(true)
   })
+  it('deve ocupar a altura toda em telas pequenas com as ações no final da tela', () => {
+    useScheduleStore.setState({ isUnsavedModalOpen: true })
+    render(<UnsavedChangesModal />)
+
+    expect(screen.getByRole('dialog')).toHaveClass('modal-overlay')
+    expect(screen.getByTestId('unsaved-modal-body')).toHaveClass('mobile:flex-1')
+  })
 })
 

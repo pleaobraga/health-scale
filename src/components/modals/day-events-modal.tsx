@@ -228,7 +228,7 @@ export function DayEventsModal() {
     <div className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 flex items-center justify-center text-red-600 dark:text-red-400">
               <Calendar className="w-4 h-4" />
@@ -253,7 +253,11 @@ export function DayEventsModal() {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
+        {/* Body grows on mobile (full-height modal) so the footer sits at the bottom of the screen */}
+        <div
+          data-testid="day-events-modal-body"
+          className="p-6 space-y-6 overflow-y-auto custom-scrollbar mobile:flex-1 mobile:min-h-0"
+        >
           {/* List of existing events */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
@@ -718,7 +722,7 @@ export function DayEventsModal() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end">
+        <div className="px-6 py-3 mobile:pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end shrink-0">
           <button
             type="button"
             onClick={() => setSelectedDateForEvents(null)}

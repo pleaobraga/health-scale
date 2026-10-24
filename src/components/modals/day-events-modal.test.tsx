@@ -461,4 +461,10 @@ describe('DayEventsModal', () => {
     expect(writeTextMock).toHaveBeenCalledWith('Clínica Paulista\nAv Paulista, 1000\nBela Vista - São Paulo')
     expect(await screen.findByText('Copiado!')).toBeInTheDocument()
   })
+  it('deve deixar o corpo ocupar o espaço livre em telas pequenas para manter o rodapé no final da tela', () => {
+    useScheduleStore.setState({ selectedDateForEvents: '2026-10-15' })
+    render(<DayEventsModal />)
+
+    expect(screen.getByTestId('day-events-modal-body')).toHaveClass('mobile:flex-1', 'mobile:min-h-0')
+  })
 })
