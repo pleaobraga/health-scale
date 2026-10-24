@@ -220,4 +220,35 @@ describe('CalendarGrid Component', () => {
     expect(screen.queryByText(/na escala/i)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Edição' }).querySelector('span')).toHaveClass('mobile:hidden')
   })
+
+  it('no modo de edição, oculta o aviso longo em telas pequenas e exibe Salvar Alterações quando houver mudanças', () => {
+    const saveMock = vi.fn()
+    useScheduleStore.setState({
+      validateCurrentSchedule: () => [],
+      isEditMode: true,
+      hasUnsavedChanges: false,
+      saveSchedule: saveMock,
+    })
+
+    const { rerender } = render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    expect(screen.getByTestId('edit-notice')).toHaveClass('mobile:hidden')
+    expect(screen.queryByTestId('edit-notice-save-button')).not.toBeInTheDocument()
+
+    useScheduleStore.setState({ hasUnsavedChanges: true })
+    rerender(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const saveBtn = screen.getByTestId('edit-notice-save-button')
+    expect(screen.getByText('Salvar Alterações')).toHaveClass('hidden', 'mobile:inline')
+    fireEvent.click(saveBtn)
+    expect(saveMock).toHaveBeenCalledTimes(1)
+  })
 })

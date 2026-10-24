@@ -518,8 +518,11 @@ export function CalendarGrid() {
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
             <span>
-              <strong>{t('calendar:editModeActive')}</strong>{' '}
-              {t('calendar:editNotice')}
+              <strong>{t('calendar:editModeActive').replace(/:\s*$/, '')}</strong>
+              {/* Long notice hidden on small screens (<= 640px) */}
+              <span data-testid="edit-notice" className="mobile:hidden">
+                : {t('calendar:editNotice')}
+              </span>
             </span>
           </div>
           {hasUnsavedChanges && (
@@ -530,9 +533,11 @@ export function CalendarGrid() {
               <button
                 type="button"
                 onClick={saveSchedule}
+                data-testid="edit-notice-save-button"
                 className="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition"
               >
-                {t('calendar:saveNow')}
+                <span className="mobile:hidden">{t('calendar:saveNow')}</span>
+                <span className="hidden mobile:inline">{t('calendar:saveChanges')}</span>
               </button>
             </div>
           )}
