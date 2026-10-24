@@ -242,7 +242,9 @@ export function CalendarGrid() {
     <div
       ref={calendarRef}
       data-testid="calendar-grid"
-      className="w-full bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors shrink-0 scroll-mt-3"
+      // Fills at least the available height: the calendar column on lg+, the viewport (minus page
+      // padding and, below md, the bottom tab bar) in the stacked layout
+      className="w-full flex flex-col flex-1 shrink-0 max-md:min-h-[calc(100dvh-6rem-env(safe-area-inset-bottom))] md:max-lg:min-h-[calc(100dvh-2.5rem)] bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors scroll-mt-3"
     >
       {/* Calendar Top Toolbar */}
       <div className="p-4 border-b rounded-t-2xl border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 max-hd:gap-y-0 bg-white dark:bg-slate-900 transition-colors">
@@ -594,7 +596,7 @@ export function CalendarGrid() {
       )}
 
       {/* Main 7-Column Grid (Sunday to Saturday) */}
-      <div className="flex flex-col">
+      <div data-testid="calendar-grid-body" className="flex flex-col flex-1">
         <CalendarHeader />
         <div className="grid grid-cols-7 border-l border-slate-200 dark:border-slate-800 flex-1 auto-rows-fr">
           {daysGrid.map((dayInfo) => {

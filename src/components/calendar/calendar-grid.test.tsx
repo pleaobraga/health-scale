@@ -351,4 +351,19 @@ describe('CalendarGrid', () => {
     expect(screen.getByTestId('audit-button-count')).toHaveTextContent(/^2$/)
     expect(screen.getByTestId('audit-button-count')).toHaveClass('hidden', 'mobile:inline')
   })
+
+  it('fills at least the available height, stretching the week rows', () => {
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const calendar = screen.getByTestId('calendar-grid')
+    expect(calendar).toHaveClass('flex', 'flex-col', 'flex-1')
+    // Stacked layout (< lg): at least the viewport height
+    expect(calendar.className).toMatch(/max-md:min-h-\[calc\(100dvh/)
+    expect(calendar.className).toMatch(/md:max-lg:min-h-\[calc\(100dvh/)
+    expect(screen.getByTestId('calendar-grid-body')).toHaveClass('flex-1')
+  })
 })
