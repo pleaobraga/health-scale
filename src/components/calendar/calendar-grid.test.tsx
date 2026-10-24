@@ -319,7 +319,10 @@ describe('CalendarGrid Component', () => {
       </AuthProvider>,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: /limpar mês/i }))
+    const clearButton = screen.getByRole('button', { name: /limpar mês/i })
+    expect(clearButton).toHaveTextContent(/^limpar$/i)
+
+    fireEvent.click(clearButton)
     const dialog = screen.getByRole('alertdialog', { name: /limpar mês/i })
     expect(dialog).toHaveTextContent(/outubro/i)
     expect(clearMonthAssignmentsMock).not.toHaveBeenCalled()
@@ -332,5 +335,19 @@ describe('CalendarGrid Component', () => {
     fireEvent.click(screen.getByTestId('confirm-dialog-confirm'))
     expect(clearMonthAssignmentsMock).toHaveBeenCalledWith('2026-10')
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+  it('deve manter o botão de edição na linha do título abaixo de 1510px (hd), preservando a label (exceto <= 640px)', () => {
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    const editButton = screen.getByRole('button', { name: /^edição$/i })
+    expect(editButton).toHaveClass('max-hd:order-2')
+    // A label só é escondida em telas <= 640px
+    const label = editButton.querySelector('span')
+    expect(label).toHaveClass('mobile:hidden')
+    expect(label?.className).not.toMatch(/max-hd:hidden/)
   })
 })

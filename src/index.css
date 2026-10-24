@@ -6,6 +6,11 @@
 /* Small screens (<= 640px): bottom tab bar & fullscreen modals */
 @custom-variant mobile (@media screen and (width <= 40rem));
 
+/* Extra breakpoint `hd` (1510px), between xl (1280px) and 2xl (1536px): enables `hd:` / `max-hd:` */
+@theme {
+  --breakpoint-hd: 94.375rem;
+}
+
 /*
   Tailwind CSS v4 no longer sets `cursor: pointer` on buttons; keep the v3 behavior.
 */

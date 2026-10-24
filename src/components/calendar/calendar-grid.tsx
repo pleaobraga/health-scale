@@ -245,9 +245,9 @@ export function CalendarGrid() {
       className="w-full bg-white dark:bg-slate-900 shadow-xs border border-slate-200 dark:border-slate-800 rounded-2xl transition-colors shrink-0 scroll-mt-3"
     >
       {/* Calendar Top Toolbar */}
-      <div className="p-4 border-b rounded-t-2xl border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 mobile:gap-y-0 bg-white dark:bg-slate-900 transition-colors">
+      <div className="p-4 border-b rounded-t-2xl border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 max-hd:gap-y-0 bg-white dark:bg-slate-900 transition-colors">
         {/* Month Navigation */}
-        <div className="flex items-center gap-3 mobile:order-1 mobile:flex-1 mobile:min-w-0">
+        <div className="flex items-center gap-3 max-hd:order-1 max-hd:flex-1 max-hd:min-w-0">
           <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200/80 dark:border-slate-700">
             <button
               type="button"
@@ -279,16 +279,16 @@ export function CalendarGrid() {
         </div>
 
         {/* View / Edit Mode Switch & Tools */}
-        <div className="flex items-center flex-wrap gap-2.5 mobile:contents">
+        <div className="flex items-center flex-wrap gap-2.5 max-hd:contents">
           {isEditMode && (
-            <div className="flex items-center gap-1.5 mobile:order-4 mobile:mt-2">
+            <div className="flex items-center gap-1.5 max-hd:order-4 max-hd:mt-2">
               <button
                 type="button"
                 onClick={() =>
                   populateMonthWithAvailableCandidates(currentMonth)
                 }
                 title={t('calendar:populateAvailableTooltip')}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition shadow-2xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 transition shadow-2xs"
               >
                 <Wand2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">
@@ -300,8 +300,8 @@ export function CalendarGrid() {
                 type="button"
                 onClick={() => setIsClearMonthConfirmOpen(true)}
                 title={t('calendar:clearMonthTooltip')}
-                aria-label={t('calendar:clearMonth')}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs"
+                aria-label={t('calendar:clearMonthTitle')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-800 transition shadow-2xs"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">
@@ -314,7 +314,7 @@ export function CalendarGrid() {
                   type="button"
                   onClick={discardChanges}
                   title={t('calendar:discardTooltip')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 transition shadow-2xs"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 transition shadow-2xs"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">
@@ -331,7 +331,7 @@ export function CalendarGrid() {
             onClick={toggleEditMode}
             title={isEditMode ? t('calendar:viewMode') : t('calendar:editMode')}
             aria-label={isEditMode ? t('calendar:viewMode') : t('calendar:editMode')}
-            className={`mobile:order-2 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${
+            className={`max-hd:order-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 ${
               isEditMode
                 ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
@@ -351,14 +351,14 @@ export function CalendarGrid() {
           </button>
 
           {/* Diagnostics & Actions (second row, right-aligned on small screens) */}
-          <div className="flex items-center gap-2.5 mobile:order-5 mobile:ml-auto mobile:mt-2">
+          <div className="flex items-center gap-2.5 max-hd:order-5 max-hd:ml-auto max-hd:mt-2">
             {/* Audit Violations Button / Real-time Status */}
             <button
               type="button"
               onClick={() => setIsAuditModalOpen(true)}
               title={t('calendar:validation.auditButtonTooltip')}
               aria-label={t('calendar:validation.auditButtonTooltip')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-2xs border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition shadow-2xs border ${
                 validationErrors.length > 0
                   ? 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
                   : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
@@ -393,7 +393,7 @@ export function CalendarGrid() {
                 aria-expanded={isActionsOpen}
                 aria-haspopup="menu"
                 data-testid="calendar-actions-dropdown-trigger"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition shadow-2xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
               >
                 <MoreHorizontal className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                 <span className="hidden sm:inline">{t('calendar:actionsMenu')}</span>
@@ -516,8 +516,8 @@ export function CalendarGrid() {
             </div>
           </div>
 
-          {/* Line break between the toolbar rows on small screens */}
-          <div aria-hidden="true" className="hidden mobile:block mobile:order-3 basis-full h-0" />
+          {/* Line break between the toolbar rows (below hd (1510px)) */}
+          <div aria-hidden="true" className="hidden max-hd:block max-hd:order-3 basis-full h-0" />
         </div>
       </div>
 
@@ -670,7 +670,7 @@ export function CalendarGrid() {
 
       <ConfirmDialog
         isOpen={isClearMonthConfirmOpen}
-        title={t('calendar:clearMonth')}
+        title={t('calendar:clearMonthTitle')}
         description={t('calendar:confirmClearMonth', {
           month: formatMonthYear(currentMonth, i18n.language),
         })}
