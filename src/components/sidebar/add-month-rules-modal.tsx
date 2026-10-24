@@ -129,7 +129,7 @@ export function AddMonthRulesModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-month-rules-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
       <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl lg:max-w-3xl overflow-hidden flex flex-col max-h-[90vh] transition-all">
         {/* Header */}
@@ -302,7 +302,7 @@ export function AddMonthRulesModal({
                               : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-transparent'
                           }`}
                         >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          <Check className="w-3.5 h-3.5 stroke-3" />
                         </div>
                       </div>
                     )

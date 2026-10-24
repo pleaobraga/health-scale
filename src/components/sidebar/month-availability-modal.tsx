@@ -290,7 +290,7 @@ export function MonthAvailabilityModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="month-avail-modal-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
       <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
         {/* Header */}
@@ -397,7 +397,7 @@ export function MonthAvailabilityModal({
                 <div className="flex items-center justify-between px-2 py-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium bg-slate-50 dark:bg-slate-800/40 rounded-lg">
                   <span className="flex items-center gap-1.5">
                     <span
-                      className="px-1.5 py-0.2 rounded text-[10px] font-black text-white uppercase"
+                      className="px-1.5 py-0.2 rounded-sm text-[10px] font-black text-white uppercase"
                       style={{ backgroundColor: currentSelectedShift.color || '#3B82F6' }}
                     >
                       {currentSelectedShift.code}

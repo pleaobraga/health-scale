@@ -232,7 +232,7 @@ export function MonthPaymentsModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="month-payments-modal-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
       <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
         {/* Header */}
@@ -437,7 +437,7 @@ export function MonthPaymentsModal({
                               </span>
 
                               <span
-                                className="px-2 py-0.5 rounded text-[10px] font-black text-white shrink-0"
+                                className="px-2 py-0.5 rounded-sm text-[10px] font-black text-white shrink-0"
                                 style={{ backgroundColor: item.shiftColor }}
                               >
                                 {item.shiftCode}

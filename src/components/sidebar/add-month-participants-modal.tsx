@@ -86,7 +86,7 @@ export function AddMonthParticipantsModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-month-participants-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
       <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl lg:max-w-3xl overflow-hidden flex flex-col max-h-[90vh] transition-all">
         {/* Header */}
@@ -167,7 +167,7 @@ export function AddMonthParticipantsModal({
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
                     placeholder={t('people:addMonthParticipants.filterPlaceholder')}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
+                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400"
                   />
                   {modalSearch && (
                     <button
@@ -248,7 +248,7 @@ export function AddMonthParticipantsModal({
                               : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
                           }`}
                         >
-                          {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          {isChecked && <Check className="w-3.5 h-3.5 stroke-3" />}
                         </div>
                       </div>
                     )

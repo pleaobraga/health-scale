@@ -23,11 +23,13 @@ import React, { use, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, useInRouterContext } from 'react-router-dom'
 
+import { MobileBottomNav } from './mobile-bottom-nav'
 import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { LanguageSelector } from '../common/language-selector'
+
 
 import type { NavigationTab } from '../../types'
 
@@ -178,15 +180,56 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
     }
   }
 
+  const bottomNavItems = [
+    {
+      id: 'calendar' as const,
+      path: '/',
+      label: t('common:navShort.calendar'),
+      icon: CalendarDays,
+      end: true,
+    },
+    {
+      id: 'people' as const,
+      path: '/pessoas',
+      label: t('common:navShort.people'),
+      icon: Users,
+    },
+    {
+      id: 'shifts' as const,
+      path: '/turnos',
+      label: t('common:navShort.shifts'),
+      icon: Clock,
+    },
+    {
+      id: 'settings' as const,
+      path: '/configuracoes',
+      label: t('common:navShort.settings'),
+      icon: Settings,
+    },
+  ]
+
   return (
     <>
-      {/* 1. Mobile Top Header (Screens smaller than 768px: < md) */}
+      {/* 0. Mobile Bottom Tab Bar (Screens <= 640px) */}
+      <MobileBottomNav
+        items={bottomNavItems}
+        currentView={currentView}
+        isMenuOpen={isMobileMenuOpen}
+        syncStatus={isAdmin ? (isSyncEnabled ? 'cloud' : 'local') : null}
+        onNavigate={(id) => {
+          setCurrentView(id)
+          setIsMobileMenuOpen(false)
+        }}
+        onOpenMenu={() => setIsMobileMenuOpen(true)}
+      />
+
+      {/* 1. Mobile Top Header (Screens 641px - 767px) */}
       <header
         data-testid="mobile-header"
-        className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40 shadow-xs md:hidden select-none transition-colors"
+        className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-40 shadow-xs mobile:hidden md:hidden select-none transition-colors"
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0">
             <CalendarDays className="w-4 h-4 stroke-[2.2]" />
           </div>
           <div className="flex flex-col">
@@ -247,7 +290,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0">
                   <CalendarDays className="w-5 h-5 stroke-[2.2]" />
                 </div>
                 <div>
@@ -513,12 +556,12 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
       {/* 3. Desktop / Tablet Fixed Hover Sidebar (Screens >= 768px: md+) */}
       <aside
         data-testid="hover-sidebar"
-        className="group/sidebar fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-sm overflow-hidden select-none"
+        className="group/sidebar fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 hidden md:flex flex-col justify-between transition-all duration-300 ease-in-out z-40 w-16 hover:w-64 shrink-0 shadow-xs overflow-hidden select-none"
       >
         {/* Top: Logo & App Branding */}
         <div>
           <div className="flex items-center gap-3 px-3.5 py-4 border-b border-slate-100 dark:border-slate-800/80">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0">
               <CalendarDays className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">

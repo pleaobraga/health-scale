@@ -103,7 +103,7 @@ export function CreateUserModal({
       aria-modal="true"
       aria-labelledby="modal-create-user-title"
       data-testid="create-user-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
       <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-7 space-y-5">
         {/* Modal Header */}
@@ -168,7 +168,7 @@ export function CreateUserModal({
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('users:createModal.namePlaceholder')}
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
           </div>
@@ -193,7 +193,7 @@ export function CreateUserModal({
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('users:createModal.emailPlaceholder')}
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
           </div>
@@ -219,7 +219,7 @@ export function CreateUserModal({
                 onChange={(e) => setTempPassword(e.target.value)}
                 placeholder={t('users:createModal.passwordPlaceholder')}
                 disabled={isSubmitting}
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-900 dark:text-white text-sm placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
               <button
                 type="button"
@@ -302,7 +302,7 @@ export function CreateUserModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

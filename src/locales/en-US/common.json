@@ -20,6 +20,13 @@
     "settings": "Settings",
     "users": "User Management"
   },
+  "navShort": {
+    "calendar": "Schedule",
+    "people": "People",
+    "shifts": "Shifts",
+    "settings": "Settings",
+    "more": "More"
+  },
   "actions": {
     "save": "Save",
     "saving": "Saving...",

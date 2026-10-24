@@ -9,7 +9,7 @@ export function CalendarView() {
       className="flex-1 flex flex-col lg:flex-row gap-5 p-3 sm:p-4 md:p-5 lg:overflow-hidden max-w-[2000px] w-full mx-auto min-h-0"
     >
       {/* Left Month Sidebar: Monthly Participants */}
-      <div className="w-full lg:w-[21rem] shrink-0 lg:h-full flex flex-col">
+      <div className="w-full lg:w-84 shrink-0 lg:h-full flex flex-col">
         <Sidebar />
       </div>
 

@@ -20,6 +20,13 @@
     "settings": "Configurações",
     "users": "Gestão de Usuários"
   },
+  "navShort": {
+    "calendar": "Escala",
+    "people": "Pessoas",
+    "shifts": "Turnos",
+    "settings": "Ajustes",
+    "more": "Mais"
+  },
   "actions": {
     "save": "Salvar",
     "saving": "Salvando...",

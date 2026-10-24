@@ -68,13 +68,13 @@ export function PersonModal({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+    <div className="modal-overlay fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden max-h-[92vh] flex flex-col transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
           <div className="flex items-center gap-2.5">
             <div
-              className="w-4 h-4 rounded-full shadow-sm"
+              className="w-4 h-4 rounded-full shadow-xs"
               style={{ backgroundColor: selectedColor }}
             />
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
@@ -113,7 +113,7 @@ export function PersonModal({
               }}
               placeholder={t('people:personModal.namePlaceholder')}
               autoFocus
-              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 transition placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 transition placeholder:text-slate-400 dark:placeholder:text-slate-500"
             />
           </div>
 
@@ -173,7 +173,7 @@ export function PersonModal({
                       aria-label={t('people:personModal.customColor')}
                     />
                     {isCustom ? (
-                      <Check className="w-3.5 h-3.5 text-white stroke-[3] drop-shadow-xs" />
+                      <Check className="w-3.5 h-3.5 text-white stroke-3 drop-shadow-xs" />
                     ) : (
                       <Pipette className="w-3.5 h-3.5 text-white drop-shadow-xs group-hover:scale-110 transition-transform" />
                     )}
@@ -192,7 +192,7 @@ export function PersonModal({
                   aria-label={pal.name}
                 >
                   {selectedColor.toLowerCase() === pal.hex.toLowerCase() && (
-                    <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                    <Check className="w-3.5 h-3.5 text-white stroke-3" />
                   )}
                 </button>
               ))}
@@ -234,7 +234,7 @@ export function PersonModal({
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-sm rounded-xl transition"
+                className="px-5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-xs rounded-xl transition"
               >
                 {personToEdit ? t('people:personModal.save') : t('people:personModal.create')}
               </button>

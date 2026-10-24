@@ -231,7 +231,7 @@ export function MonthShiftConfigModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="month-shift-config-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
       <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
         {/* Modal Header */}
@@ -314,7 +314,7 @@ export function MonthShiftConfigModal({
                     placeholder={t(
                       'calendar:dailyShiftsConfig.shiftNamePlaceholder',
                     )}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
@@ -328,7 +328,7 @@ export function MonthShiftConfigModal({
                       required
                       value={newShiftStartTime}
                       onChange={(e) => setNewShiftStartTime(e.target.value)}
-                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -344,7 +344,7 @@ export function MonthShiftConfigModal({
                       onChange={(e) =>
                         setNewShiftDuration(Number(e.target.value))
                       }
-                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -362,7 +362,7 @@ export function MonthShiftConfigModal({
                       placeholder={t(
                         'calendar:dailyShiftsConfig.codePlaceholder',
                       )}
-                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white uppercase font-bold focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -374,7 +374,7 @@ export function MonthShiftConfigModal({
                         type="color"
                         value={newShiftColor}
                         onChange={(e) => setNewShiftColor(e.target.value)}
-                        className="w-7 h-7 rounded border border-slate-300 dark:border-slate-600 cursor-pointer p-0"
+                        className="w-7 h-7 rounded-sm border border-slate-300 dark:border-slate-600 cursor-pointer p-0"
                       />
                       <span className="text-[10px] text-slate-500 font-mono">
                         {newShiftColor}
@@ -423,7 +423,7 @@ export function MonthShiftConfigModal({
                       <div className="flex items-center gap-2 min-w-0">
                         <span
                           style={{ backgroundColor: shift.color }}
-                          className="px-1.5 py-0.5 rounded text-[10px] font-black text-white shrink-0 shadow-2xs"
+                          className="px-1.5 py-0.5 rounded-sm text-[10px] font-black text-white shrink-0 shadow-2xs"
                         >
                           {shift.code}
                         </span>
@@ -643,7 +643,7 @@ export function MonthShiftConfigModal({
                           {/* Dots / tags for shifts on this day */}
                           <div className="flex items-center gap-1 mt-1 flex-wrap justify-center">
                             {isSelected && (
-                              <Check className="w-3 h-3 text-white stroke-[3]" />
+                              <Check className="w-3 h-3 text-white stroke-3" />
                             )}
                             {otherShiftsOnDay.map((s) => (
                               <span

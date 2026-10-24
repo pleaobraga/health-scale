@@ -39,8 +39,8 @@ export function PersonManagementCard({
       {/* Top: Avatar & Info */}
       <div className="flex items-start gap-3.5">
         <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-sm shrink-0 transition-opacity ${
-            !isActive ? 'grayscale-[40%]' : ''
+          className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-xs shrink-0 transition-opacity ${
+            !isActive ? 'grayscale-40' : ''
           }`}
           style={{ backgroundColor: person.color }}
         >
@@ -79,7 +79,7 @@ export function PersonManagementCard({
               style={{ backgroundColor: person.color }}
               title={person.color}
             />
-            <span className="text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm">
               {person.color.toUpperCase()}
             </span>
           </div>

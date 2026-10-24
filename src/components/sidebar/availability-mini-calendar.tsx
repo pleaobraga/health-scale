@@ -63,7 +63,7 @@ export function AvailabilityMiniCalendar({
         <button
           type="button"
           onClick={selectEven}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-sm bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
           <CheckSquare className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
           {t('people:monthAvailability.evenDays')}
@@ -71,7 +71,7 @@ export function AvailabilityMiniCalendar({
         <button
           type="button"
           onClick={selectOdd}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-sm bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
           <CheckSquare className="w-3 h-3 text-amber-600 dark:text-amber-400" />
           {t('people:monthAvailability.oddDays')}
@@ -79,7 +79,7 @@ export function AvailabilityMiniCalendar({
         <button
           type="button"
           onClick={selectAll}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-sm bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition"
         >
           <Sparkles className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
           {t('people:monthAvailability.allDays')}
@@ -87,7 +87,7 @@ export function AvailabilityMiniCalendar({
         <button
           type="button"
           onClick={clearAll}
-          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 text-rose-600 dark:text-rose-400 transition ml-auto"
+          className="flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-sm bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 text-rose-600 dark:text-rose-400 transition ml-auto"
         >
           <Eraser className="w-3 h-3 text-rose-500" />
           {t('people:monthAvailability.clear')}

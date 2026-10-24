@@ -130,13 +130,13 @@ export function FullScreenCalendarModal() {
   return createPortal(
     <div
       id="fullscreen-calendar-modal-container"
-      className="fixed inset-0 z-[110] flex items-center justify-center p-0 m-0 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn print:p-0 print:m-0 print:static print:bg-transparent print:backdrop-blur-none print:z-auto"
+      className="modal-overlay fixed inset-0 z-110 flex items-center justify-center p-0 m-0 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn print:p-0 print:m-0 print:static print:bg-transparent print:backdrop-blur-none print:z-auto"
     >
       <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none sm:rounded-2xl md:rounded-3xl shadow-none sm:shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transition-colors print:rounded-none print:border-none print:shadow-none print:bg-white print:text-slate-900 print:h-auto print:overflow-visible dark:print:bg-white dark:print:text-slate-900">
         {/* Fullscreen Header */}
         <div className="px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-2 sm:gap-3 shrink-0 print:px-2 print:py-2 print:border-b-2 print:border-slate-800 print:bg-white dark:print:bg-white dark:print:border-slate-800">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0 print:hidden">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-xs shrink-0 print:hidden">
               <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
             </div>
             <div className="min-w-0">
@@ -335,7 +335,7 @@ export function FullScreenCalendarModal() {
                                     WebkitPrintColorAdjust: 'exact',
                                     printColorAdjust: 'exact',
                                   }}
-                                  className="text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded shrink-0 shadow-xs print:text-[8px] print:px-1"
+                                  className="text-[9px] md:text-[10px] font-black uppercase px-1.5 py-0.2 rounded-sm shrink-0 shadow-xs print:text-[8px] print:px-1"
                                 >
                                   {personShift.code}
                                 </span>
@@ -352,7 +352,7 @@ export function FullScreenCalendarModal() {
                         activeShifts.length <= 1 ||
                         !dayShiftMap ||
                         Object.keys(dayShiftMap).length <= 1) && (
-                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 dark:print:bg-rose-100 print:text-rose-800 dark:print:text-rose-800 print:border-rose-300 dark:print:border-rose-300">
+                        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-950/50 px-1.5 py-0.5 rounded-sm border border-rose-200 dark:border-rose-800 block text-center print:bg-rose-100 dark:print:bg-rose-100 print:text-rose-800 dark:print:text-rose-800 print:border-rose-300 dark:print:border-rose-300">
                           {t('calendar:dayCell.conflict', {
                             count: assigned.length,
                           })}
@@ -470,7 +470,7 @@ export function FullScreenCalendarModal() {
                               WebkitPrintColorAdjust: 'exact',
                               printColorAdjust: 'exact',
                             }}
-                            className="inline-block px-2 py-0.5 rounded text-[11px] font-bold text-white print:text-white print-person-chip shadow-2xs"
+                            className="inline-block px-2 py-0.5 rounded-sm text-[11px] font-bold text-white print:text-white print-person-chip shadow-2xs"
                           >
                             {servicePerson.name}
                           </span>

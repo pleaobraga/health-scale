@@ -61,7 +61,7 @@ export function DayViolationsModal({
       role="dialog"
       aria-modal="true"
       data-testid="day-violations-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn"
       onClick={onClose}
     >
       <div

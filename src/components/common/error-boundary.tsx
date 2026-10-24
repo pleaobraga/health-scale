@@ -85,7 +85,7 @@ export class ErrorBoundary extends Component<
           <button
             type="button"
             onClick={this.handleReset}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-sm transition active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-xs transition active:scale-95"
           >
             <RefreshCw className="w-4 h-4" />
             <span>{i18n.t('common:errorBoundary.retry')}</span>

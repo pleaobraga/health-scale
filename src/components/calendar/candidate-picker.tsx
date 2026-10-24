@@ -241,7 +241,7 @@ export function CandidatePicker({
                       </div>
                       <span
                         title={t('calendar:candidatePicker.noAvailabilityForDate')}
-                        className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-950/60 px-1.5 py-0.5 rounded shrink-0"
+                        className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-sm shrink-0"
                       >
                         {t('calendar:candidatePicker.unavailableBadge')}
                       </span>

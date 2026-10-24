@@ -196,7 +196,7 @@ export function ValidationPanel() {
             type="button"
             onClick={saveSchedule}
             disabled={isSaving}
-            className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 rounded-xl transition shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 rounded-xl transition shadow-xs"
           >
             <Save className="w-4 h-4" />
             <span>

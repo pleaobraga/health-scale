@@ -244,7 +244,7 @@ export function ImportView({ embedded = false }: ImportViewProps) {
     <>
       <div className="w-full max-w-4xl space-y-6">
       {/* Onboarding Welcome Banner (Highlighted when system is empty or as welcome) */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white p-6 sm:p-8 shadow-xl">
+        <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white p-6 sm:p-8 shadow-xl">
           <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -296,7 +296,7 @@ export function ImportView({ embedded = false }: ImportViewProps) {
         {isAdmin && (
           <div
             data-testid="admin-cloud-pull-card"
-            className="bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-900/60 rounded-3xl p-6 shadow-sm space-y-4"
+            className="bg-white dark:bg-slate-900 border border-indigo-200/80 dark:border-indigo-900/60 rounded-3xl p-6 shadow-xs space-y-4"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
@@ -351,7 +351,7 @@ export function ImportView({ embedded = false }: ImportViewProps) {
         )}
 
         {/* Dropzone Container */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
               <Database className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />

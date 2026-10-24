@@ -158,7 +158,7 @@ export function SettingsView() {
       <div className="w-full max-w-4xl space-y-6 pb-12">
         {/* Header */}
         <div className="flex items-center gap-3.5 pb-3 border-b border-slate-200 dark:border-slate-800">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
             {activeTab === 'import' ? (
               <Upload className="w-5 h-5" />
             ) : (
@@ -311,7 +311,7 @@ export function SettingsView() {
                 aria-checked={syncEnabled}
                 onClick={handleToggleSync}
                 data-testid="toggle-sync-button"
-                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
+                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
                   syncEnabled
                     ? 'bg-indigo-600'
                     : 'bg-slate-300 dark:bg-slate-700'

@@ -157,9 +157,9 @@ export function PersonCard({
     <div
       className={`group flex items-center justify-between p-2.5 rounded-xl border transition-all ${
         isHighlighted
-          ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-500/20 shadow-sm'
+          ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-500/20 shadow-xs'
           : isScheduledHighlighted
-          ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-500/20 shadow-sm'
+          ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-500/20 shadow-xs'
           : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xs'
       }`}
     >
@@ -263,7 +263,7 @@ export function PersonCard({
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span
                             style={{ backgroundColor: shift.color }}
-                            className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded text-white shrink-0 shadow-2xs"
+                            className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-sm text-white shrink-0 shadow-2xs"
                           >
                             {shift.code}
                           </span>

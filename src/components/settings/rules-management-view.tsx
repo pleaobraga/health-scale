@@ -294,7 +294,7 @@ export function RulesManagementView() {
             placeholder={t('settings:rules.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-2xs transition"
           />
         </div>
 
@@ -335,7 +335,7 @@ export function RulesManagementView() {
               return (
                 <div
                   key={rule.id}
-                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col justify-between gap-4 transition hover:shadow-sm"
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs flex flex-col justify-between gap-4 transition hover:shadow-xs"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
@@ -492,7 +492,7 @@ export function RulesManagementView() {
                                   style={{
                                     backgroundColor: sDef?.color || '#64748B',
                                   }}
-                                  className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white shadow-2xs"
+                                  className="px-1.5 py-0.5 rounded-sm text-[10px] font-bold text-white shadow-2xs"
                                 >
                                   {sDef?.code || sId}
                                 </span>
@@ -541,7 +541,7 @@ export function RulesManagementView() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
               <div className="flex items-center gap-3">
@@ -592,7 +592,7 @@ export function RulesManagementView() {
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn overflow-y-auto">
+        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full shadow-2xl my-8 space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
@@ -624,7 +624,7 @@ export function RulesManagementView() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t('settings:rules.namePlaceholder')}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -638,7 +638,7 @@ export function RulesManagementView() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t('settings:rules.descriptionPlaceholder')}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
@@ -652,7 +652,7 @@ export function RulesManagementView() {
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as RuleType)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="MAX_SHIFTS_PER_PERIOD">
                       {t('settings:rules.types.MAX_SHIFTS_PER_PERIOD')}
@@ -683,7 +683,7 @@ export function RulesManagementView() {
                   <select
                     value={severity}
                     onChange={(e) => setSeverity(e.target.value as 'ERROR' | 'WARNING')}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="ERROR">{t('settings:rules.severitySelect.ERROR')}</option>
                     <option value="WARNING">{t('settings:rules.severitySelect.WARNING')}</option>
@@ -709,7 +709,7 @@ export function RulesManagementView() {
                       <select
                         value={scope}
                         onChange={(e) => setScope(e.target.value as PeriodScope)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="DAY">{t('settings:rules.scopes.DAY')}</option>
                         <option value="WEEK">{t('settings:rules.scopes.WEEK')}</option>
@@ -728,7 +728,7 @@ export function RulesManagementView() {
                           max={99}
                           value={maxOccurrences}
                           onChange={(e) => setMaxOccurrences(Number(e.target.value))}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                         />
                       </div>
                     )}
@@ -744,7 +744,7 @@ export function RulesManagementView() {
                           max={720}
                           value={maxHours}
                           onChange={(e) => setMaxHours(Number(e.target.value))}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                         />
                       </div>
                     )}
@@ -762,7 +762,7 @@ export function RulesManagementView() {
                       max={72}
                       value={minRestHours}
                       onChange={(e) => setMinRestHours(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 )}
@@ -778,7 +778,7 @@ export function RulesManagementView() {
                       max={31}
                       value={consecutiveDaysLimit}
                       onChange={(e) => setConsecutiveDaysLimit(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 )}
@@ -794,7 +794,7 @@ export function RulesManagementView() {
                       max={50}
                       value={maxPeople}
                       onChange={(e) => setMaxPeople(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 )}
@@ -812,7 +812,7 @@ export function RulesManagementView() {
                           max={72}
                           value={targetDailyHours}
                           onChange={(e) => setTargetDailyHours(Number(e.target.value))}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                         />
                       </div>
 
@@ -823,7 +823,7 @@ export function RulesManagementView() {
                         <select
                           value={dailyHoursComparison}
                           onChange={(e) => setDailyHoursComparison(e.target.value as DailyHoursComparison)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                         >
                           <option value="EXACT">{t('settings:rules.comparisons.EXACT')}</option>
                           <option value="MAX">{t('settings:rules.comparisons.MAX')}</option>
@@ -839,7 +839,7 @@ export function RulesManagementView() {
                       <select
                         value={dayFilterType}
                         onChange={(e) => setDayFilterType(e.target.value as DayFilterType)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="ALL">{t('settings:rules.dayFilters.ALL')}</option>
                         <option value="WEEKDAYS">{t('settings:rules.dayFilters.WEEKDAYS')}</option>
@@ -944,7 +944,7 @@ export function RulesManagementView() {
                   type="checkbox"
                   checked={enabledByDefault}
                   onChange={(e) => setEnabledByDefault(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                  className="mt-0.5 h-4 w-4 rounded-sm text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
                 />
               </div>
 

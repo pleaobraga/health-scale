@@ -87,7 +87,7 @@ export function AddDayShiftModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-day-shift-modal-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+      className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
       <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh] transition-colors">
         {/* Modal Header */}
@@ -152,7 +152,7 @@ export function AddDayShiftModal({
                   >
                     <div className="flex items-center justify-between gap-1.5">
                       <span
-                        className="px-2 py-0.5 rounded text-[11px] font-black text-white uppercase shadow-2xs"
+                        className="px-2 py-0.5 rounded-sm text-[11px] font-black text-white uppercase shadow-2xs"
                         style={{ backgroundColor: shift.color || '#3B82F6' }}
                       >
                         {shift.code}
@@ -183,7 +183,7 @@ export function AddDayShiftModal({
                           </span>
                         ) : (
                           <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                            <Check className="w-3 h-3 stroke-[3]" />
+                            <Check className="w-3 h-3 stroke-3" />
                             <span>{t('calendar:addShiftModal.vacant')}</span>
                           </span>
                         )}
@@ -245,7 +245,7 @@ export function AddDayShiftModal({
                         </div>
                         {isSelected && (
                           <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            <Check className="w-2.5 h-2.5 stroke-3" />
                           </span>
                         )}
                       </button>
@@ -289,7 +289,7 @@ export function AddDayShiftModal({
                           />
                           <span className="truncate">{person.name}</span>
                         </div>
-                        <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-950/60 px-1.5 py-0.2 rounded shrink-0">
+                        <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/70 dark:bg-amber-950/60 px-1.5 py-0.2 rounded-sm shrink-0">
                           {t('calendar:candidatePicker.unavailableBadge')}
                         </span>
                       </button>

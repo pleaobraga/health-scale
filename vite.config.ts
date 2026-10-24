@@ -1,10 +1,11 @@
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   // Relative base './' ensures compatibility in local dev as well as GitHub Pages subpaths (/<repo>/)
   base: './',
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
