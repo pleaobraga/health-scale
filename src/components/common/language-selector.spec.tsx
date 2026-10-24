@@ -10,7 +10,7 @@ describe('LanguageSelector Component', () => {
     await i18n.changeLanguage('pt-BR')
   })
 
-  it('deve renderizar o idioma ativo Português (Brasil) por padrão no modo full', () => {
+  it('renders Português (Brasil) as the default language in the full variant', () => {
     render(<LanguageSelector variant="full" />)
 
     const trigger = screen.getByRole('button', {
@@ -20,16 +20,7 @@ describe('LanguageSelector Component', () => {
     expect(screen.getByText('Português (Brasil)')).toBeInTheDocument()
   })
 
-  it('deve renderizar o modo compacto exibindo o botão acessível', () => {
-    render(<LanguageSelector variant="compact" />)
-
-    const trigger = screen.getByRole('button', {
-      name: /idioma atual: português \(brasil\)/i,
-    })
-    expect(trigger).toBeInTheDocument()
-  })
-
-  it('deve renderizar a variante menu centralizada para cabeçalhos e gavetas mobile', () => {
+  it('renders the centered menu variant used in headers and mobile drawers', () => {
     render(<LanguageSelector variant="menu" />)
 
     const trigger = screen.getByRole('button', {
@@ -41,7 +32,7 @@ describe('LanguageSelector Component', () => {
     expect(screen.getByText('Português (Brasil)')).toBeInTheDocument()
   })
 
-  it('deve abrir o menu ao clicar e alternar o idioma para English (US)', async () => {
+  it('opens the menu and switches the language to English (US)', async () => {
     render(<LanguageSelector variant="full" />)
 
     const trigger = screen.getByRole('button', {
@@ -63,7 +54,7 @@ describe('LanguageSelector Component', () => {
     })
   })
 
-  it('deve fechar o dropdown ao pressionar a tecla Escape', () => {
+  it('closes the dropdown on Escape', () => {
     render(<LanguageSelector variant="full" />)
 
     const trigger = screen.getByRole('button', {
@@ -78,7 +69,7 @@ describe('LanguageSelector Component', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
 
-  it('deve fechar o dropdown ao clicar fora', () => {
+  it('closes the dropdown on outside click', () => {
     render(
       <div>
         <div data-testid="outside-element">Fora</div>

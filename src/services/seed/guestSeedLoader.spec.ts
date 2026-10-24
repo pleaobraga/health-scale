@@ -26,7 +26,7 @@ describe('guestSeedLoader', () => {
   })
 
   describe('getRelativeMonths', () => {
-    it('calcula corretamente M-1, M e M+1 para datas no meio do ano', () => {
+    it('computes M-1, M and M+1 in the middle of the year', () => {
       const refDate = new Date(2026, 9, 20) // Outubro (mês 9 no JS, 10 no calendário)
       const { prevMonthStr, currMonthStr, nextMonthStr } = getRelativeMonths(refDate)
 
@@ -35,7 +35,7 @@ describe('guestSeedLoader', () => {
       expect(nextMonthStr).toBe('2026-11')
     })
 
-    it('calcula corretamente M-1 na virada de ano (Janeiro -> Dezembro do ano anterior)', () => {
+    it('computes M-1 across the year boundary (January -> previous December)', () => {
       const refDate = new Date(2027, 0, 15) // Janeiro 2027
       const { prevMonthStr, currMonthStr, nextMonthStr } = getRelativeMonths(refDate)
 
@@ -44,7 +44,7 @@ describe('guestSeedLoader', () => {
       expect(nextMonthStr).toBe('2027-02')
     })
 
-    it('calcula corretamente M+1 na virada de ano (Dezembro -> Janeiro do ano seguinte)', () => {
+    it('computes M+1 across the year boundary (December -> next January)', () => {
       const refDate = new Date(2026, 11, 25) // Dezembro 2026
       const { prevMonthStr, currMonthStr, nextMonthStr } = getRelativeMonths(refDate)
 
@@ -53,7 +53,7 @@ describe('guestSeedLoader', () => {
       expect(nextMonthStr).toBe('2027-01')
     })
 
-    it('não pula Fevereiro quando a data de referência é dia 31 (ex: 31 de Janeiro ou 31 de Março)', () => {
+    it('does not skip February when the reference date is the 31st (e.g. January 31 or March 31)', () => {
       const jan31 = new Date(2026, 0, 31) // 31 de Janeiro de 2026
       expect(getRelativeMonths(jan31)).toEqual({
         prevMonthStr: '2025-12',
@@ -71,20 +71,20 @@ describe('guestSeedLoader', () => {
   })
 
   describe('getDaysInMonth', () => {
-    it('retorna 31 dias para meses longos (ex: Janeiro, Março, Outubro)', () => {
+    it('returns 31 days for long months (e.g. January, March, October)', () => {
       expect(getDaysInMonth('2026-01')).toBe(31)
       expect(getDaysInMonth('2026-03')).toBe(31)
       expect(getDaysInMonth('2026-10')).toBe(31)
     })
 
-    it('retorna 30 dias para meses de 30 dias (ex: Abril, Junho, Setembro, Novembro)', () => {
+    it('returns 30 days for 30-day months (e.g. April, June, September, November)', () => {
       expect(getDaysInMonth('2026-04')).toBe(30)
       expect(getDaysInMonth('2026-06')).toBe(30)
       expect(getDaysInMonth('2026-09')).toBe(30)
       expect(getDaysInMonth('2026-11')).toBe(30)
     })
 
-    it('retorna 28 dias para Fevereiro em anos não bissextos e 29 em anos bissextos', () => {
+    it('returns 28 days for February in common years and 29 in leap years', () => {
       expect(getDaysInMonth('2025-02')).toBe(28)
       expect(getDaysInMonth('2026-02')).toBe(28)
       expect(getDaysInMonth('2027-02')).toBe(28)
@@ -96,8 +96,8 @@ describe('guestSeedLoader', () => {
   describe('transformSeedData', () => {
     const rawDemo = demoJson as unknown as AppDataSnapshot
 
-    it('converte corretamente as chaves estáticas de 2026-09, 2026-10 e 2026-11 para datas relativas do sistema', () => {
-      // Definindo uma data de referência em Março de 2027 (M-1 = 2027-02, M = 2027-03, M+1 = 2027-04)
+    it('maps the static 2026-09, 2026-10 and 2026-11 keys to months relative to today', () => {
+      // Reference date in March 2027 (M-1 = 2027-02, M = 2027-03, M+1 = 2027-04)
       const refDate = new Date(2027, 2, 10)
       const transformed = transformSeedData(rawDemo, refDate)
 
@@ -108,11 +108,11 @@ describe('guestSeedLoader', () => {
       expect(transformed.monthParticipants).not.toHaveProperty('2026-10')
       expect(transformed.monthParticipants['2027-03']).toHaveLength(7)
 
-      // monthActiveShifts e monthActiveRules
+      // monthActiveShifts and monthActiveRules
       expect(transformed.monthActiveShifts).toHaveProperty('2027-03')
       expect(transformed.monthActiveRules).toHaveProperty('2027-03')
 
-      // assignments: chaves de data devem pertencer aos meses 2027-02, 2027-03 ou 2027-04
+      // assignments: date keys belong to 2027-02, 2027-03 or 2027-04
       const assignmentKeys = Object.keys(transformed.assignments || {})
       expect(assignmentKeys.length).toBeGreaterThan(0)
       expect(assignmentKeys.some((k) => k.startsWith('2027-02'))).toBe(true)
@@ -134,11 +134,11 @@ describe('guestSeedLoader', () => {
       expect(monthsInAvailabilities).not.toContain('2026-10')
     })
 
-    it('mapeia os eventos em events e preserva os 4 endereços em addresses com seus addressId correspondentes', () => {
+    it('maps the events and keeps the 4 addresses with their matching addressId', () => {
       const refDate = new Date(2027, 4, 15) // Maio 2027 (M-1 = Abril, M = Maio, M+1 = Junho)
       const transformed = transformSeedData(rawDemo, refDate)
 
-      // Endereços intactos
+      // Addresses are untouched
       expect(transformed.addresses).toHaveLength(4)
       const addressIds = transformed.addresses?.map((a) => a.id)
       expect(addressIds).toEqual([
@@ -148,28 +148,28 @@ describe('guestSeedLoader', () => {
         'addr_seed_04',
       ])
 
-      // Eventos mapeados
+      // Mapped events
       expect(transformed.events).toHaveLength(rawDemo.events.length)
       transformed.events.forEach((ev: CalendarEvent) => {
         expect(addressIds).toContain(ev.addressId)
         expect(ev.personId).toMatch(/^p_seed_/)
         expect(ev.title).toBeTruthy()
         expect(ev.time).toMatch(/^\d{2}:\d{2}$/)
-        // Data deve começar com 2027-04, 2027-05 ou 2027-06
+        // The date starts with 2027-04, 2027-05 or 2027-06
         const monthPrefix = ev.date.slice(0, 7)
         expect(['2027-04', '2027-05', '2027-06']).toContain(monthPrefix)
       })
     })
 
-    it('não quebra em meses com menos dias (ex: Fevereiro com 28 dias) e ajusta dias limites', () => {
-      // Usando Fevereiro de 2026 como mês atual (M-1 = Janeiro [31], M = Fevereiro [28], M+1 = Março [31])
+    it('handles shorter months (e.g. a 28-day February) by clamping the days', () => {
+      // February 2026 as the current month (M-1 = January [31], M = February [28], M+1 = March [31])
       const refDate = new Date(2026, 1, 10)
       const transformed = transformSeedData(rawDemo, refDate)
 
-      // Mês atual é 2026-02 (28 dias)
+      // The current month is 2026-02 (28 days)
       expect(getDaysInMonth('2026-02')).toBe(28)
 
-      // Assignments em Fevereiro não devem ultrapassar dia 28
+      // February assignments do not go past day 28
       Object.keys(transformed.assignments || {}).forEach((dateStr) => {
         if (dateStr.startsWith('2026-02')) {
           const day = parseInt(dateStr.slice(8, 10), 10)
@@ -178,7 +178,7 @@ describe('guestSeedLoader', () => {
         }
       })
 
-      // dayShiftAssignments em Fevereiro não devem ultrapassar dia 28
+      // February dayShiftAssignments do not go past day 28
       Object.keys(transformed.dayShiftAssignments || {}).forEach((dateStr) => {
         if (dateStr.startsWith('2026-02')) {
           const day = parseInt(dateStr.slice(8, 10), 10)
@@ -186,7 +186,7 @@ describe('guestSeedLoader', () => {
         }
       })
 
-      // monthDailyShifts em Fevereiro (2026-02) não deve conter nenhum dia > 28
+      // February (2026-02) monthDailyShifts has no day > 28
       const febDailyShifts = transformed.monthDailyShifts?.['2026-02']
       if (febDailyShifts) {
         Object.values(febDailyShifts).forEach((days) => {
@@ -196,7 +196,7 @@ describe('guestSeedLoader', () => {
         })
       }
 
-      // availabilities em Fevereiro não deve conter dia 29, 30 ou 31
+      // February availabilities have no day 29, 30 or 31
       const febAvailabilities = (
         transformed.availabilities as MonthlyAvailability[]
       ).filter((a) => a.month === '2026-02')
@@ -220,7 +220,7 @@ describe('guestSeedLoader', () => {
         }
       })
 
-      // Eventos em Fevereiro não devem ultrapassar dia 28
+      // February events do not go past day 28
       transformed.events.forEach((ev: CalendarEvent) => {
         if (ev.date.startsWith('2026-02')) {
           const day = parseInt(ev.date.slice(8, 10), 10)
@@ -229,8 +229,8 @@ describe('guestSeedLoader', () => {
       })
     })
 
-    it('ajusta dias para meses de 30 dias (ex: Abril com 30 dias)', () => {
-      // Abril como mês atual (M-1 = Março [31], M = Abril [30], M+1 = Maio [31])
+    it('clamps the days for 30-day months (e.g. April)', () => {
+      // April as the current month (M-1 = March [31], M = April [30], M+1 = May [31])
       const refDate = new Date(2026, 3, 10)
       const transformed = transformSeedData(rawDemo, refDate)
 
@@ -253,13 +253,13 @@ describe('guestSeedLoader', () => {
       }
     })
 
-    it('valida os 3 meses envolvidos (anterior, atual e seguinte) com Fevereiro em qualquer posição (28 e 29 dias) tanto em Português quanto em Inglês', () => {
+    it('maps the previous, current and next months with February in any position (28 and 29 days), in Portuguese and English', () => {
       const datasets = [
         { lang: 'pt-BR', data: demoJson as unknown as AppDataSnapshot },
         { lang: 'en-US', data: demoEnJson as unknown as AppDataSnapshot },
       ]
 
-      // Cenários onde Fevereiro é M+1 (ref: Jan), M (ref: Fev), M-1 (ref: Mar) e ano bissexto (2028)
+      // Scenarios where February is M+1 (ref: Jan), M (ref: Feb), M-1 (ref: Mar), plus a leap year (2028)
       const scenarios = [
         { refDate: new Date(2026, 0, 31), expectedMonths: ['2025-12', '2026-01', '2026-02'] },
         { refDate: new Date(2026, 1, 15), expectedMonths: ['2026-01', '2026-02', '2026-03'] },
@@ -271,7 +271,7 @@ describe('guestSeedLoader', () => {
         for (const { refDate, expectedMonths } of scenarios) {
           const transformed = transformSeedData(data, refDate)
 
-          // Garante que os 3 meses envolvidos foram mapeados em todas as estruturas mensais
+          // The 3 months are mapped in every monthly structure
           expect(Object.keys(transformed.monthParticipants).sort()).toEqual(expectedMonths)
           expect(Object.keys(transformed.monthActiveShifts || {}).sort()).toEqual(expectedMonths)
           expect(Object.keys(transformed.monthActiveRules || {}).sort()).toEqual(expectedMonths)
@@ -342,8 +342,8 @@ describe('guestSeedLoader', () => {
               })
           }
 
-          // Quando Fevereiro de 28 dias é o mês anterior (ex: ref Março 2026),
-          // o dia 28 de Fevereiro deve preservar sua escala original sem ser sobrescrito pelos dias 29/30
+          // When a 28-day February is the previous month (e.g. ref March 2026),
+          // February 28 keeps its original schedule instead of being overwritten by days 29/30
           if (expectedMonths[0] === '2026-02') {
             expect(transformed.assignments['2026-02-28']).toEqual(['p_seed_07'])
             expect(transformed.assignments['2026-02-29']).toBeUndefined()
@@ -355,26 +355,22 @@ describe('guestSeedLoader', () => {
   })
 
   describe('isGuestDataEmpty', () => {
-    it('retorna true quando o armazenamento local não contém pessoas nem escalas', () => {
+    it('returns true when local storage has no people and no assignments', () => {
       expect(isGuestDataEmpty()).toBe(true)
     })
 
-    it('retorna false quando há pessoas salvas', () => {
-      StorageService.savePersons([
-        { id: 'p1', name: 'Dr. Teste', color: '#000000', active: true },
-      ])
-      expect(isGuestDataEmpty()).toBe(false)
-    })
-
-    it('retorna false quando há escalas salvas', () => {
-      StorageService.saveAssignments({ '2026-10-01': ['p1'] })
+    it.each([
+      ['people', () => StorageService.savePersons([{ id: 'p1', name: 'Dr. Teste', color: '#000000', active: true }])],
+      ['assignments', () => StorageService.saveAssignments({ '2026-10-01': ['p1'] })],
+    ])('returns false when %s are saved', (_label, seed) => {
+      seed()
       expect(isGuestDataEmpty()).toBe(false)
     })
   })
 
   describe('loadGuestSeedData', () => {
-    it('carrega o JSON demo, transforma dinamicamente e popula o armazenamento local e store', async () => {
-      // Mock de fetch para retornar o demoJson
+    it('loads the demo JSON, maps it to the current months and fills storage and the store', async () => {
+      // fetch returns the demo JSON
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
         ok: true,
         json: async () => demoJson,
@@ -389,24 +385,24 @@ describe('guestSeedLoader', () => {
       expect(snapshot).not.toBeNull()
       expect(snapshot.people).toHaveLength(7)
 
-      // Verifica que o armazenamento local foi populado
+      // Local storage is filled
       expect(isGuestDataEmpty()).toBe(false)
       expect(StorageService.getPersons()).toHaveLength(7)
       expect(StorageService.getAddresses()).toHaveLength(4)
       expect(Object.keys(StorageService.getAssignments()).length).toBeGreaterThan(0)
 
-      // Verifica que o Zustand store foi atualizado com o mês atual dinâmico
+      // The store is updated with the current month
       const state = useScheduleStore.getState()
       expect(state.currentMonth).toBe('2026-10')
       expect(state.persons).toHaveLength(7)
       expect(state.addresses).toHaveLength(4)
       expect(state.currentView).toBe('calendar')
 
-      // Verifica que o onboarding foi marcado como checado
+      // Onboarding is marked as checked
       expect(StorageService.hasCheckedOnboarding()).toBe(true)
     })
 
-    it('salva o snapshot no perfil de convidado ativo se houver um ativo', async () => {
+    it('saves the snapshot to the active guest profile when there is one', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
         ok: true,
         json: async () => demoJson,
@@ -430,7 +426,7 @@ describe('guestSeedLoader', () => {
       expect(guestDataset?.addresses).toHaveLength(4)
     })
 
-    it('dispara erro explicativo caso fetch retorne status não-ok', async () => {
+    it('throws a descriptive error when fetch returns a non-ok status', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -439,7 +435,7 @@ describe('guestSeedLoader', () => {
       await expect(loadGuestSeedData()).rejects.toThrow(/Failed to load seed JSON/i)
     })
 
-    it('carrega dados em inglês dos EUA (demo-en.json) quando o idioma da aplicação está em inglês', async () => {
+    it('loads the US English demo (demo-en.json) when the app language is English', async () => {
       await i18n.changeLanguage('en-US')
 
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
@@ -454,7 +450,7 @@ describe('guestSeedLoader', () => {
       expect(snapshot.people).toHaveLength(7)
       expect(snapshot.people[0].name).toBe('Dr. Emily Carter')
 
-      // Verifica plantões em inglês
+      // Shifts are in English
       const shifts = StorageService.getShiftDefinitions()
       expect(shifts.map((s) => s.name)).toEqual([
         '12h Day Shift',
@@ -462,7 +458,7 @@ describe('guestSeedLoader', () => {
         '24h On-Call Shift',
       ])
 
-      // Verifica regras em inglês
+      // Rules are in English
       const rules = StorageService.getShiftRules()
       expect(rules.map((r) => r.name)).toEqual([
         'Max 1 shift per day',
@@ -470,19 +466,19 @@ describe('guestSeedLoader', () => {
         'Minimum rest between shifts',
       ])
 
-      // Verifica endereços dos EUA em inglês
+      // Addresses are US addresses
       const addresses = StorageService.getAddresses()
       expect(addresses).toHaveLength(4)
       expect(addresses[0].name).toBe('Massachusetts General Hospital')
       expect(addresses[0].city).toBe('Boston, MA')
       expect(addresses[0].street).toBe('Fruit Street')
 
-      // Verifica eventos em inglês
+      // Events are in English
       const events = StorageService.getEvents()
       expect(events.length).toBeGreaterThan(0)
       expect(events[0].title).toBe('Emergency Protocols Training')
 
-      // Verifica que o store global reflete os dados em inglês
+      // The store holds the English data
       const state = useScheduleStore.getState()
       expect(state.persons[0].name).toBe('Dr. Emily Carter')
       expect(state.shiftDefinitions[0].name).toBe('12h Day Shift')
@@ -492,7 +488,7 @@ describe('guestSeedLoader', () => {
   })
 
   describe('resolveSeedUrl & isEnglishLanguage', () => {
-    it('identifica corretamente idiomas em inglês e português', async () => {
+    it('tells English and Portuguese languages apart', async () => {
       expect(isEnglishLanguage('en')).toBe(true)
       expect(isEnglishLanguage('en-US')).toBe(true)
       expect(isEnglishLanguage('pt-BR')).toBe(false)
@@ -505,17 +501,17 @@ describe('guestSeedLoader', () => {
       expect(isEnglishLanguage()).toBe(false)
     })
 
-    it('respeita customUrl quando fornecida', () => {
+    it('uses customUrl when given', () => {
       expect(resolveSeedUrl('/custom/path.json')).toBe('/custom/path.json')
     })
 
-    it('monta a URL contendo demo/demo.json quando em português', async () => {
+    it('builds a demo/demo.json URL in Portuguese', async () => {
       await i18n.changeLanguage('pt-BR')
       const url = resolveSeedUrl()
       expect(url).toContain('demo/demo.json')
     })
 
-    it('monta a URL contendo demo/demo-en.json quando em inglês', async () => {
+    it('builds a demo/demo-en.json URL in English', async () => {
       await i18n.changeLanguage('en-US')
       const url = resolveSeedUrl()
       expect(url).toContain('demo/demo-en.json')

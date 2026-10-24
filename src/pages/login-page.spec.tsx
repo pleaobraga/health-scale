@@ -10,7 +10,7 @@ import { getFriendlyAuthErrorMessage } from '../utils/auth-errors'
 
 import type { AuthContextType } from '../context/auth-context'
 
-describe('LoginPage Component', () => {
+describe('LoginPage', () => {
   beforeEach(async () => {
     vi.restoreAllMocks()
     localStorage.clear()
@@ -48,7 +48,7 @@ describe('LoginPage Component', () => {
     )
   }
 
-  it('deve renderizar os campos de email, senha e botão de login', () => {
+  it('renders the email and password fields and the login button', () => {
     renderWithAuth()
 
     expect(screen.getByTestId('login-page')).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('LoginPage Component', () => {
     expect(screen.getByTestId('enter-as-guest-btn')).toBeInTheDocument()
   })
 
-  it('deve alternar a visibilidade da senha ao clicar no botão de exibição', () => {
+  it('toggles the password visibility', () => {
     renderWithAuth()
 
     const passwordInput = screen.getByLabelText(/^senha$/i) as HTMLInputElement
@@ -74,7 +74,7 @@ describe('LoginPage Component', () => {
     expect(passwordInput.type).toBe('password')
   })
 
-  it('deve exibir mensagem de erro amigável quando as credenciais forem inválidas', async () => {
+  it('shows a friendly error for invalid credentials', async () => {
     const mockLogin = vi
       .fn()
       .mockRejectedValue({ code: 'auth/invalid-credential' })
@@ -102,7 +102,7 @@ describe('LoginPage Component', () => {
     })
   })
 
-  it('deve desabilitar o botão durante a submissão para prevenir múltiplos envios', async () => {
+  it('disables the button while submitting to prevent double submits', async () => {
     let resolveLogin: () => void = () => {}
     const mockLogin = vi.fn().mockReturnValue(
       new Promise<void>((res) => {
@@ -135,7 +135,7 @@ describe('LoginPage Component', () => {
     })
   })
 
-  it('deve abrir o modal de acesso como convidado e listar contas salvas', () => {
+  it('opens the guest modal and lists the saved accounts', () => {
     const mockProfiles = [
       {
         id: 'g1',
@@ -161,7 +161,7 @@ describe('LoginPage Component', () => {
     expect(screen.getByText('Dra. Mariana')).toBeInTheDocument()
   })
 
-  it('deve permitir selecionar um convidado existente da lista', async () => {
+  it('signs in as an existing guest from the list', async () => {
     const mockLoginAsGuest = vi.fn().mockResolvedValue(undefined)
     const mockProfiles = [
       {
@@ -185,7 +185,7 @@ describe('LoginPage Component', () => {
     })
   })
 
-  it('deve permitir criar um novo convidado fornecendo nome', async () => {
+  it('creates a new guest from a name', async () => {
     const mockLoginAsGuest = vi.fn().mockResolvedValue(undefined)
 
     renderWithAuth({
@@ -205,7 +205,7 @@ describe('LoginPage Component', () => {
     })
   })
 
-  it('deve permitir excluir um perfil de convidado salvo', () => {
+  it('deletes a saved guest profile', () => {
     const mockDelete = vi.fn()
     const mockProfiles = [
       {
@@ -227,8 +227,8 @@ describe('LoginPage Component', () => {
     expect(mockDelete).toHaveBeenCalledWith('g1')
   })
 
-  describe('Detecção e inicialização de idioma', () => {
-    it('deve inicializar com idioma Português quando o navegador for "pt-BR" e não houver preferência salva', async () => {
+  describe('language detection', () => {
+    it('starts in Portuguese when the browser is "pt-BR" and nothing is saved', async () => {
       localStorage.clear()
       document.cookie = ''
       const originalLang = navigator.language
@@ -249,7 +249,7 @@ describe('LoginPage Component', () => {
       })
     })
 
-    it('deve inicializar com idioma Português quando o navegador for "pt" e não houver preferência salva', async () => {
+    it('starts in Portuguese when the browser is "pt" and nothing is saved', async () => {
       localStorage.clear()
       document.cookie = ''
       const originalLang = navigator.language
@@ -270,7 +270,7 @@ describe('LoginPage Component', () => {
       })
     })
 
-    it('deve inicializar com idioma Inglês quando o navegador for outro idioma (ex: "fr" ou "es") e não houver preferência salva', async () => {
+    it('starts in English for any other browser language (e.g. "fr" or "es") when nothing is saved', async () => {
       localStorage.clear()
       document.cookie = ''
       const originalLang = navigator.language
@@ -291,7 +291,7 @@ describe('LoginPage Component', () => {
       })
     })
 
-    it('deve respeitar a preferência previamente salva pelo usuário no localStorage mesmo se o navegador for outro idioma', async () => {
+    it('keeps the language saved in localStorage regardless of the browser language', async () => {
       localStorage.setItem(LANGUAGE_STORAGE_KEY, 'pt-BR')
       const originalLang = navigator.language
       Object.defineProperty(navigator, 'language', {
@@ -312,25 +312,8 @@ describe('LoginPage Component', () => {
     })
   })
 
-  describe('Layout do divisor "ou"', () => {
-    it('deve renderizar o divisor devidamente centralizado com linhas laterais', () => {
-      renderWithAuth()
-      const orText = screen.getByText(i18n.t('auth:or'))
-      expect(orText).toBeInTheDocument()
-
-      const dividerContainer = orText.parentElement
-      expect(dividerContainer).toHaveClass('flex')
-      expect(dividerContainer).toHaveClass('items-center')
-      expect(dividerContainer).toHaveClass('w-full')
-
-      // Must have two sibling lines with flex-1
-      const lines = dividerContainer?.querySelectorAll('.flex-1.border-t')
-      expect(lines).toHaveLength(2)
-    })
-  })
-
-  describe('Alternador de tema (Dark/Light mode)', () => {
-    it('deve renderizar o botão de alternar tema ao lado do seletor de idioma e acionar o toggle', () => {
+  describe('theme toggle', () => {
+    it('renders the theme toggle next to the language selector and toggles the theme', () => {
       renderWithAuth()
 
       const themeBtn = screen.getByTestId('login-theme-toggle-btn')

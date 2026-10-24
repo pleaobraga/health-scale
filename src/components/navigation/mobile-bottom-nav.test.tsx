@@ -3,7 +3,6 @@ import { CalendarDays, Users } from 'lucide-react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
-import { HoverSidebar } from './hover-sidebar'
 import { MobileBottomNav } from './mobile-bottom-nav'
 
 import type { MobileBottomNavItem } from './mobile-bottom-nav'
@@ -13,8 +12,8 @@ const items: MobileBottomNavItem[] = [
   { id: 'people', path: '/pessoas', label: 'Pessoas', icon: Users },
 ]
 
-describe('MobileBottomNav Component', () => {
-  it('deve renderizar os itens e marcar a rota ativa', () => {
+describe('MobileBottomNav', () => {
+  it('renders the items and marks the active route', () => {
     render(
       <MemoryRouter initialEntries={['/pessoas']}>
         <MobileBottomNav
@@ -35,7 +34,7 @@ describe('MobileBottomNav Component', () => {
     )
   })
 
-  it('deve chamar onNavigate e onOpenMenu ao clicar', () => {
+  it('calls onNavigate and onOpenMenu on click', () => {
     const onNavigate = vi.fn()
     const onOpenMenu = vi.fn()
     render(
@@ -56,7 +55,7 @@ describe('MobileBottomNav Component', () => {
     expect(onOpenMenu).toHaveBeenCalledTimes(1)
   })
 
-  it('deve exibir o indicador de sincronização somente quando informado', () => {
+  it('shows the sync indicator only when a status is given', () => {
     const { rerender } = render(
       <MemoryRouter>
         <MobileBottomNav
@@ -85,15 +84,4 @@ describe('MobileBottomNav Component', () => {
     expect(screen.getByTestId('mobile-bottom-nav-sync-dot')).toBeInTheDocument()
   })
 
-  it('deve abrir o menu em tela cheia pelo botão "Mais" da HoverSidebar', () => {
-    render(
-      <MemoryRouter>
-        <HoverSidebar />
-      </MemoryRouter>,
-    )
-
-    expect(screen.getByTestId('mobile-bottom-nav')).toBeInTheDocument()
-    fireEvent.click(screen.getByTestId('mobile-bottom-nav-more'))
-    expect(screen.getByTestId('mobile-fullscreen-menu')).toBeInTheDocument()
-  })
 })

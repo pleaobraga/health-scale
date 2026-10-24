@@ -48,8 +48,8 @@ const fullDataset = {
     { personId: 'p2', month: '2026-11', availableDays: [3] },
   ],
   events: [
-    { id: 'e1', date: '2026-10-09', title: 'Reunião' },
-    { id: 'e2', date: '2026-11-20', title: 'Treinamento' },
+    { id: 'e1', date: '2026-10-09', title: 'Meeting' },
+    { id: 'e2', date: '2026-11-20', title: 'Training' },
   ],
   monthDailyShifts: { '2026-11': { shift_d12: [3] } },
   monthActiveShifts: { '2026-10': ['shift_d12'] },
@@ -68,8 +68,8 @@ describe('CloudSyncService', () => {
     vi.restoreAllMocks()
   })
 
-  describe('toggle de sincronização', () => {
-    it('deve gerenciar o toggle no localStorage', () => {
+  describe('sync toggle', () => {
+    it('stores the toggle in localStorage', () => {
       expect(CloudSyncService.isSyncEnabled()).toBe(false)
 
       CloudSyncService.setSyncEnabled(true)
@@ -79,7 +79,7 @@ describe('CloudSyncService', () => {
       expect(CloudSyncService.isSyncEnabled()).toBe(false)
     })
 
-    it('deve guardar o toggle separadamente para cada conta', () => {
+    it('keeps a separate toggle per account', () => {
       StorageService.setActiveUserId('admin_a')
       CloudSyncService.setSyncEnabled(true)
       expect(localStorage.getItem(`${CLOUD_SYNC_STORAGE_KEY}_admin_a`)).toBe('true')
@@ -91,7 +91,7 @@ describe('CloudSyncService', () => {
       expect(CloudSyncService.isSyncEnabled()).toBe(true)
     })
 
-    it('deve migrar o toggle antigo (global do dispositivo) para a primeira conta que o ler', () => {
+    it('moves the old device-wide toggle to the first account that reads it', () => {
       localStorage.setItem(CLOUD_SYNC_STORAGE_KEY, 'true')
       StorageService.setActiveUserId('admin_a')
 
@@ -104,8 +104,8 @@ describe('CloudSyncService', () => {
     })
   })
 
-  describe('verificação de administrador', () => {
-    it('deve reutilizar o papel em cache em vez de ler o Firestore a cada gravação', async () => {
+  describe('admin check', () => {
+    it('reuses the cached role instead of reading Firestore on every write', async () => {
       mockAuth.currentUser = { uid: 'u1' }
       CloudSyncService.setCachedAdminStatus('u1', true)
 
@@ -113,7 +113,7 @@ describe('CloudSyncService', () => {
       expect(firestoreModule.getDoc).not.toHaveBeenCalled()
     })
 
-    it('deve buscar o papel no Firestore uma única vez quando não houver cache', async () => {
+    it('reads the role from Firestore only once without a cache', async () => {
       mockAuth.currentUser = { uid: 'u1' }
 
       expect(await CloudSyncService.isCurrentUserAdmin()).toBe(true)
@@ -122,12 +122,12 @@ describe('CloudSyncService', () => {
     })
   })
 
-  describe('helpers de documentos mensais', () => {
-    it('deve listar todos os meses referenciados pelo dataset', () => {
+  describe('month doc helpers', () => {
+    it('lists every month referenced by the dataset', () => {
       expect(getMonthsInScheduleData(fullDataset)).toEqual(['2026-10', '2026-11'])
     })
 
-    it('deve extrair apenas os dados do mês informado', () => {
+    it('extracts only the data of the given month', () => {
       expect(sliceMonthScheduleData(fullDataset, '2026-11')).toEqual({
         assignments: { '2026-11-03': ['p2'] },
         dayShiftAssignments: {},
@@ -136,11 +136,11 @@ describe('CloudSyncService', () => {
         monthActiveShifts: {},
         monthActiveRules: {},
         availabilities: [{ personId: 'p2', month: '2026-11', availableDays: [3] }],
-        events: [{ id: 'e2', date: '2026-11-20', title: 'Treinamento' }],
+        events: [{ id: 'e2', date: '2026-11-20', title: 'Training' }],
       })
     })
 
-    it('deve usar o documento legado mais recente como base e aplicar por cima os meses no formato novo', () => {
+    it('uses the newest legacy doc as the base and applies the new-format months over it', () => {
       const merged = mergeMonthDocs([
         {
           month: '2026-09',
@@ -161,31 +161,31 @@ describe('CloudSyncService', () => {
         },
       ])
 
-      // 2026-09 vem do legado mais recente; 2026-10 é substituído inteiro (o dia 02 foi removido)
+      // 2026-09 comes from the newest legacy doc; 2026-10 is fully replaced (day 02 was removed)
       expect(merged?.assignments).toEqual({ '2026-09-01': ['p1'], '2026-10-01': ['p2'] })
       expect(merged?.monthParticipants).toEqual({ '2026-09': ['p1'], '2026-10': ['p2'] })
     })
 
-    it('deve retornar null quando não houver documentos mensais', () => {
+    it('returns null when there are no month docs', () => {
       expect(mergeMonthDocs([])).toBeNull()
     })
   })
 
-  describe('gravação', () => {
-    it('NÃO deve salvar dados no Firestore se o toggle estiver DESLIGADO', async () => {
+  describe('writes', () => {
+    it('does not write to Firestore when the toggle is off', async () => {
       const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, true)
       expect(result).toBe(false)
       expect(firestoreModule.setDoc).not.toHaveBeenCalled()
     })
 
-    it('NÃO deve salvar dados no Firestore se o usuário for não-admin', async () => {
+    it('does not write to Firestore for non-admin users', async () => {
       CloudSyncService.setSyncEnabled(true)
       const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, false)
       expect(result).toBe(false)
       expect(firestoreModule.setDoc).not.toHaveBeenCalled()
     })
 
-    it('deve substituir o documento do mês (sem merge) contendo apenas os dados daquele mês', async () => {
+    it('replaces the month doc (no merge) with only that month data', async () => {
       CloudSyncService.setSyncEnabled(true)
 
       const result = await CloudSyncService.saveMonthToCloud('2026-10', fullDataset, true)
@@ -203,11 +203,11 @@ describe('CloudSyncService', () => {
       )
     })
 
-    it('deve sincronizar listas mestras limpando propriedades undefined', async () => {
+    it('syncs master lists without undefined properties', async () => {
       CloudSyncService.setSyncEnabled(true)
 
       const result = await CloudSyncService.saveAddressesToCloud(
-        [{ id: 'a1', label: 'Clínica', street: 'Rua A', number: undefined } as never],
+        [{ id: 'a1', label: 'Clinic', street: 'Main St', number: undefined } as never],
         true,
       )
 
@@ -215,13 +215,13 @@ describe('CloudSyncService', () => {
       expect(firestoreModule.setDoc).toHaveBeenCalledWith(
         { path: 'schedules/_master_addresses' },
         {
-          addresses: [{ id: 'a1', label: 'Clínica', street: 'Rua A' }],
+          addresses: [{ id: 'a1', label: 'Clinic', street: 'Main St' }],
           updatedAt: 'mock-server-timestamp',
         },
       )
     })
 
-    it('deve retornar false quando o Firestore rejeitar a gravação', async () => {
+    it('returns false when Firestore rejects the write', async () => {
       CloudSyncService.setSyncEnabled(true)
       vi.spyOn(console, 'error').mockImplementation(() => {})
       vi.mocked(firestoreModule.setDoc).mockRejectedValueOnce(new Error('permission-denied'))
@@ -229,7 +229,7 @@ describe('CloudSyncService', () => {
       expect(await CloudSyncService.savePeopleToCloud([], true)).toBe(false)
     })
 
-    it('não deve aguardar a confirmação do servidor quando estiver offline (gravação fica na fila)', async () => {
+    it('does not wait for the server while offline (the write stays queued)', async () => {
       CloudSyncService.setSyncEnabled(true)
       vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
       vi.mocked(firestoreModule.setDoc).mockReturnValueOnce(new Promise<void>(() => {}))
@@ -242,7 +242,7 @@ describe('CloudSyncService', () => {
   })
 
   describe('pullAllFromCloud', () => {
-    it('deve juntar todos os meses e as listas mestras lidas direto do servidor, mesmo com o toggle DESLIGADO', async () => {
+    it('merges every month and the master lists read from the server, even with the toggle off', async () => {
       mockScheduleDocs({
         '2026-10': {
           schemaVersion: MONTH_DOC_SCHEMA_VERSION,
@@ -269,13 +269,13 @@ describe('CloudSyncService', () => {
       expect(firestoreModule.getDoc).not.toHaveBeenCalled()
     })
 
-    it('NÃO deve buscar dados para usuários comuns (não-admin)', async () => {
+    it('does not read data for non-admin users', async () => {
       const result = await CloudSyncService.pullAllFromCloud(false)
       expect(result.status).toBe('unauthorized')
       expect(firestoreModule.getDocsFromServer).not.toHaveBeenCalled()
     })
 
-    it('deve retornar offline sem usar o cache local quando não houver conexão', async () => {
+    it('returns offline without using the local cache when there is no connection', async () => {
       vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
 
       const result = await CloudSyncService.pullAllFromCloud(true)
@@ -285,7 +285,7 @@ describe('CloudSyncService', () => {
       expect(firestoreModule.getDocsFromServer).not.toHaveBeenCalled()
     })
 
-    it('deve retornar offline quando o servidor estiver indisponível', async () => {
+    it('returns offline when the server is unavailable', async () => {
       vi.spyOn(console, 'error').mockImplementation(() => {})
       vi.mocked(firestoreModule.getDocsFromServer).mockRejectedValueOnce({ code: 'unavailable' })
 
@@ -295,7 +295,7 @@ describe('CloudSyncService', () => {
   })
 
   describe('pushAllToCloud', () => {
-    it('deve gravar cada mês local, limpar meses que só existem na nuvem e enviar as listas mestras sem exigir o toggle', async () => {
+    it('writes every local month, clears cloud-only months and sends the master lists without the toggle', async () => {
       mockScheduleDocs({ '2026-08': { assignments: { '2026-08-01': ['p9'] } }, _master_people: {} })
 
       const success = await CloudSyncService.pushAllToCloud(
@@ -332,7 +332,7 @@ describe('CloudSyncService', () => {
       expect(CloudSyncService.isSyncEnabled()).toBe(false)
     })
 
-    it('NÃO deve enviar nada para usuários não-admin', async () => {
+    it('sends nothing for non-admin users', async () => {
       const success = await CloudSyncService.pushAllToCloud(
         { monthData: fullDataset, persons: [], addresses: [] },
         false,

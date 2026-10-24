@@ -23,7 +23,7 @@ describe('PrivateRoute Guard', () => {
     )
   }
 
-  it('deve exibir indicador de loading enquanto a autenticação estiver carregando', () => {
+  it('shows a loading indicator while authentication is loading', () => {
     renderPrivateRoute({
       loading: true,
       user: null,
@@ -34,7 +34,7 @@ describe('PrivateRoute Guard', () => {
     expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument()
   })
 
-  it('deve redirecionar para a tela de login quando o usuário não estiver autenticado', () => {
+  it('redirects to the login screen when the user is not authenticated', () => {
     renderPrivateRoute({
       loading: false,
       user: null,
@@ -45,7 +45,7 @@ describe('PrivateRoute Guard', () => {
     expect(screen.queryByTestId('protected-content')).not.toBeInTheDocument()
   })
 
-  it('deve renderizar o conteúdo protegido quando o usuário estiver autenticado', () => {
+  it('renders the protected content when the user is authenticated', () => {
     renderPrivateRoute({
       loading: false,
       user: { uid: 'user-123', email: 'medico@hospital.com' } as unknown as AuthContextType['user'],

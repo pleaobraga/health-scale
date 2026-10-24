@@ -5,7 +5,7 @@ import { AddDayShiftModal } from './add-day-shift-modal'
 
 import type { Person, ShiftDefinition } from '../../types'
 
-describe('AddDayShiftModal Component', () => {
+describe('AddDayShiftModal', () => {
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila', color: '#3B82F6' },
     { id: 'p2', name: 'Dr. Lucas', color: '#10B981' },
@@ -37,7 +37,7 @@ describe('AddDayShiftModal Component', () => {
     },
   ]
 
-  it('permite escolher o plantão e selecionar o profissional disponível para confirmar alocação', () => {
+  it('picks a shift and an available professional, then confirms the assignment', () => {
     const handleAssign = vi.fn()
     // p1 available for d12, p2 available for n12
     const isPersonAvailable = (personId: string, _day: number, shiftId?: string) => {

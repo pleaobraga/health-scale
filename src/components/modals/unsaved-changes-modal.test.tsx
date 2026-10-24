@@ -15,12 +15,12 @@ describe('UnsavedChangesModal', () => {
     })
   })
 
-  it('não deve renderizar quando isUnsavedModalOpen for false', () => {
+  it('renders nothing when isUnsavedModalOpen is false', () => {
     render(<UnsavedChangesModal />)
     expect(screen.queryByText('Alterações Não Salvas')).not.toBeInTheDocument()
   })
 
-  it('deve exibir título, mensagem e opções de ação quando aberto', () => {
+  it('shows the title, message and actions when open', () => {
     useScheduleStore.setState({ isUnsavedModalOpen: true })
     render(<UnsavedChangesModal />)
 
@@ -31,7 +31,7 @@ describe('UnsavedChangesModal', () => {
     expect(screen.getByText('Continuar Editando')).toBeInTheDocument()
   })
 
-  it('deve salvar, sair do modo de edição e fechar o modal ao clicar em "Salvar e Sair"', () => {
+  it('saves, leaves edit mode and closes on "Salvar e Sair"', () => {
     const saveSpy = vi.spyOn(useScheduleStore.getState(), 'saveSchedule')
     useScheduleStore.setState({ isUnsavedModalOpen: true })
     render(<UnsavedChangesModal />)
@@ -44,7 +44,7 @@ describe('UnsavedChangesModal', () => {
     expect(useScheduleStore.getState().isUnsavedModalOpen).toBe(false)
   })
 
-  it('deve descartar alterações, sair do modo de edição e fechar o modal ao clicar em "Descartar Alterações"', () => {
+  it('discards changes, leaves edit mode and closes on "Descartar Alterações"', () => {
     useScheduleStore.setState({ isUnsavedModalOpen: true })
     render(<UnsavedChangesModal />)
 
@@ -56,7 +56,7 @@ describe('UnsavedChangesModal', () => {
     expect(useScheduleStore.getState().assignments['2026-10-01']).toBeUndefined()
   })
 
-  it('deve fechar o modal e permanecer no modo de edição ao clicar em "Continuar Editando"', () => {
+  it('closes and stays in edit mode on "Continuar Editando"', () => {
     useScheduleStore.setState({ isUnsavedModalOpen: true })
     render(<UnsavedChangesModal />)
 
@@ -68,7 +68,7 @@ describe('UnsavedChangesModal', () => {
     expect(useScheduleStore.getState().hasUnsavedChanges).toBe(true)
   })
 
-  it('deve fechar o modal ao pressionar a tecla Escape', () => {
+  it('closes on Escape', () => {
     useScheduleStore.setState({ isUnsavedModalOpen: true })
     render(<UnsavedChangesModal />)
 
@@ -76,7 +76,7 @@ describe('UnsavedChangesModal', () => {
     expect(useScheduleStore.getState().isUnsavedModalOpen).toBe(false)
     expect(useScheduleStore.getState().isEditMode).toBe(true)
   })
-  it('deve ocupar a altura toda em telas pequenas com as ações no final da tela', () => {
+  it('uses the shared modal layout so the actions stay at the bottom on small screens', () => {
     useScheduleStore.setState({ isUnsavedModalOpen: true })
     render(<UnsavedChangesModal />)
 

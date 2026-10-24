@@ -5,7 +5,7 @@ import { ScheduleAuditModal } from './schedule-audit-modal'
 
 import type { ValidationError, Person, ShiftRule } from '../../types'
 
-describe('ScheduleAuditModal Component', () => {
+describe('ScheduleAuditModal', () => {
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila', color: '#3B82F6' },
   ]
@@ -36,7 +36,7 @@ describe('ScheduleAuditModal Component', () => {
     },
   ]
 
-  it('não deve renderizar quando isOpen for false', () => {
+  it('renders nothing when isOpen is false', () => {
     const { container } = render(
       <ScheduleAuditModal
         isOpen={false}
@@ -52,7 +52,7 @@ describe('ScheduleAuditModal Component', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('deve renderizar abas de agrupamento e exibir as violações por regra', () => {
+  it('renders the grouping tabs and lists violations by rule', () => {
     render(
       <ScheduleAuditModal
         isOpen={true}
@@ -73,7 +73,7 @@ describe('ScheduleAuditModal Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve permitir alternar para aba por profissional', () => {
+  it('switches to the by-professional tab', () => {
     render(
       <ScheduleAuditModal
         isOpen={true}
@@ -93,7 +93,7 @@ describe('ScheduleAuditModal Component', () => {
     expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
   })
 
-  it('deve permitir desativar a regra para o mês atual', () => {
+  it('disables a rule for the current month', () => {
     const onToggle = vi.fn()
     render(
       <ScheduleAuditModal

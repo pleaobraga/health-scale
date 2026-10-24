@@ -13,7 +13,7 @@ const renderRulesView = () => {
   )
 }
 
-describe('RulesManagementView Component', () => {
+describe('RulesManagementView', () => {
   beforeEach(() => {
     localStorage.clear()
     useScheduleStore.setState({
@@ -49,7 +49,7 @@ describe('RulesManagementView Component', () => {
     })
   })
 
-  it('deve renderizar a listagem de regras cadastradas', () => {
+  it('lists the registered rules', () => {
     renderRulesView()
 
     expect(screen.getByTestId('rules-management-view')).toBeInTheDocument()
@@ -57,17 +57,7 @@ describe('RulesManagementView Component', () => {
     expect(screen.getByText(/Evita sobrecarga/i)).toBeInTheDocument()
   })
 
-  it('deve abrir o modal para criação de nova regra', () => {
-    renderRulesView()
-
-    const newBtn = screen.getByRole('button', { name: /nova regra/i })
-    fireEvent.click(newBtn)
-
-    expect(screen.getByRole('heading', { name: /nova regra/i })).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/Ex: Limite Semanal de Plantões/i)).toBeInTheDocument()
-  })
-
-  it('deve permitir cadastrar uma nova regra com sucesso', () => {
+  it('creates a new rule from the modal', () => {
     renderRulesView()
 
     fireEvent.click(screen.getByRole('button', { name: /nova regra/i }))
@@ -81,7 +71,7 @@ describe('RulesManagementView Component', () => {
     expect(screen.getByText('Máximo 2 turnos por semana')).toBeInTheDocument()
   })
 
-  it('deve permitir cadastrar uma regra de quantidade máxima de pessoas no mesmo turno', () => {
+  it('creates a max people per shift rule', () => {
     renderRulesView()
 
     fireEvent.click(screen.getByRole('button', { name: /nova regra/i }))
@@ -106,7 +96,7 @@ describe('RulesManagementView Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve permitir cadastrar uma regra flexível de horas de plantão por dia para fins de semana', () => {
+  it('creates a weekend daily shift hours rule', () => {
     renderRulesView()
 
     fireEvent.click(screen.getByRole('button', { name: /nova regra/i }))
@@ -139,7 +129,7 @@ describe('RulesManagementView Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve permitir duplicar uma regra existente', () => {
+  it('duplicates a rule', () => {
     renderRulesView()
 
     const duplicateBtn = screen.getByTitle(/duplicar/i)
@@ -148,7 +138,7 @@ describe('RulesManagementView Component', () => {
     expect(screen.getByText(/Máximo 1 turno por dia \(Cópia\)/i)).toBeInTheDocument()
   })
 
-  it('deve permitir excluir uma regra após confirmação', () => {
+  it('deletes a rule after confirmation', () => {
     renderRulesView()
 
     const deleteBtn = screen.getByTitle(/excluir/i)
@@ -164,10 +154,10 @@ describe('RulesManagementView Component', () => {
     expect(screen.queryByText('Máximo 1 turno por dia')).not.toBeInTheDocument()
   })
 
-  it('deve exibir o banner explicativo de severidade e o critério de disparo da regra', () => {
+  it('shows the severity banner and the rule trigger criteria', () => {
     renderRulesView()
 
-    // Banner explicativo
+    // Severity banner
     expect(
       screen.getByText(/Como funcionam os critérios de validação e severidade/i)
     ).toBeInTheDocument()
@@ -175,7 +165,7 @@ describe('RulesManagementView Component', () => {
       screen.getByText(/Não representa um defeito ou erro no cadastro da regra/i)
     ).toBeInTheDocument()
 
-    // Critério de disparo
+    // Trigger criteria
     expect(
       screen.getByText(/Critério de Disparo \(Quando gera erro\):/i)
     ).toBeInTheDocument()
@@ -183,11 +173,11 @@ describe('RulesManagementView Component', () => {
       screen.getByText(/Dispara quando o mesmo profissional for escalado em mais de 1 plantão/i)
     ).toBeInTheDocument()
 
-    // Impacto no mês ativo não deve ser exibido
+    // The active month impact is not shown
     expect(screen.queryByText(/Impacto na Escala Atual/i)).not.toBeInTheDocument()
   })
 
-  it('deve filtrar as regras de acordo com a busca', () => {
+  it('filters the rules with the search', () => {
     renderRulesView()
 
     expect(screen.getByText('Máximo 1 turno por dia')).toBeInTheDocument()
@@ -199,7 +189,7 @@ describe('RulesManagementView Component', () => {
     expect(screen.getByText(/nenhuma regra encontrada/i)).toBeInTheDocument()
   })
 
-  it('deve exibir a alça de drag and drop para reordenar as regras', () => {
+  it('renders a drag handle to reorder the rules', () => {
     renderRulesView()
 
     expect(screen.getByTestId('drag-handle-rule_max_1_day')).toHaveAccessibleName(

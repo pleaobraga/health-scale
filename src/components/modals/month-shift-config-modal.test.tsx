@@ -38,7 +38,7 @@ describe('MonthShiftConfigModal', () => {
     })
   })
 
-  it('não deve renderizar quando isOpen for false', () => {
+  it('renders nothing when isOpen is false', () => {
     render(
       <MonthShiftConfigModal
         isOpen={false}
@@ -49,7 +49,7 @@ describe('MonthShiftConfigModal', () => {
     expect(screen.queryByText(/Configurar Plantões e Horas por Dia/i)).not.toBeInTheDocument()
   })
 
-  it('deve renderizar o modal com os turnos cadastrados quando isOpen for true', () => {
+  it('lists the registered shifts when open', () => {
     render(
       <MonthShiftConfigModal
         isOpen={true}
@@ -63,7 +63,7 @@ describe('MonthShiftConfigModal', () => {
     expect(screen.getByText('Plantão Noturno 12h')).toBeInTheDocument()
   })
 
-  it('deve permitir selecionar atalhos rápidos de dias e salvar no store', () => {
+  it('applies a day shortcut and saves it to the store', () => {
     const handleClose = vi.fn()
     render(
       <MonthShiftConfigModal
@@ -90,7 +90,7 @@ describe('MonthShiftConfigModal', () => {
     expect(handleClose).toHaveBeenCalled()
   })
 
-  it('deve permitir criar um novo tipo de turno com horário e duração customizada', () => {
+  it('creates a new shift type with a custom start time and duration', () => {
     render(
       <MonthShiftConfigModal
         isOpen={true}

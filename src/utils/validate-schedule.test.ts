@@ -5,7 +5,7 @@ import { i18n } from '../i18n'
 
 import type { Person, MonthlyAvailability, ShiftRule } from '../types'
 
-describe('validateSchedule - Motor de Regras e Auditoria', () => {
+describe('validateSchedule', () => {
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila', color: '#3b82f6' },
     { id: 'p2', name: 'Dr. Lucas', color: '#10b981' },
@@ -30,7 +30,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     },
   ]
 
-  it('deve acusar erro quando a mesma pessoa trabalha em dias consecutivos no mesmo mês', () => {
+  it('flags the same person working consecutive days in the month', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1'],
       '2026-10-02': ['p1'], // Consecutive
@@ -51,7 +51,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(error?.message).toContain('01/10/2026 e 02/10/2026')
   })
 
-  it('deve acusar erro de dias consecutivos na virada de mês (ex: 31 de Outubro e 01 de Novembro)', () => {
+  it('flags consecutive days across months (e.g. October 31 and November 1)', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-31': ['p1'],
       '2026-11-01': ['p1'], // Month boundary rollover
@@ -69,7 +69,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(error?.message).toContain('31/10/2026 e 01/11/2026')
   })
 
-  it('deve acusar erro quando o limite semanal de 2 escalas (Domingo a Sábado) é ultrapassado', () => {
+  it('flags going over the weekly limit of 2 shifts (Sunday to Saturday)', () => {
     // 2026-10-04 is Sunday and 2026-10-10 is Saturday
     const assignments: Record<string, string[]> = {
       '2026-10-04': ['p1'], // Sun
@@ -91,7 +91,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(error?.message).toContain('3 vezes')
   })
 
-  it('deve acusar erro quando há mais de uma pessoa atribuída ao mesmo dia (conflito não resolvido)', () => {
+  it('flags more than one person on the same day (unresolved conflict)', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1', 'p3'], // 2 people assigned to the same day
     }
@@ -110,7 +110,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(error?.message).toContain('2 pessoas atribuídas')
   })
 
-  it('deve acusar aviso para dias vazios sem ninguém escalado no mês atual', () => {
+  it('warns about every empty day of the month when no daily shifts are configured', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1'],
     }
@@ -129,7 +129,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(emptyErrors[0].message).toContain('Dia sem responsável')
   })
 
-  it('deve acusar erro quando uma pessoa é escalada sem ter marcado disponibilidade', () => {
+  it('flags a person assigned without availability', () => {
     // p2 only has availability on even days (2, 4, 6...)
     const assignments: Record<string, string[]> = {
       '2026-10-05': ['p2'], // Day 5 is not in p2's availability
@@ -149,7 +149,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(error?.message).toContain('Indisponibilidade')
   })
 
-  it('deve retornar zero erros críticos quando todos os dias estão em conformidade com as regras', () => {
+  it('returns no critical errors when every day follows the rules', () => {
     // Creates alternating assignment without consecutive days and max 2 days per week
     // Week 1: 01 (Thu - p1), 03 (Sat - p1) -> 2 times in the week
     // Week 2: 05 (Mon - p3), 07 (Wed - p3) -> 2 times in the week
@@ -171,7 +171,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(criticalErrors.length).toBe(0)
   })
 
-  it('permite 2 pessoas no mesmo dia quando alocadas em turnos de 12h distintos sem gerar erro multi_assigned', () => {
+  it('allows 2 people on the same day on different 12h shifts without multi_assigned', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1', 'p3'], // 2 people on the same day
     }
@@ -196,7 +196,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(multiAssignedError).toBeUndefined()
   })
 
-  it('valida regra dinâmica MAX_PEOPLE_PER_SHIFT acusando erro quando limite de pessoas no mesmo turno é ultrapassado', () => {
+  it('MAX_PEOPLE_PER_SHIFT flags going over the people limit on a shift', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1', 'p2'],
     }
@@ -234,7 +234,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(ruleError?.severity).toBe('error')
   })
 
-  it('valida regra dinâmica MAX_PEOPLE_PER_SHIFT acusando erro quando 2 turnos diferentes no mesmo dia se sobrepõem no horário (ex: 24h e 12h noite)', () => {
+  it('MAX_PEOPLE_PER_SHIFT flags 2 different shifts that overlap on the same day (24h and night 12h)', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1', 'p2'],
     }
@@ -272,7 +272,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(ruleErrors[0].message).toContain('trabalhando simultaneamente')
   })
 
-  it('acusa conflito de alocação se 2 turnos diferentes no mesmo dia se sobrepõem quando não há regra dinâmica configurada', () => {
+  it('flags an assignment conflict for overlapping shifts when no dynamic rule is set', () => {
     const assignments: Record<string, string[]> = {
       '2026-10-01': ['p1', 'p2'],
     }
@@ -298,7 +298,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(multiError?.severity).toBe('error')
   })
 
-  it('não deve gerar aviso de dia vazio para datas que não possuem plantão agendado', () => {
+  it('does not warn about empty days that have no scheduled shift', () => {
     // Only day 1 has a shift scheduled; days 2..31 have no shifts
     const monthDailyShifts = {
       '2026-10': {
@@ -323,7 +323,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(emptyErrors.length).toBe(0)
   })
 
-  it('deve gerar aviso de dia vazio apenas se a data possui plantão agendado mas ninguém foi escalado', () => {
+  it('warns about an empty day only when it has a scheduled shift and nobody assigned', () => {
     // Day 1 and Day 2 have shifts scheduled, but only Day 1 is covered
     const monthDailyShifts = {
       '2026-10': {
@@ -349,7 +349,7 @@ describe('validateSchedule - Motor de Regras e Auditoria', () => {
     expect(emptyErrors[0].date).toBe('2026-10-02')
   })
 
-  it('deve utilizar os tokens do i18n em inglês quando o idioma ativo for en-US', async () => {
+  it('uses the English i18n messages when the language is en-US', async () => {
     await i18n.changeLanguage('en-US')
 
     const assignments: Record<string, string[]> = {

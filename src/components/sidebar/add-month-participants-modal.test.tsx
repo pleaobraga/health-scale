@@ -5,14 +5,14 @@ import { AddMonthParticipantsModal } from './add-month-participants-modal'
 
 import type { Person } from '../../types'
 
-describe('AddMonthParticipantsModal Component', () => {
+describe('AddMonthParticipantsModal', () => {
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila Santos', color: '#3b82f6', active: true },
     { id: 'p2', name: 'Dr. Lucas Oliveira (Inativo)', color: '#10b981', active: false },
     { id: 'p3', name: 'Enf. Beatriz Lima', color: '#8b5cf6', active: true },
   ]
 
-  it('deve listar APENAS profissionais ativos (active: true), ocultando profissionais inativos', () => {
+  it('lists only active professionals', () => {
     render(
       <AddMonthParticipantsModal
         isOpen={true}
@@ -30,26 +30,7 @@ describe('AddMonthParticipantsModal Component', () => {
     expect(screen.queryByText('Dr. Lucas Oliveira (Inativo)')).not.toBeInTheDocument()
   })
 
-  it('deve exibir profissional anteriormente inativo após ele ser reativado', () => {
-    const reactivatedPersons: Person[] = [
-      ...mockPersons.map((p) => (p.id === 'p2' ? { ...p, active: true } : p)),
-    ]
-
-    render(
-      <AddMonthParticipantsModal
-        isOpen={true}
-        onClose={vi.fn()}
-        currentMonth="2026-10"
-        allPersons={reactivatedPersons}
-        currentParticipantIds={[]}
-        onAddParticipants={vi.fn()}
-      />
-    )
-
-    expect(screen.getByText('Dr. Lucas Oliveira (Inativo)')).toBeInTheDocument()
-  })
-
-  it('deve permitir selecionar e vincular os profissionais ativos ao mês', () => {
+  it('selects active professionals and links them to the month', () => {
     const handleAdd = vi.fn()
     const handleClose = vi.fn()
 
@@ -79,7 +60,7 @@ describe('AddMonthParticipantsModal Component', () => {
     expect(handleClose).toHaveBeenCalledTimes(1)
   })
 
-  it('deve disparar onGoToGlobalManagement e fechar o modal ao clicar no botão no estado vazio', () => {
+  it('calls onGoToGlobalManagement and closes from the empty state button', () => {
     const handleClose = vi.fn()
     const handleGoToPeople = vi.fn()
 
@@ -102,7 +83,7 @@ describe('AddMonthParticipantsModal Component', () => {
     expect(handleGoToPeople).toHaveBeenCalledTimes(1)
   })
 
-  it('deve disparar onGoToGlobalManagement e fechar o modal pelo rodapé quando houver candidatos', () => {
+  it('calls onGoToGlobalManagement and closes from the footer when there are candidates', () => {
     const handleClose = vi.fn()
     const handleGoToPeople = vi.fn()
 

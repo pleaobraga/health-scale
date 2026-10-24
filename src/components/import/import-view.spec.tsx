@@ -41,7 +41,7 @@ describe('ImportView Component', () => {
     useScheduleStore.setState({ currentView: 'import' })
   })
 
-  it('deve renderizar o banner de boas-vindas e a área de dropzone', async () => {
+  it('renders the welcome banner and the dropzone', async () => {
     renderWithRouter()
 
     expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('ImportView Component', () => {
     expect(screen.getByText(/Clique para selecionar/i)).toBeInTheDocument()
   })
 
-  it('deve permitir começar do zero limpando dados e navegando para a tela de calendário quando não houver dados salvos', async () => {
+  it('starts from scratch (clears data and opens the calendar) when nothing is saved', async () => {
     renderWithRouter()
 
     expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
@@ -62,7 +62,7 @@ describe('ImportView Component', () => {
     expect(useScheduleStore.getState().persons).toEqual([])
   })
 
-  it('não deve exibir o botão "Começar do zero" quando já houver dados salvos localmente', async () => {
+  it('hides "Começar do zero" when local data already exists', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     renderWithRouter()
@@ -71,7 +71,7 @@ describe('ImportView Component', () => {
     expect(screen.queryByTestId('start-zero-button')).not.toBeInTheDocument()
   })
 
-  it('deve exibir mensagem de erro quando arquivo inválido for selecionado', async () => {
+  it('shows an error when an invalid file is selected', async () => {
     renderWithRouter()
 
     expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
@@ -87,7 +87,7 @@ describe('ImportView Component', () => {
     })
   })
 
-  it('deve processar arquivo válido e exibir os contadores de prévia', async () => {
+  it('parses a valid file and shows the preview counters', async () => {
     const validSnapshot: AppDataSnapshot = {
       exportedAt: '2026-10-17T12:00:00.000Z',
       people: [
@@ -117,7 +117,7 @@ describe('ImportView Component', () => {
     })
   })
 
-  it('deve restaurar diretamente quando a aplicação estiver 100% vazia (sem modal de sobrescrita)', async () => {
+  it('restores right away, without the overwrite modal, when the app is empty', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false)
     const restoreSpy = vi.spyOn(backupService, 'restoreAppData').mockResolvedValue()
 
@@ -151,7 +151,7 @@ describe('ImportView Component', () => {
     })
   })
 
-  it('deve abrir modal de sobrescrita quando já existirem dados cadastrados localmente', async () => {
+  it('asks for overwrite confirmation when local data already exists', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
     const restoreSpy = vi.spyOn(backupService, 'restoreAppData').mockResolvedValue()
 
@@ -195,7 +195,7 @@ describe('ImportView Component', () => {
     })
   })
 
-  it('deve exibir o botão de atualizar dados e chamar mergeAppData quando já existirem dados locais', async () => {
+  it('offers the merge option and calls mergeAppData when local data already exists', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
     const mergeSpy = vi.spyOn(backupService, 'mergeAppData').mockResolvedValue()
 
@@ -230,7 +230,7 @@ describe('ImportView Component', () => {
     })
   })
 
-  it('não deve exibir os botões de puxar da nuvem quando o usuário não for admin', async () => {
+  it('hides the cloud pull buttons for non-admin users', async () => {
     renderWithRouter({ isAdmin: false })
 
     expect(await screen.findByText('Configuração Inicial / Boas-vindas')).toBeInTheDocument()
@@ -238,7 +238,7 @@ describe('ImportView Component', () => {
     expect(screen.queryByTestId('banner-pull-cloud-button')).not.toBeInTheDocument()
   })
 
-  it('deve exibir os botões de puxar da nuvem quando o usuário for admin e executar a sincronização', async () => {
+  it('shows the cloud pull buttons to admins and pulls the data', async () => {
     const pullCloudDataMock = vi.fn().mockResolvedValue({
       success: true,
       message: 'Dados da nuvem sincronizados com sucesso!',

@@ -24,7 +24,7 @@ describe('BackupService', () => {
   })
 
   describe('getBackupFilename', () => {
-    it('deve gerar o nome do arquivo no formato escala_backup_YYYY-MM-DD_HHmm.json', () => {
+    it('builds the escala_backup_YYYY-MM-DD_HHmm.json file name', () => {
       const fixedDate = new Date(2026, 9, 17, 18, 45) // 2026-10-17 18:45
       const filename = getBackupFilename(fixedDate)
       expect(filename).toBe('escala_backup_2026-10-17_1845.json')
@@ -32,12 +32,12 @@ describe('BackupService', () => {
   })
 
   describe('hasExistingLocalData', () => {
-    it('deve retornar false quando o localStorage estiver completamente vazio', async () => {
+    it('returns false when localStorage is empty', async () => {
       const exists = await hasExistingLocalData()
       expect(exists).toBe(false)
     })
 
-    it('deve retornar false quando as chaves existirem porém estiverem vazias', async () => {
+    it('returns false when the keys exist but are empty', async () => {
       localStorage.setItem('scale_manager_persons_v1', JSON.stringify([]))
       localStorage.setItem('scale_manager_assignments_v1', JSON.stringify({}))
       localStorage.setItem('scale_manager_month_participants_v1', JSON.stringify({}))
@@ -46,49 +46,20 @@ describe('BackupService', () => {
       expect(exists).toBe(false)
     })
 
-    it('deve retornar true quando houver profissionais salvos no storage', async () => {
-      localStorage.setItem(
-        'scale_manager_persons_v1',
-        JSON.stringify([{ id: 'p1', name: 'Dr. Lucas', color: '#10b981' }])
-      )
+    it.each([
+      ['people', 'scale_manager_persons_v1', [{ id: 'p1', name: 'Dr. Lucas', color: '#10b981' }]],
+      ['assignments', 'scale_manager_assignments_v1', { '2026-10-01': ['p1'] }],
+      ['month participants', 'scale_manager_month_participants_v1', { '2026-10': ['p1', 'p2'] }],
+      ['events', 'scale_manager_events_v1', [{ id: 'e1', date: '2026-10-05', title: 'Shift' }]],
+    ])('returns true when %s are saved', async (_label, key, value) => {
+      localStorage.setItem(key, JSON.stringify(value))
 
-      const exists = await hasExistingLocalData()
-      expect(exists).toBe(true)
-    })
-
-    it('deve retornar true quando houver escalas salvas no storage', async () => {
-      localStorage.setItem(
-        'scale_manager_assignments_v1',
-        JSON.stringify({ '2026-10-01': ['p1'] })
-      )
-
-      const exists = await hasExistingLocalData()
-      expect(exists).toBe(true)
-    })
-
-    it('deve retornar true quando houver participantes mensais cadastrados', async () => {
-      localStorage.setItem(
-        'scale_manager_month_participants_v1',
-        JSON.stringify({ '2026-10': ['p1', 'p2'] })
-      )
-
-      const exists = await hasExistingLocalData()
-      expect(exists).toBe(true)
-    })
-
-    it('deve retornar true quando houver eventos cadastrados', async () => {
-      localStorage.setItem(
-        'scale_manager_events_v1',
-        JSON.stringify([{ id: 'e1', date: '2026-10-05', title: 'Plantão' }])
-      )
-
-      const exists = await hasExistingLocalData()
-      expect(exists).toBe(true)
+      expect(await hasExistingLocalData()).toBe(true)
     })
   })
 
   describe('exportAppData', () => {
-    it('deve disparar o download com o snapshot completo dos dados da aplicação', async () => {
+    it('downloads a full snapshot of the app data', async () => {
       StorageService.savePersons([{ id: 'p1', name: 'Dra. Camila', color: '#3b82f6' }])
       StorageService.saveMonthParticipants({ '2026-10': ['p1'] })
       StorageService.saveAssignments({ '2026-10-01': ['p1'] })
@@ -127,27 +98,27 @@ describe('BackupService', () => {
   })
 
   describe('validateAndParseBackup', () => {
-    it('deve rejeitar arquivo nulo ou indefinido', async () => {
+    it('rejects a null or undefined file', async () => {
       await expect(validateAndParseBackup(null as unknown as File)).rejects.toThrow(
         'Nenhum arquivo foi selecionado.'
       )
     })
 
-    it('deve rejeitar arquivo com JSON corrompido ou inválido', async () => {
+    it('rejects a corrupted or invalid JSON file', async () => {
       const file = new File(['{ invalid json content '], 'backup.json', { type: 'application/json' })
       await expect(validateAndParseBackup(file)).rejects.toThrow(
         'Arquivo de backup inválido: formato JSON corrompido ou ilegível.'
       )
     })
 
-    it('deve rejeitar JSON que não é um objeto', async () => {
+    it('rejects JSON that is not an object', async () => {
       const file = new File(['["item1", "item2"]'], 'backup.json', { type: 'application/json' })
       await expect(validateAndParseBackup(file)).rejects.toThrow(
         'Estrutura do arquivo inválida: o backup deve ser um objeto JSON.'
       )
     })
 
-    it('deve rejeitar JSON sem lista de pessoas', async () => {
+    it('rejects JSON without a people list', async () => {
       const file = new File([JSON.stringify({ monthParticipants: {} })], 'backup.json', {
         type: 'application/json',
       })
@@ -156,7 +127,7 @@ describe('BackupService', () => {
       )
     })
 
-    it('deve rejeitar pessoas com formato inválido (sem id ou name)', async () => {
+    it('rejects people without id or name', async () => {
       const file = new File(
         [JSON.stringify({ people: [{ id: 'p1' }] })],
         'backup.json',
@@ -167,7 +138,7 @@ describe('BackupService', () => {
       )
     })
 
-    it('deve validar e retornar snapshot normalizado preservando metadados', async () => {
+    it('returns a normalized snapshot that keeps the metadata', async () => {
       const payload = {
         exportedAt: '2026-10-17T12:00:00.000Z',
         people: [{ id: 'p1', name: 'Dr. Roberto', color: '#10b981', specialty: 'Cardiologia' }],
@@ -190,7 +161,7 @@ describe('BackupService', () => {
       expect((parsed as Record<string, unknown>).customSetting).toBe('hospital_central')
     })
 
-    it('deve aceitar fallback para campo "persons" caso "people" venha com nome alternativo', async () => {
+    it('accepts "persons" as a fallback for "people"', async () => {
       const payload = {
         persons: [{ id: 'p2', name: 'Dra. Julia', color: '#ec4899' }],
       }
@@ -204,7 +175,7 @@ describe('BackupService', () => {
   })
 
   describe('restoreAppData', () => {
-    it('deve persistir dados no StorageService e atualizar o store redirecionando para o calendário', async () => {
+    it('saves the data, updates the store and goes back to the calendar', async () => {
       useScheduleStore.setState({ currentView: 'import', isEditMode: true })
 
       const snapshot: AppDataSnapshot = {
@@ -236,7 +207,7 @@ describe('BackupService', () => {
       expect(storeState.isDarkMode).toBe(true)
     })
 
-    it('deve restaurar configurações avançadas de turnos, regras e escalas diárias', async () => {
+    it('restores shifts, rules and daily shift settings', async () => {
       const snapshot: AppDataSnapshot = {
         exportedAt: '2026-10-20T17:00:00.000Z',
         people: [{ id: 'p1', name: 'Dr. Lucas', color: '#3b82f6' }],
@@ -294,8 +265,8 @@ describe('BackupService', () => {
   })
 
   describe('mergeAppData', () => {
-    it('deve atualizar dados conflitantes com o arquivo novo e preservar dados locais sem conflito', async () => {
-      // Estado inicial salvo localmente
+    it('overwrites conflicting data with the file and keeps the rest of the local data', async () => {
+      // Initial local state
       StorageService.savePersons([
         { id: 'p1', name: 'Dr. Lucas Antigo', color: '#10b981' },
         { id: 'p_local_only', name: 'Dra. Helena Local', color: '#f59e0b' },
@@ -321,7 +292,7 @@ describe('BackupService', () => {
         { id: 'addr_local', name: 'Hospital Local', street: 'Rua B', number: '20', neighborhood: 'Sul', city: 'SP' },
       ])
 
-      // Snapshot de entrada que atualiza p1, 2026-10-01, ev1, addr1 e adiciona p_new
+      // Incoming snapshot that updates p1, 2026-10-01, ev1 and addr1, and adds p_new
       const incomingSnapshot: AppDataSnapshot = {
         exportedAt: '2026-10-21T12:00:00.000Z',
         people: [

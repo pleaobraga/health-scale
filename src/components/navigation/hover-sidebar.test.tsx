@@ -19,7 +19,7 @@ const renderWithRouter = (initialPath = '/') => {
   )
 }
 
-describe('HoverSidebar Component', () => {
+describe('HoverSidebar', () => {
   beforeEach(() => {
     useToastStore.setState({ toasts: [] })
     useScheduleStore.setState({
@@ -28,7 +28,7 @@ describe('HoverSidebar Component', () => {
     })
   })
 
-  it('deve renderizar a logo, os links de navegação e o alternador de tema', () => {
+  it('renders the logo, the navigation links and the theme toggle', () => {
     renderWithRouter()
 
     expect(screen.getAllByText('Escalas Mensais').length).toBeGreaterThan(0)
@@ -50,46 +50,21 @@ describe('HoverSidebar Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('deve alternar a tela para "people" ao clicar em Gerenciar Pessoas', () => {
-    renderWithRouter()
+  it.each([
+    { link: /gerenciar pessoas/i, view: 'people', from: '/' },
+    { link: /turnos de trabalho/i, view: 'shifts', from: '/' },
+    { link: /regras de validação/i, view: 'rules', from: '/' },
+    { link: /calendário de escalas/i, view: 'calendar', from: '/pessoas' },
+  ])('sets the current view to "$view" from its navigation link', ({ link, view, from }) => {
+    useScheduleStore.setState({ currentView: from === '/' ? 'calendar' : 'people' })
+    renderWithRouter(from)
 
-    const peopleLink = screen.getByRole('link', { name: /gerenciar pessoas/i })
-    fireEvent.click(peopleLink)
+    fireEvent.click(screen.getByRole('link', { name: link }))
 
-    expect(useScheduleStore.getState().currentView).toBe('people')
+    expect(useScheduleStore.getState().currentView).toBe(view)
   })
 
-  it('deve alternar a tela para "shifts" ao clicar em Turnos de Trabalho', () => {
-    renderWithRouter()
-
-    const shiftsLink = screen.getByRole('link', { name: /turnos de trabalho/i })
-    fireEvent.click(shiftsLink)
-
-    expect(useScheduleStore.getState().currentView).toBe('shifts')
-  })
-
-  it('deve alternar a tela para "rules" ao clicar em Regras de Validação', () => {
-    renderWithRouter()
-
-    const rulesLink = screen.getByRole('link', { name: /regras de validação/i })
-    fireEvent.click(rulesLink)
-
-    expect(useScheduleStore.getState().currentView).toBe('rules')
-  })
-
-  it('deve alternar a tela para "calendar" ao clicar em Calendário de Escalas', () => {
-    useScheduleStore.setState({ currentView: 'people' })
-    renderWithRouter('/pessoas')
-
-    const calendarLink = screen.getByRole('link', {
-      name: /calendário de escalas/i,
-    })
-    fireEvent.click(calendarLink)
-
-    expect(useScheduleStore.getState().currentView).toBe('calendar')
-  })
-
-  it('deve alternar entre Dark Mode e Light Mode e alterar a classe dark no documento', () => {
+  it('toggles between dark and light mode and updates the dark class on the document', () => {
     renderWithRouter()
 
     const toggleBtn = screen.getByRole('button', {
@@ -109,13 +84,13 @@ describe('HoverSidebar Component', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 
-  it('não deve exibir o link direto de Importar Dados na barra de navegação', () => {
+  it('does not show a direct Importar Dados link in the navigation', () => {
     renderWithRouter()
 
     expect(screen.queryByRole('link', { name: /importar dados/i })).not.toBeInTheDocument()
   })
 
-  it('deve exibir o botão de Exportar Dados e permitir o clique', async () => {
+  it('exports the data from the Exportar Dados button', async () => {
     vi.spyOn(backupService, 'exportAppData').mockResolvedValue()
     renderWithRouter()
 
@@ -128,7 +103,7 @@ describe('HoverSidebar Component', () => {
     })
   })
 
-  it('deve exibir a barra inferior (sem cabeçalho superior) e abrir o menu em tela cheia pelo botão Mais', () => {
+  it('renders the bottom tab bar (no top header) and opens the fullscreen menu from Mais', () => {
     renderWithRouter()
 
     // Below 768px the bottom tab bar replaces the old top header
@@ -154,7 +129,7 @@ describe('HoverSidebar Component', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('deve renderizar o nome e o badge de Convidado quando o usuário for convidado', () => {
+  it('shows the guest name and the Convidado badge for guest users', () => {
     const mockAuth: Partial<AuthContextType> = {
       user: {
         uid: 'guest_123',
@@ -178,7 +153,7 @@ describe('HoverSidebar Component', () => {
     expect(screen.getAllByText('Convidado').length).toBeGreaterThan(0)
   })
 
-  it('deve exibir botão Puxar Dados da Nuvem e permitir disparar pullCloudData sem alterar toggle de sincronização', async () => {
+  it('pulls cloud data and shows a success toast without changing the sync toggle', async () => {
     localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
     const pullCloudDataMock = vi.fn().mockResolvedValue({ success: true, message: 'Dados atualizados!' })
     useScheduleStore.setState({ pullCloudData: pullCloudDataMock })
@@ -199,7 +174,7 @@ describe('HoverSidebar Component', () => {
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
 
-  it('deve exibir um toast de erro quando o pull falhar por falta de conexão', async () => {
+  it('shows an error toast when the pull fails while offline', async () => {
     useToastStore.setState({ toasts: [] })
     const pullCloudDataMock = vi
       .fn()
@@ -219,12 +194,12 @@ describe('HoverSidebar Component', () => {
     })
   })
 
-  it('NÃO deve exibir botão Forçar Dados na Nuvem quando não for prod ou não for admin', () => {
+  it('hides Forçar Dados na Nuvem outside prod or for non-admins', () => {
     renderWithRouter()
     expect(screen.queryByRole('button', { name: /forçar dados na nuvem/i })).not.toBeInTheDocument()
   })
 
-  it('deve exibir botão Forçar Dados na Nuvem quando for prod e admin, e disparar forcePushCloudData sem alterar toggle de sync', async () => {
+  it('force-pushes from Forçar Dados na Nuvem in prod for admins, without changing the sync toggle', async () => {
     localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
     const forcePushMock = vi.fn().mockResolvedValue({ success: true, message: 'Forçado!' })
     useScheduleStore.setState({ forcePushCloudData: forcePushMock })
@@ -262,7 +237,7 @@ describe('HoverSidebar Component', () => {
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
 
-  it('deve renderizar o seletor de idiomas na sidebar', () => {
+  it('renders the language selector', () => {
     renderWithRouter()
 
     const selectors = screen.getAllByTestId('language-selector')

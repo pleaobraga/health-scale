@@ -21,7 +21,7 @@ describe('ErrorBoundary Component', () => {
     console.error = originalError
   })
 
-  it('deve renderizar os filhos normalmente quando nenhum erro ocorrer', () => {
+  it('renders its children when nothing throws', () => {
     render(
       <ErrorBoundary>
         <ProblematicChild shouldThrow={false} />
@@ -31,7 +31,7 @@ describe('ErrorBoundary Component', () => {
     expect(screen.getByText('Conteúdo renderizado com sucesso')).toBeInTheDocument()
   })
 
-  it('deve renderizar a interface de erro padrão quando um filho lançar exceção', () => {
+  it('renders the default error screen when a child throws', () => {
     render(
       <ErrorBoundary>
         <ProblematicChild shouldThrow={true} />
@@ -44,7 +44,7 @@ describe('ErrorBoundary Component', () => {
     expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument()
   })
 
-  it('deve permitir resetar o estado de erro através do botão de retry', () => {
+  it('resets the error state with the retry button', () => {
     const handleReset = vi.fn()
 
     const { rerender } = render(
@@ -69,7 +69,7 @@ describe('ErrorBoundary Component', () => {
     expect(screen.getByText('Conteúdo renderizado com sucesso')).toBeInTheDocument()
   })
 
-  it('deve suportar uma função customizada de fallback', () => {
+  it('supports a custom fallback render function', () => {
     render(
       <ErrorBoundary
         fallback={(error, reset) => (

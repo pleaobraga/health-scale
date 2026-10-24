@@ -3,8 +3,8 @@ import { describe, it, expect, vi } from 'vitest'
 
 import { AvailabilityMiniCalendar } from './availability-mini-calendar'
 
-describe('AvailabilityMiniCalendar Component', () => {
-  it('deve renderizar os dias do mês e contador de dias selecionados', () => {
+describe('AvailabilityMiniCalendar', () => {
+  it('renders the month days and the selected days counter', () => {
     const handleChange = vi.fn()
     render(
       <AvailabilityMiniCalendar
@@ -21,7 +21,10 @@ describe('AvailabilityMiniCalendar Component', () => {
     expect(screen.getByRole('button', { name: '31' })).toBeInTheDocument()
   })
 
-  it('deve acionar atalho de Dias Pares', () => {
+  it.each([
+    { shortcut: /Dias Pares/i, count: 15, isExpected: (d: number) => d % 2 === 0 },
+    { shortcut: /Dias Ímpares/i, count: 16, isExpected: (d: number) => d % 2 !== 0 },
+  ])('selects the matching days from the $shortcut shortcut', ({ shortcut, count, isExpected }) => {
     const handleChange = vi.fn()
     render(
       <AvailabilityMiniCalendar
@@ -31,35 +34,16 @@ describe('AvailabilityMiniCalendar Component', () => {
       />
     )
 
-    const evenBtn = screen.getByRole('button', { name: /Dias Pares/i })
-    fireEvent.click(evenBtn)
+    fireEvent.click(screen.getByRole('button', { name: shortcut }))
 
     expect(handleChange).toHaveBeenCalledTimes(1)
-    const calledWith = handleChange.mock.calls[0][0]
-    expect(calledWith.length).toBe(15) // Out of 31 days, 15 even days
-    expect(calledWith.every((d: number) => d % 2 === 0)).toBe(true)
+    const calledWith: number[] = handleChange.mock.calls[0][0]
+    // October 2026 has 31 days: 15 even and 16 odd
+    expect(calledWith).toHaveLength(count)
+    expect(calledWith.every(isExpected)).toBe(true)
   })
 
-  it('deve acionar atalho de Dias Ímpares', () => {
-    const handleChange = vi.fn()
-    render(
-      <AvailabilityMiniCalendar
-        month="2026-10"
-        selectedDays={[]}
-        onChange={handleChange}
-      />
-    )
-
-    const oddBtn = screen.getByRole('button', { name: /Dias Ímpares/i })
-    fireEvent.click(oddBtn)
-
-    expect(handleChange).toHaveBeenCalledTimes(1)
-    const calledWith = handleChange.mock.calls[0][0]
-    expect(calledWith.length).toBe(16) // Out of 31 days, 16 odd days
-    expect(calledWith.every((d: number) => d % 2 !== 0)).toBe(true)
-  })
-
-  it('deve acionar atalho de Limpar', () => {
+  it('clears the selection from the Limpar shortcut', () => {
     const handleChange = vi.fn()
     render(
       <AvailabilityMiniCalendar
@@ -75,7 +59,7 @@ describe('AvailabilityMiniCalendar Component', () => {
     expect(handleChange).toHaveBeenCalledWith([])
   })
 
-  it('deve alternar dia individual ao clicar nele', () => {
+  it('toggles a single day on click', () => {
     const handleChange = vi.fn()
     render(
       <AvailabilityMiniCalendar

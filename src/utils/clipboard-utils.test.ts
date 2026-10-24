@@ -17,12 +17,12 @@ describe('clipboard-utils - copyToClipboard', () => {
     })
   })
 
-  it('deve retornar false quando o texto for vazio', async () => {
+  it('returns false for empty text', async () => {
     const result = await copyToClipboard('')
     expect(result).toBe(false)
   })
 
-  it('deve copiar usando navigator.clipboard.writeText quando disponível', async () => {
+  it('copies with navigator.clipboard.writeText when available', async () => {
     const writeTextMock = vi.fn().mockResolvedValue(undefined)
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: writeTextMock },
@@ -35,7 +35,7 @@ describe('clipboard-utils - copyToClipboard', () => {
     expect(writeTextMock).toHaveBeenCalledWith('Av. Paulista, 1000')
   })
 
-  it('deve usar o fallback document.execCommand quando navigator.clipboard não estiver disponível', async () => {
+  it('falls back to document.execCommand without navigator.clipboard', async () => {
     Object.defineProperty(navigator, 'clipboard', {
       value: undefined,
       writable: true,
@@ -50,7 +50,7 @@ describe('clipboard-utils - copyToClipboard', () => {
     expect(execCommandMock).toHaveBeenCalledWith('copy')
   })
 
-  it('deve retornar false e capturar erro caso a cópia falhe', async () => {
+  it('returns false and catches the error when copying fails', async () => {
     const writeTextMock = vi.fn().mockRejectedValue(new Error('Permission denied'))
     Object.defineProperty(navigator, 'clipboard', {
       value: { writeText: writeTextMock },

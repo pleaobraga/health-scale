@@ -12,27 +12,27 @@ describe('PersonService', () => {
   }
 
   describe('hasScheduleHistory & canDeletePerson', () => {
-    it('deve identificar que pessoa com alocações possui histórico e NÃO pode ser excluída', () => {
+    it('a person with assignments has history and cannot be deleted', () => {
       expect(hasScheduleHistory('p1', mockAssignments)).toBe(true)
       expect(canDeletePerson('p1', mockAssignments)).toBe(false)
       expect(PersonService.canDeletePerson('p2', mockAssignments)).toBe(false)
       expect(PersonService.canDeletePerson('p3', mockAssignments)).toBe(false)
     })
 
-    it('deve identificar que pessoa sem nenhuma alocação (0 vínculos) PODE ser excluída definitivamente', () => {
+    it('a person without assignments can be deleted', () => {
       expect(hasScheduleHistory('p_sem_escala', mockAssignments)).toBe(false)
       expect(canDeletePerson('p_sem_escala', mockAssignments)).toBe(true)
       expect(PersonService.canDeletePerson('p_sem_escala', mockAssignments)).toBe(true)
     })
 
-    it('deve retornar true em canDeletePerson quando assignments for vazio ou inválido', () => {
+    it('canDeletePerson returns true for empty or invalid assignments', () => {
       expect(canDeletePerson('p1', {})).toBe(true)
       expect(hasScheduleHistory('p1', {})).toBe(false)
     })
   })
 
   describe('getActivePersons', () => {
-    it('deve filtrar e retornar apenas profissionais com active !== false', () => {
+    it('returns only professionals with active !== false', () => {
       const persons: Person[] = [
         { id: '1', name: 'Ativo 1', color: '#3b82f6', active: true },
         { id: '2', name: 'Inativo 1', color: '#10b981', active: false },

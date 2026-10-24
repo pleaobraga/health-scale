@@ -5,14 +5,14 @@ import { TestAppRouter } from './index'
 import * as backupService from '../services/backup-service'
 import { useScheduleStore } from '../store/use-schedule-store'
 
-describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
+describe('Application router (HashRouter & route mapping)', () => {
   beforeEach(() => {
     localStorage.clear()
     sessionStorage.clear()
     vi.restoreAllMocks()
   })
 
-  it('deve renderizar o RootLayout com a Sidebar fixa e o CalendarView na rota "/"', async () => {
+  it('renders the RootLayout with the sidebar and the CalendarView on "/"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/']} />)
@@ -22,7 +22,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
   })
 
-  it('deve renderizar o CalendarView na rota alias "/calendario"', async () => {
+  it('renders the CalendarView on the "/calendario" alias', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/calendario']} />)
@@ -30,7 +30,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
   })
 
-  it('deve renderizar a tela de Gestão Global de Pessoas na rota "/pessoas"', async () => {
+  it('renders the people management screen on "/pessoas"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/pessoas']} />)
@@ -39,7 +39,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(useScheduleStore.getState().currentView).toBe('people')
   })
 
-  it('deve renderizar a tela dedicada de importação na rota "/importar"', async () => {
+  it('renders the import screen on "/importar"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/importar']} />)
@@ -49,7 +49,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(useScheduleStore.getState().currentView).toBe('import')
   })
 
-  it('deve renderizar a tela de Turnos de Trabalho na rota "/turnos"', async () => {
+  it('renders the shifts screen on "/turnos"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/turnos']} />)
@@ -59,7 +59,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(useScheduleStore.getState().currentView).toBe('shifts')
   })
 
-  it('deve renderizar a tela de Regras de Validação na rota "/regras"', async () => {
+  it('renders the validation rules screen on "/regras"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/regras']} />)
@@ -69,7 +69,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(useScheduleStore.getState().currentView).toBe('rules')
   })
 
-  it('deve redirecionar rotas legadas "/configuracoes/turnos" para "/turnos"', async () => {
+  it('redirects the legacy "/configuracoes/turnos" route to "/turnos"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/configuracoes/turnos']} />)
@@ -79,7 +79,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     })
   })
 
-  it('deve redirecionar rotas legadas "/configuracoes/regras" para "/regras"', async () => {
+  it('redirects the legacy "/configuracoes/regras" route to "/regras"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/configuracoes/regras']} />)
@@ -89,7 +89,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     })
   })
 
-  it('deve renderizar a rota extensível de configurações na rota "/configuracoes"', async () => {
+  it('renders the settings screen on "/configuracoes"', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/configuracoes']} />)
@@ -98,7 +98,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(screen.getByText(/Configurações Gerais/i)).toBeInTheDocument()
   })
 
-  it('deve redirecionar rotas não mapeadas (*) de volta para a rota raiz', async () => {
+  it('redirects unknown routes (*) back to the root route', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/rota-completamente-invalida']} />)
@@ -108,7 +108,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     })
   })
 
-  it('deve navegar entre as rotas através dos links da Sidebar', async () => {
+  it('navigates between routes through the sidebar links', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/']} />)
@@ -141,7 +141,7 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     })
   })
 
-  it('deve aplicar estilo ativo (classes Tailwind) no NavLink correspondente à rota ativa', () => {
+  it('applies the active style to the NavLink of the current route', () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(true)
 
     render(<TestAppRouter initialEntries={['/pessoas']} />)
@@ -151,32 +151,26 @@ describe('Application Client-Side Router (HashRouter & Route Mapping)', () => {
     expect(peopleLink.className).toContain('font-bold')
   })
 
-  it('deve redirecionar para "/importar" se a rota inicial for "/" e o armazenamento local estiver vazio (onboarding)', async () => {
+  it('redirects "/" to the import screen when local storage is empty, then lets the user open the calendar', async () => {
     vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false)
 
     render(<TestAppRouter initialEntries={['/']} />)
 
-    await waitFor(() => {
-      expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
-      expect(useScheduleStore.getState().currentView).toBe('import')
-    })
-  })
+    // Onboarding: the empty-storage check redirects to Settings > Import, a heavy first render,
+    // so this wait gets more time than the 1s default when the whole suite runs in parallel
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+        expect(useScheduleStore.getState().currentView).toBe('import')
+      },
+      { timeout: 3000 },
+    )
 
-  it('deve permitir navegar para o calendário mesmo sem dados locais após o onboarding inicial', async () => {
-    vi.spyOn(backupService, 'hasExistingLocalData').mockResolvedValue(false)
-
-    render(<TestAppRouter initialEntries={['/']} />)
-
-    // Aguarda o redirecionamento inicial para /importar
-    await waitFor(() => {
-      expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
-    })
-
-    // Usuário clica no link do Calendário na barra lateral
+    // The user opens the calendar from the sidebar
     const calendarLink = screen.getByRole('link', { name: /calendário de escalas/i })
     fireEvent.click(calendarLink)
 
-    // Deve renderizar a visualização do calendário sem redirecionar de volta para /importar
+    // The calendar renders without being redirected back to the import screen
     await waitFor(() => {
       expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
       expect(useScheduleStore.getState().currentView).toBe('calendar')

@@ -5,7 +5,7 @@ import { useListOrder } from './use-list-order'
 import { StorageService } from '../services/storage-service'
 
 describe('useListOrder', () => {
-  it('carrega e salva a ordem da lista apenas no localStorage', () => {
+  it('loads and saves the list order in localStorage only', () => {
     StorageService.saveListOrder('shifts', ['b', 'a'])
     const { result } = renderHook(() => useListOrder('shifts'))
     expect(result.current.order).toEqual(['b', 'a'])

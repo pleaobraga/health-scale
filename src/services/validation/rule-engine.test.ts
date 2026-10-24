@@ -466,7 +466,7 @@ describe('RuleEngine', () => {
     expect(violationsExceeded[0].message).toContain('máximo permitido: 2')
   })
 
-  it('detecta violação de MAX_PEOPLE_PER_SHIFT quando 2 pessoas estão em turnos DIFERENTES porém com horários sobrepostos (ex: 24h e 12h noite)', () => {
+  it('detects MAX_PEOPLE_PER_SHIFT when 2 people are on DIFFERENT but overlapping shifts (24h and night 12h)', () => {
     const maxOnePersonRule: ShiftRule = {
       id: 'rule_max_1_person',
       name: 'Máximo 1 pessoa por turno',
@@ -478,9 +478,9 @@ describe('RuleEngine', () => {
       updatedAt: '',
     }
 
-    // p1 no Plantão 24h (07:00 às 07:00 do dia seguinte)
-    // p2 no Plantão Noturno 12h (19:00 às 07:00 do dia seguinte)
-    // Ambos trabalham simultaneamente a partir das 19:00!
+    // p1 on the 24h shift (07:00 to 07:00 next day)
+    // p2 on the night 12h shift (19:00 to 07:00 next day)
+    // Both work at the same time from 19:00
     const schedule: MonthScheduleDocument = {
       month: '2026-10',
       shifts: {
@@ -506,7 +506,7 @@ describe('RuleEngine', () => {
     expect(violations[0].message).toContain('Dr. Roberto Alves')
     expect(violations[0].message).toContain('Dra. Ana Paula')
 
-    // Se o limite for de 2 pessoas, a alocação é permitida
+    // With a limit of 2 people the assignment is allowed
     const maxTwoPeopleRule: ShiftRule = {
       ...maxOnePersonRule,
       parameters: { maxPeople: 2 },
@@ -521,7 +521,7 @@ describe('RuleEngine', () => {
     expect(violationsTwo).toHaveLength(0)
   })
 
-  it('detecta violação de MAX_PEOPLE_PER_SHIFT para Plantão 24h e Plantão Diurno 12h sobrepostos', () => {
+  it('detects MAX_PEOPLE_PER_SHIFT for overlapping 24h and day 12h shifts', () => {
     const maxOnePersonRule: ShiftRule = {
       id: 'rule_max_1_person',
       name: 'Máximo 1 pessoa por turno',
@@ -533,8 +533,8 @@ describe('RuleEngine', () => {
       updatedAt: '',
     }
 
-    // p1 no Plantão 24h (07:00 às 07:00)
-    // p3 no Plantão Diurno 12h (07:00 às 19:00)
+    // p1 on the 24h shift (07:00 to 07:00)
+    // p3 on the day 12h shift (07:00 to 19:00)
     const schedule: MonthScheduleDocument = {
       month: '2026-10',
       shifts: {
@@ -555,7 +555,7 @@ describe('RuleEngine', () => {
     expect(violations[0].message).toContain('trabalhando simultaneamente')
   })
 
-  it('valida DAILY_SHIFT_HOURS exigindo exatamente 24h nos dias de semana e detecta infração com apenas 12h', () => {
+  it('DAILY_SHIFT_HOURS requires exactly 24h on weekdays and flags a day with only 12h', () => {
     const weekday24hRule: ShiftRule = {
       id: 'rule_weekday_24h',
       name: 'Plantão 24h dias de semana',
@@ -571,7 +571,7 @@ describe('RuleEngine', () => {
       updatedAt: '',
     }
 
-    // 2026-10-01 é quinta-feira (dia de semana) com apenas 12h escaladas
+    // 2026-10-01 is a Thursday (weekday) with only 12h assigned
     const scheduleIncomplete: MonthScheduleDocument = {
       month: '2026-10',
       shifts: {
@@ -591,7 +591,7 @@ describe('RuleEngine', () => {
     expect(violationsIncomplete[0].ruleId).toBe('rule_weekday_24h')
     expect(violationsIncomplete[0].message).toContain('possui 12h de plantão (esperado: exatamente 24h)')
 
-    // Com cobertura completa de 24h (D12 + N12 ou P24), não deve gerar violação
+    // Full 24h coverage (D12 + N12 or P24) raises no violation
     const scheduleComplete: MonthScheduleDocument = {
       month: '2026-10',
       shifts: {
@@ -611,7 +611,7 @@ describe('RuleEngine', () => {
     expect(violationsComplete).toHaveLength(0)
   })
 
-  it('valida DAILY_SHIFT_HOURS limitando a 12h nos finais de semana e acusa erro se houver 24h', () => {
+  it('DAILY_SHIFT_HOURS caps weekends at 12h and flags a day with 24h', () => {
     const weekend12hRule: ShiftRule = {
       id: 'rule_weekend_12h',
       name: 'Plantão fim de semana 12h',
@@ -627,7 +627,7 @@ describe('RuleEngine', () => {
       updatedAt: '',
     }
 
-    // 2026-10-03 é sábado (fim de semana) com 24h escaladas
+    // 2026-10-03 is a Saturday (weekend) with 24h assigned
     const scheduleWeekend24h: MonthScheduleDocument = {
       month: '2026-10',
       shifts: {
@@ -647,7 +647,7 @@ describe('RuleEngine', () => {
     expect(violationsWeekend[0].severity).toBe('WARNING')
     expect(violationsWeekend[0].message).toContain('possui 24h de plantão (máximo permitido: 12h)')
 
-    // 2026-10-03 com apenas 12h não deve gerar violação
+    // 2026-10-03 with only 12h raises no violation
     const scheduleWeekend12h: MonthScheduleDocument = {
       month: '2026-10',
       shifts: {

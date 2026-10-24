@@ -9,9 +9,9 @@ const renderDialog = (props: Partial<Parameters<typeof ConfirmDialog>[0]> = {}) 
   render(
     <ConfirmDialog
       isOpen
-      title="Limpar Mês"
-      description="Deseja realmente limpar todas as escalas?"
-      confirmLabel="Limpar"
+      title="Clear month"
+      description="Clear every shift of the month?"
+      confirmLabel="Clear"
       onConfirm={onConfirm}
       onCancel={onCancel}
       {...props}
@@ -21,25 +21,25 @@ const renderDialog = (props: Partial<Parameters<typeof ConfirmDialog>[0]> = {}) 
 }
 
 describe('ConfirmDialog', () => {
-  it('deve renderizar como alertdialog modal com título e descrição acessíveis', () => {
+  it('renders a modal alertdialog with an accessible title and description', () => {
     renderDialog()
 
-    const dialog = screen.getByRole('alertdialog', { name: 'Limpar Mês' })
+    const dialog = screen.getByRole('alertdialog', { name: 'Clear month' })
     expect(dialog).toHaveAttribute('aria-modal', 'true')
-    expect(dialog).toHaveAccessibleDescription('Deseja realmente limpar todas as escalas?')
-    // Classe que aplica 100% de altura em telas <= 640px
+    expect(dialog).toHaveAccessibleDescription('Clear every shift of the month?')
+    // Class that makes the modal full height on screens <= 640px
     expect(dialog).toHaveClass('modal-overlay')
   })
 
-  it('não deve renderizar nada quando estiver fechado', () => {
+  it('renders nothing when closed', () => {
     renderDialog({ isOpen: false })
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 
-  it('deve chamar onConfirm ao confirmar e onCancel ao cancelar, fechar ou pressionar ESC', () => {
+  it('calls onConfirm on confirm, and onCancel on cancel, close or Escape', () => {
     const { onConfirm, onCancel } = renderDialog()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Limpar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
     expect(onConfirm).toHaveBeenCalledTimes(1)
 
     fireEvent.click(screen.getByRole('button', { name: /cancelar/i }))
@@ -48,10 +48,10 @@ describe('ConfirmDialog', () => {
     expect(onCancel).toHaveBeenCalledTimes(3)
   })
 
-  it('deve desabilitar as ações enquanto estiver ocupado', () => {
+  it('disables the actions while busy', () => {
     const { onCancel } = renderDialog({ isBusy: true })
 
-    expect(screen.getByRole('button', { name: 'Limpar' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled()
     fireEvent.keyDown(window, { key: 'Escape' })
     expect(onCancel).not.toHaveBeenCalled()
   })

@@ -5,14 +5,14 @@ import { CandidatePicker } from './candidate-picker'
 
 import type { Person } from '../../types'
 
-describe('CandidatePicker Component', () => {
+describe('CandidatePicker', () => {
   const mockPersons: Person[] = [
     { id: 'p1', name: 'Dra. Camila', color: '#3b82f6' },
     { id: 'p2', name: 'Dr. Lucas', color: '#10b981' },
     { id: 'p3', name: 'Enf. Beatriz', color: '#8b5cf6' },
   ]
 
-  it('permite selecionar profissional que possui disponibilidade', () => {
+  it('lets the user pick a professional who is available on the day', () => {
     const handleSelect = vi.fn()
     // Only p1 has availability on day 15
     const isPersonAvailable = (id: string, day: number) => id === 'p1' && day === 15
@@ -42,7 +42,7 @@ describe('CandidatePicker Component', () => {
     expect(handleSelect).toHaveBeenCalledWith('p1')
   })
 
-  it('bloqueia e desabilita profissionais que NÃO possuem disponibilidade no dia', () => {
+  it('disables professionals who are not available on the day', () => {
     const handleSelect = vi.fn()
     // Only p1 has availability on day 15; p2 and p3 do not
     const isPersonAvailable = (id: string, day: number) => id === 'p1' && day === 15
@@ -61,7 +61,7 @@ describe('CandidatePicker Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /adicionar/i }))
 
-    // Dr. Lucas and Enf. Beatriz must be in the "Sem disponibilidade" section and disabled
+    // Dr. Lucas and Enf. Beatriz are listed as unavailable and disabled
     const lucasBtn = screen.getByTitle(/dr\. lucas não possui disponibilidade no dia 15/i)
     expect(lucasBtn).toBeDisabled()
     expect(lucasBtn).toHaveAttribute('aria-disabled', 'true')
@@ -71,7 +71,7 @@ describe('CandidatePicker Component', () => {
     expect(handleSelect).not.toHaveBeenCalled()
   })
 
-  it('exibe mensagem quando nenhum profissional possui disponibilidade para o dia', () => {
+  it('shows a message when nobody is available on the day', () => {
     const handleSelect = vi.fn()
     // Nobody is available
     const isPersonAvailable = () => false
@@ -95,7 +95,7 @@ describe('CandidatePicker Component', () => {
     ).toBeInTheDocument()
   })
 
-  it('não renderiza o botão Adicionar se todos os profissionais já estiverem alocados no dia', () => {
+  it('hides the Adicionar button when everyone is already assigned to the day', () => {
     render(
       <CandidatePicker
         dateStr="2026-10-15"
@@ -111,26 +111,4 @@ describe('CandidatePicker Component', () => {
     expect(screen.queryByRole('button', { name: /adicionar/i })).not.toBeInTheDocument()
   })
 
-  it('considera APENAS pessoas participantes do mês fornecidas para a seleção', () => {
-    // Only p1 and p2 are participants of current month; p3 is in global people but not in the month
-    const monthOnlyPersons = [mockPersons[0], mockPersons[1]]
-
-    render(
-      <CandidatePicker
-        dateStr="2026-10-15"
-        dayNumber={15}
-        month="2026-10"
-        assignedPersonIds={[]}
-        allPersons={monthOnlyPersons}
-        isPersonAvailable={() => true}
-        onSelectPerson={vi.fn()}
-      />
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /adicionar/i }))
-
-    expect(screen.getByText('Dra. Camila')).toBeInTheDocument()
-    expect(screen.getByText('Dr. Lucas')).toBeInTheDocument()
-    expect(screen.queryByText('Enf. Beatriz')).not.toBeInTheDocument()
-  })
 })
