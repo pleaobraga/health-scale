@@ -109,7 +109,11 @@ export function DayCell({
       }`}
     >
       {/* Top Header of the Cell */}
-      <div className="flex items-center justify-between mb-1 mobile:justify-center mobile:pt-1">
+      <div
+        className={`flex items-center justify-between mb-1 mobile:justify-center mobile:pt-1 mobile:pb-0.5 ${
+          hasEvents ? 'mobile:bg-red-50 mobile:dark:bg-red-950/60' : ''
+        }`}
+      >
         <div className="flex items-center gap-1.5">
           {/* Day number: RED if has 1 or more events. On small screens (<= 640px) it opens the events modal */}
           <button
@@ -120,7 +124,7 @@ export function DayCell({
             aria-label={eventsButtonLabel}
             className={`pointer-events-none mobile:pointer-events-auto mobile:cursor-pointer text-sm font-semibold inline-flex items-center justify-center transition-colors ${
               hasEvents
-                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-6 h-6 rounded-full'
+                ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-6 h-6 rounded-full mobile:bg-transparent mobile:dark:bg-transparent mobile:w-auto mobile:h-auto mobile:rounded-none'
                 : isToday
                 ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1'
                 : isCurrentMonth

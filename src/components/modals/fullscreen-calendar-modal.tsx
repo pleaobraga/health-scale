@@ -266,7 +266,11 @@ export function FullScreenCalendarModal() {
                   }`}
                 >
                   {/* Cell Top Header */}
-                  <div className="flex items-center justify-between mb-1.5 mobile:justify-center mobile:pt-1">
+                  <div
+                    className={`flex items-center justify-between mb-1.5 mobile:justify-center mobile:pt-1 mobile:pb-0.5 ${
+                      hasEvents ? 'mobile:bg-red-50 mobile:dark:bg-red-950/60' : ''
+                    }`}
+                  >
                     {/* Day number: on small screens (<= 640px) it opens the events modal */}
                     <button
                       type="button"
@@ -280,7 +284,7 @@ export function FullScreenCalendarModal() {
                       }
                       className={`pointer-events-none mobile:pointer-events-auto mobile:cursor-pointer text-sm md:text-base font-semibold inline-flex items-center justify-center transition-colors print:w-6 print:h-6 print:text-xs ${
                         hasEvents
-                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full print:w-6 print:h-6 print:bg-red-100 dark:print:bg-red-100 print:text-red-700 dark:print:text-red-700'
+                          ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-7 h-7 rounded-full mobile:bg-transparent mobile:dark:bg-transparent mobile:w-auto mobile:h-auto mobile:rounded-none print:w-6 print:h-6 print:bg-red-100 dark:print:bg-red-100 print:text-red-700 dark:print:text-red-700'
                           : dayInfo.isToday
                             ? 'text-indigo-600 dark:text-indigo-400 font-bold px-1 print:text-slate-900 dark:print:text-slate-900'
                             : dayInfo.isCurrentMonth

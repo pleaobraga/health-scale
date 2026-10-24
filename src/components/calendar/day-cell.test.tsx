@@ -538,4 +538,28 @@ describe('DayCell Component', () => {
 
     expect(screen.getByTestId('scheduled-highlight-badge')).toHaveClass('mobile:hidden')
   })
+
+  it('em telas pequenas, dia com eventos aplica o fundo vermelho na linha inteira, sem o círculo no número', () => {
+    const events: CalendarEvent[] = [{ id: 'e1', date: '2026-10-15', title: 'Reunião' }]
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={[]}
+        allPersons={mockPersons}
+        events={events}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={vi.fn()}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    const dayNumberBtn = screen.getByTestId('day-number-button')
+    expect(dayNumberBtn).toHaveClass('mobile:rounded-none', 'mobile:bg-transparent', 'mobile:w-auto')
+    expect(dayNumberBtn.parentElement?.parentElement).toHaveClass('mobile:bg-red-50')
+  })
 })
