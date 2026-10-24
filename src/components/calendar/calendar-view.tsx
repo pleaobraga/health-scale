@@ -1,6 +1,5 @@
 import { CalendarGrid } from './calendar-grid'
 import { Sidebar } from '../sidebar/sidebar'
-import { ValidationPanel } from '../validation/validation-panel'
 
 export function CalendarView() {
   return (
@@ -13,10 +12,9 @@ export function CalendarView() {
         <Sidebar />
       </div>
 
-      {/* Central / Right Area: Calendar & Validation */}
+      {/* Central / Right Area: Calendar */}
       <div className="flex-1 lg:h-full lg:overflow-y-auto pr-0 lg:pr-1 flex flex-col gap-5 min-w-0 pb-6 mobile:pb-0 custom-scrollbar mobile:order-1">
         <CalendarGrid />
-        <ValidationPanel />
       </div>
     </main>
   )
