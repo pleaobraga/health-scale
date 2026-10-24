@@ -59,6 +59,9 @@ export function DayCell({
   const { t } = useTranslation(['calendar', 'common'])
   const { dayNumber, isCurrentMonth, isToday, dateStr } = dayInfo
   const hasEvents = events.length > 0
+  const eventsButtonLabel = hasEvents
+    ? t('calendar:dayCell.eventsTooltip', { count: events.length })
+    : t('calendar:dayCell.viewOrAddEvents')
   const personMap = new Map<string, Person>(allPersons.map((p) => [p.id, p]))
 
   const [isViolationsModalOpen, setIsViolationsModalOpen] = useState(false)
@@ -108,9 +111,14 @@ export function DayCell({
       {/* Top Header of the Cell */}
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5">
-          {/* Day number: RED if has 1 or more events */}
-          <span
-            className={`text-sm font-semibold inline-flex items-center justify-center transition-colors ${
+          {/* Day number: RED if has 1 or more events. On small screens (<= 640px) it opens the events modal */}
+          <button
+            type="button"
+            onClick={onOpenEvents}
+            tabIndex={-1}
+            data-testid="day-number-button"
+            aria-label={eventsButtonLabel}
+            className={`pointer-events-none mobile:pointer-events-auto mobile:cursor-pointer text-sm font-semibold inline-flex items-center justify-center transition-colors ${
               hasEvents
                 ? 'text-red-600 font-extrabold dark:text-red-400 bg-red-50 dark:bg-red-950/60 w-6 h-6 rounded-full'
                 : isToday
@@ -121,7 +129,7 @@ export function DayCell({
             }`}
           >
             {dayNumber}
-          </span>
+          </button>
 
           {/* Highlight indicator */}
           {isTargetOfHighlight && (
@@ -168,12 +176,8 @@ export function DayCell({
         <button
           type="button"
           onClick={onOpenEvents}
-          title={
-            hasEvents
-              ? t('calendar:dayCell.eventsTooltip', { count: events.length })
-              : t('calendar:dayCell.viewOrAddEvents')
-          }
-          className={`p-1 rounded-md text-xs transition flex items-center gap-0.5 ${
+          title={eventsButtonLabel}
+          className={`mobile:hidden p-1 rounded-md text-xs transition flex items-center gap-0.5 ${
             hasEvents
               ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 font-semibold'
               : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

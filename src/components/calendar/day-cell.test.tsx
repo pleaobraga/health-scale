@@ -95,6 +95,34 @@ describe('DayCell Component', () => {
     expect(handleOpenEvents).toHaveBeenCalledTimes(1)
   })
 
+  it('deve abrir o modal de eventos ao clicar no número do dia (telas pequenas)', () => {
+    const handleOpenEvents = vi.fn()
+    render(
+      <DayCell
+        dayInfo={mockDayInfo}
+        currentMonth="2026-10"
+        isEditMode={false}
+        assignedPersonIds={[]}
+        allPersons={mockPersons}
+        events={[]}
+        highlightedPerson={null}
+        isHighlightedPersonAvailable={false}
+        isPersonAvailable={() => true}
+        onOpenEvents={handleOpenEvents}
+        onRemovePerson={vi.fn()}
+        onAddPerson={vi.fn()}
+      />
+    )
+
+    const dayNumberBtn = screen.getByTestId('day-number-button')
+    expect(dayNumberBtn).toHaveTextContent('15')
+    expect(dayNumberBtn).toHaveClass('pointer-events-none', 'mobile:pointer-events-auto')
+    expect(screen.getByTitle(/Ver ou adicionar eventos/i)).toHaveClass('mobile:hidden')
+
+    fireEvent.click(dayNumberBtn)
+    expect(handleOpenEvents).toHaveBeenCalledTimes(1)
+  })
+
   it('no Modo Leitura, exibe badge com o nome da pessoa alocada', () => {
     render(
       <DayCell
