@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx'
 
 import { getMonthDaysArray, formatMonthYear } from './date-utils'
 import { getPersonShiftRate } from './shift-rate-utils'
+import { i18n } from '../i18n'
 
 import type {
   Person,
@@ -20,6 +21,19 @@ export interface ExportScheduleParams {
   dayShiftAssignments?: Record<string, Record<string, string>>;
   shiftDefinitions?: ShiftDefinition[];
   availabilities?: MonthlyAvailability[];
+  language?: string;
+}
+
+export const getScheduleFileBaseName = (
+  month: string,
+  language?: string,
+): string => {
+  const [yearStr = '', monthStr = ''] = month.split('-')
+  const monthNumber = Number.parseInt(monthStr, 10)
+  const resolvedLang = (language || i18n.language || 'pt-BR').toLowerCase()
+  const prefix = resolvedLang.startsWith('en') ? 'schedule' : 'escala'
+  const validMonth = Number.isNaN(monthNumber) ? monthStr : String(monthNumber)
+  return `${prefix}-${validMonth}-${yearStr}`
 }
 
 export const generateScheduleWorkbook = ({
@@ -321,8 +335,8 @@ export const generateScheduleWorkbook = ({
 
 export const exportScheduleToExcel = (params: ExportScheduleParams): void => {
   const workbook = generateScheduleWorkbook(params)
-  const cleanMonth = params.month.replace('-', '_')
-  const fileName = `Escala_${cleanMonth}.xlsx`
+  const baseName = getScheduleFileBaseName(params.month, params.language)
+  const fileName = `${baseName}.xlsx`
 
   XLSX.writeFile(workbook, fileName)
 }

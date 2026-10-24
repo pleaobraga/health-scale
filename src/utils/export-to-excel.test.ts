@@ -1,6 +1,19 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import * as XLSX from 'xlsx'
 
-import { generateScheduleWorkbook } from './export-to-excel'
+import {
+  generateScheduleWorkbook,
+  getScheduleFileBaseName,
+  exportScheduleToExcel,
+} from './export-to-excel'
+
+vi.mock('xlsx', async () => {
+  const actual = await vi.importActual<typeof XLSX>('xlsx')
+  return {
+    ...actual,
+    writeFile: vi.fn(),
+  }
+})
 
 describe('exportScheduleToExcel - Geração de Planilha', () => {
   it('gera workbook com 3 abas e preenchimento correto', () => {
@@ -84,6 +97,33 @@ describe('exportScheduleToExcel - Geração de Planilha', () => {
 
     const financialSheet = workbook.Sheets['Fechamento Financeiro']
     expect(financialSheet).toBeDefined()
+  })
+
+  it('gera o nome base do arquivo com mês de 1 a 12 e ano em português (escala) e inglês (schedule)', () => {
+    expect(getScheduleFileBaseName('2026-01', 'pt-BR')).toBe('escala-1-2026')
+    expect(getScheduleFileBaseName('2026-10', 'pt-BR')).toBe('escala-10-2026')
+    expect(getScheduleFileBaseName('2026-01', 'en-US')).toBe('schedule-1-2026')
+    expect(getScheduleFileBaseName('2026-12', 'en-US')).toBe('schedule-12-2026')
+  })
+
+  it('salva o arquivo Excel com o nome formatado de acordo com o idioma e mês (1-12)', () => {
+    exportScheduleToExcel({
+      month: '2026-03',
+      persons: [],
+      assignments: {},
+      events: [],
+      language: 'pt-BR',
+    })
+    expect(XLSX.writeFile).toHaveBeenCalledWith(expect.anything(), 'escala-3-2026.xlsx')
+
+    exportScheduleToExcel({
+      month: '2026-03',
+      persons: [],
+      assignments: {},
+      events: [],
+      language: 'en-US',
+    })
+    expect(XLSX.writeFile).toHaveBeenCalledWith(expect.anything(), 'schedule-3-2026.xlsx')
   })
 })
 

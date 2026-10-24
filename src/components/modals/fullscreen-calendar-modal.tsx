@@ -16,6 +16,7 @@ import {
   formatMonthYear,
   getMonthCalendarGrid,
 } from '../../utils/date-utils'
+import { getScheduleFileBaseName } from '../../utils/export-to-excel'
 
 import type { ShiftDefinition } from '../../types'
 
@@ -120,7 +121,10 @@ export function FullScreenCalendarModal() {
   if (!isFullScreenModalOpen) return null
 
   const handlePrint = () => {
+    const previousTitle = document.title
+    document.title = getScheduleFileBaseName(currentMonth, i18n.language)
     window.print()
+    document.title = previousTitle
   }
 
   return createPortal(

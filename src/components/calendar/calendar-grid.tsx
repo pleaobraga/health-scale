@@ -27,7 +27,7 @@ import { DayCell } from './day-cell'
 import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { formatMonthYear, getMonthCalendarGrid, getCurrentMonth } from '../../utils/date-utils'
-import { exportScheduleToExcel } from '../../utils/export-to-excel'
+import { exportScheduleToExcel, getScheduleFileBaseName } from '../../utils/export-to-excel'
 import { computePopoverPosition } from '../../utils/popover-position'
 import { MonthPaymentsModal } from '../modals/month-payments-modal'
 import { ScheduleAuditModal } from '../modals/schedule-audit-modal'
@@ -110,7 +110,10 @@ export function CalendarGrid() {
   const handlePrint = () => {
     setFullScreenModalOpen(true)
     setTimeout(() => {
+      const previousTitle = document.title
+      document.title = getScheduleFileBaseName(currentMonth, i18n.language)
       window.print()
+      document.title = previousTitle
     }, 200)
   }
 
@@ -446,6 +449,7 @@ export function CalendarGrid() {
                         dayShiftAssignments,
                         shiftDefinitions,
                         availabilities,
+                        language: i18n.language,
                       })
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition"

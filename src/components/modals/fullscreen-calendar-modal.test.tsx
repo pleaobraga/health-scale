@@ -53,9 +53,13 @@ describe('FullScreenCalendarModal', () => {
     expect(useScheduleStore.getState().isFullScreenModalOpen).toBe(false)
   })
 
-  it('renders print button and triggers print on click', () => {
-    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {})
-    useScheduleStore.setState({ isFullScreenModalOpen: true })
+  it('renders print button and triggers print on click with formatted document title', () => {
+    let titleDuringPrint = ''
+    document.title = 'Original Title'
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {
+      titleDuringPrint = document.title
+    })
+    useScheduleStore.setState({ isFullScreenModalOpen: true, currentMonth: '2026-10' })
     render(<FullScreenCalendarModal />)
 
     const printBtn = screen.getByTitle(/imprimir escala do mês/i)
@@ -64,6 +68,8 @@ describe('FullScreenCalendarModal', () => {
 
     fireEvent.click(printBtn)
     expect(printSpy).toHaveBeenCalledTimes(1)
+    expect(titleDuringPrint).toBe('escala-10-2026')
+    expect(document.title).toBe('Original Title')
     printSpy.mockRestore()
   })
 
