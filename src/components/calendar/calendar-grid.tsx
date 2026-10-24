@@ -270,7 +270,7 @@ export function CalendarGrid() {
           <div>
             <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <CalendarDays className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              {formatMonthYear(currentMonth, i18n.language)}
+              {formatMonthYear(currentMonth, i18n.language, { compact: true })}
             </h2>
             <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400">
               {t('calendar:subtitle')}
@@ -367,7 +367,13 @@ export function CalendarGrid() {
               {validationErrors.length > 0 ? (
                 <>
                   <ShieldAlert className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
-                  <span>{t('calendar:validation.auditButton', { count: validationErrors.length })}</span>
+                  {/* <= 640px: icon + number only */}
+                  <span data-testid="audit-button-label" className="mobile:hidden">
+                    {t('calendar:validation.auditButton', { count: validationErrors.length })}
+                  </span>
+                  <span data-testid="audit-button-count" className="hidden mobile:inline">
+                    {validationErrors.length}
+                  </span>
                 </>
               ) : (
                 <>
@@ -546,14 +552,7 @@ export function CalendarGrid() {
                 data-testid="edit-notice-save-button"
                 className="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition disabled:opacity-60"
               >
-                {isSaving ? (
-                  <span>{t('common:actions.saving')}</span>
-                ) : (
-                  <>
-                    <span className="mobile:hidden">{t('calendar:saveNow')}</span>
-                    <span className="hidden mobile:inline">{t('calendar:saveChanges')}</span>
-                  </>
-                )}
+                {isSaving ? t('common:actions.saving') : t('common:actions.save')}
               </button>
             </div>
           )}

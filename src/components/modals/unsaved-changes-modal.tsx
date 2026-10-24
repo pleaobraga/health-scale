@@ -48,9 +48,9 @@ export function UnsavedChangesModal() {
       aria-labelledby="unsaved-modal-title"
       className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col transition-colors">
+      <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-950/30 shrink-0">
+        <div className="modal-header flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-amber-50/60 dark:bg-amber-950/30 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-2xs">
               <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
@@ -80,8 +80,7 @@ export function UnsavedChangesModal() {
         </div>
 
         {/* Body */}
-        {/* Body grows on mobile (full-height modal) so the actions sit at the bottom of the screen */}
-        <div data-testid="unsaved-modal-body" className="p-6 space-y-4 mobile:flex-1">
+        <div data-testid="unsaved-modal-body" className="modal-body p-6 space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             <Trans ns="calendar" i18nKey="unsavedModal.message">
               Se você alternar para o modo de <strong>Visualização</strong> sem salvar, todas as escalas e turnos modificados serão descartados e o calendário retornará ao estado original.
@@ -94,7 +93,7 @@ export function UnsavedChangesModal() {
         </div>
 
         {/* Actions Footer */}
-        <div className="px-6 py-4 mobile:pb-[calc(1rem+env(safe-area-inset-bottom))] bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-2 justify-end sm:items-center shrink-0">
+        <div className="modal-footer px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-2 justify-end sm:items-center shrink-0">
           <button
             type="button"
             onClick={handleCancel}

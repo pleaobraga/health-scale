@@ -170,11 +170,11 @@ export function ScheduleAuditModal({
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-scaleIn"
+        className="modal-panel bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden animate-scaleIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="modal-header p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/60">
               <ShieldAlert className="w-6 h-6" />
@@ -263,7 +263,7 @@ export function ScheduleAuditModal({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
+        <div className="modal-body flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
           {filteredViolations.length === 0 ? (
             <div className="p-8 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-center flex flex-col items-center justify-center space-y-2">
               <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400" />
@@ -475,7 +475,7 @@ export function ScheduleAuditModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">
+        <div className="modal-footer p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">
           <p className="text-xs text-slate-500">
             {t('calendar:validation.dayViolationsModal.howToFixText')}
           </p>

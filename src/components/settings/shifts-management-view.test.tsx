@@ -135,4 +135,14 @@ describe('ShiftsManagementView Component', () => {
     expect(screen.getByTestId('sortable-item-shift_d12')).toBeInTheDocument()
     expect(screen.getByTestId('drag-handle-shift_d12')).toHaveAccessibleName(/Arrastar para reordenar/)
   })
+  it('deve manter as ações do modal de turno no final do modal em telas <= 640px', () => {
+    renderShiftsView()
+    fireEvent.click(screen.getByRole('button', { name: /novo turno/i }))
+
+    const form = screen.getByTestId('shift-form')
+    expect(form).toHaveClass('modal-form')
+    expect(form.parentElement).toHaveClass('modal-panel')
+    expect(screen.getByTestId('shift-form-footer')).toHaveClass('modal-footer')
+    expect(screen.getByTestId('shift-form-footer').previousElementSibling).toHaveClass('modal-body')
+  })
 })

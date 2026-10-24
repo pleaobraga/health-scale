@@ -74,7 +74,7 @@ export function ConfirmDialog({
       aria-describedby={descriptionId}
       className="modal-overlay fixed inset-0 z-140 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn print:hidden"
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-slate-900 dark:text-slate-100 relative flex flex-col">
+      <div className="modal-panel bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full text-slate-900 dark:text-slate-100 relative">
         <button
           type="button"
           onClick={onCancel}
@@ -85,7 +85,7 @@ export function ConfirmDialog({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-start gap-4 pr-6 mobile:flex-1 mobile:pt-8">
+        <div className="modal-body flex items-start gap-4 p-6 pr-12 mobile:pt-14">
           <div
             className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border ${iconBox}`}
           >
@@ -104,7 +104,7 @@ export function ConfirmDialog({
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="modal-footer flex flex-col-reverse sm:flex-row items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={onCancel}

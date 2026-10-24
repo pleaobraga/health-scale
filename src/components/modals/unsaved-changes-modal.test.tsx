@@ -81,7 +81,10 @@ describe('UnsavedChangesModal', () => {
     render(<UnsavedChangesModal />)
 
     expect(screen.getByRole('dialog')).toHaveClass('modal-overlay')
-    expect(screen.getByTestId('unsaved-modal-body')).toHaveClass('mobile:flex-1')
+    const body = screen.getByTestId('unsaved-modal-body')
+    expect(body).toHaveClass('modal-body')
+    expect(body.parentElement).toHaveClass('modal-panel')
+    expect(body.nextElementSibling).toHaveClass('modal-footer')
   })
 })
 

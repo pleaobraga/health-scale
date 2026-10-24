@@ -143,7 +143,7 @@ export function FullScreenCalendarModal() {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <h2 className="text-sm sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-white print:text-slate-950 dark:print:text-slate-950 print:text-2xl tracking-tight truncate">
-                  {formatMonthYear(currentMonth, i18n.language)}
+                  {formatMonthYear(currentMonth, i18n.language, { compact: true })}
                 </h2>
 
                 {/* Month Navigation */}

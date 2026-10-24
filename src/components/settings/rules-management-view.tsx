@@ -555,8 +555,8 @@ export function RulesManagementView() {
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
+          <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
+            <div className="modal-header flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 shadow-2xs">
                   <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
@@ -582,7 +582,7 @@ export function RulesManagementView() {
               </button>
             </div>
 
-            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+            <div className="modal-footer px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDeleteConfirmId(null)}
@@ -605,9 +605,9 @@ export function RulesManagementView() {
 
       {/* Create / Edit Modal */}
       {isModalOpen && (
-        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full shadow-2xl my-8 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn">
+          <div className="modal-panel bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-lg w-full shadow-2xl">
+            <div className="modal-header flex items-center justify-between px-6 pt-6 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4" />
@@ -625,344 +625,347 @@ export function RulesManagementView() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveRule} className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  {t('settings:rules.name')} *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t('settings:rules.namePlaceholder')}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  {t('settings:rules.description')}
-                </label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t('settings:rules.descriptionPlaceholder')}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 resize-none"
-                />
-              </div>
-
-              {/* Type and Severity Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Type */}
+            <form onSubmit={handleSaveRule} data-testid="rule-form" className="modal-form">
+              <div className="modal-body p-6 space-y-4 custom-scrollbar">
+                {/* Name */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    {t('settings:rules.type')}
+                    {t('settings:rules.name')} *
                   </label>
-                  <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as RuleType)}
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={t('settings:rules.namePlaceholder')}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="MAX_SHIFTS_PER_PERIOD">
-                      {t('settings:rules.types.MAX_SHIFTS_PER_PERIOD')}
-                    </option>
-                    <option value="MAX_HOURS_PER_PERIOD">
-                      {t('settings:rules.types.MAX_HOURS_PER_PERIOD')}
-                    </option>
-                    <option value="MIN_REST_HOURS">
-                      {t('settings:rules.types.MIN_REST_HOURS')}
-                    </option>
-                    <option value="CONSECUTIVE_DAYS_LIMIT">
-                      {t('settings:rules.types.CONSECUTIVE_DAYS_LIMIT')}
-                    </option>
-                    <option value="MAX_PEOPLE_PER_SHIFT">
-                      {t('settings:rules.types.MAX_PEOPLE_PER_SHIFT')}
-                    </option>
-                    <option value="DAILY_SHIFT_HOURS">
-                      {t('settings:rules.types.DAILY_SHIFT_HOURS')}
-                    </option>
-                  </select>
+                  />
                 </div>
 
-                {/* Severity */}
+                {/* Description */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    {t('settings:rules.severity')}
+                    {t('settings:rules.description')}
                   </label>
-                  <select
-                    value={severity}
-                    onChange={(e) => setSeverity(e.target.value as 'ERROR' | 'WARNING')}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="ERROR">{t('settings:rules.severitySelect.ERROR')}</option>
-                    <option value="WARNING">{t('settings:rules.severitySelect.WARNING')}</option>
-                  </select>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
-                    {t(`settings:rules.severityDescriptions.${severity}`)}
-                  </p>
+                  <textarea
+                    rows={2}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={t('settings:rules.descriptionPlaceholder')}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 resize-none"
+                  />
                 </div>
-              </div>
 
-              {/* Conditional Parameter Inputs */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  {t('settings:rules.parametersTitle', { defaultValue: 'Parâmetros da Regra' })}
-                </span>
-
-                {(type === 'MAX_SHIFTS_PER_PERIOD' || type === 'MAX_HOURS_PER_PERIOD') && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {t('settings:rules.scope')}
-                      </label>
-                      <select
-                        value={scope}
-                        onChange={(e) => setScope(e.target.value as PeriodScope)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                      >
-                        <option value="DAY">{t('settings:rules.scopes.DAY')}</option>
-                        <option value="WEEK">{t('settings:rules.scopes.WEEK')}</option>
-                        <option value="MONTH">{t('settings:rules.scopes.MONTH')}</option>
-                      </select>
-                    </div>
-
-                    {type === 'MAX_SHIFTS_PER_PERIOD' && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          {t('settings:rules.maxOccurrences')}
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={99}
-                          value={maxOccurrences}
-                          onChange={(e) => setMaxOccurrences(Number(e.target.value))}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                        />
-                      </div>
-                    )}
-
-                    {type === 'MAX_HOURS_PER_PERIOD' && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          {t('settings:rules.maxHours')}
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={720}
-                          value={maxHours}
-                          onChange={(e) => setMaxHours(Number(e.target.value))}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {type === 'MIN_REST_HOURS' && (
+                {/* Type and Severity Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Type */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      {t('settings:rules.minRestHours')}
+                      {t('settings:rules.type')}
                     </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={72}
-                      value={minRestHours}
-                      onChange={(e) => setMinRestHours(Number(e.target.value))}
+                    <select
+                      value={type}
+                      onChange={(e) => setType(e.target.value as RuleType)}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                    />
+                    >
+                      <option value="MAX_SHIFTS_PER_PERIOD">
+                        {t('settings:rules.types.MAX_SHIFTS_PER_PERIOD')}
+                      </option>
+                      <option value="MAX_HOURS_PER_PERIOD">
+                        {t('settings:rules.types.MAX_HOURS_PER_PERIOD')}
+                      </option>
+                      <option value="MIN_REST_HOURS">
+                        {t('settings:rules.types.MIN_REST_HOURS')}
+                      </option>
+                      <option value="CONSECUTIVE_DAYS_LIMIT">
+                        {t('settings:rules.types.CONSECUTIVE_DAYS_LIMIT')}
+                      </option>
+                      <option value="MAX_PEOPLE_PER_SHIFT">
+                        {t('settings:rules.types.MAX_PEOPLE_PER_SHIFT')}
+                      </option>
+                      <option value="DAILY_SHIFT_HOURS">
+                        {t('settings:rules.types.DAILY_SHIFT_HOURS')}
+                      </option>
+                    </select>
                   </div>
-                )}
 
-                {type === 'CONSECUTIVE_DAYS_LIMIT' && (
+                  {/* Severity */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      {t('settings:rules.consecutiveDaysLimit')}
+                      {t('settings:rules.severity')}
                     </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={31}
-                      value={consecutiveDaysLimit}
-                      onChange={(e) => setConsecutiveDaysLimit(Number(e.target.value))}
+                    <select
+                      value={severity}
+                      onChange={(e) => setSeverity(e.target.value as 'ERROR' | 'WARNING')}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                    />
+                    >
+                      <option value="ERROR">{t('settings:rules.severitySelect.ERROR')}</option>
+                      <option value="WARNING">{t('settings:rules.severitySelect.WARNING')}</option>
+                    </select>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+                      {t(`settings:rules.severityDescriptions.${severity}`)}
+                    </p>
                   </div>
-                )}
+                </div>
 
-                {type === 'MAX_PEOPLE_PER_SHIFT' && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      {t('settings:rules.maxPeoplePerShift')}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={50}
-                      value={maxPeople}
-                      onChange={(e) => setMaxPeople(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                )}
+                {/* Conditional Parameter Inputs */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                  <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    {t('settings:rules.parametersTitle', { defaultValue: 'Parâmetros da Regra' })}
+                  </span>
 
-                {type === 'DAILY_SHIFT_HOURS' && (
-                  <div className="space-y-3">
+                  {(type === 'MAX_SHIFTS_PER_PERIOD' || type === 'MAX_HOURS_PER_PERIOD') && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          {t('settings:rules.targetDailyHours')}
+                          {t('settings:rules.scope')}
                         </label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={72}
-                          value={targetDailyHours}
-                          onChange={(e) => setTargetDailyHours(Number(e.target.value))}
+                        <select
+                          value={scope}
+                          onChange={(e) => setScope(e.target.value as PeriodScope)}
                           className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                        />
+                        >
+                          <option value="DAY">{t('settings:rules.scopes.DAY')}</option>
+                          <option value="WEEK">{t('settings:rules.scopes.WEEK')}</option>
+                          <option value="MONTH">{t('settings:rules.scopes.MONTH')}</option>
+                        </select>
+                      </div>
+
+                      {type === 'MAX_SHIFTS_PER_PERIOD' && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            {t('settings:rules.maxOccurrences')}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={99}
+                            value={maxOccurrences}
+                            onChange={(e) => setMaxOccurrences(Number(e.target.value))}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                      )}
+
+                      {type === 'MAX_HOURS_PER_PERIOD' && (
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            {t('settings:rules.maxHours')}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={720}
+                            value={maxHours}
+                            onChange={(e) => setMaxHours(Number(e.target.value))}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {type === 'MIN_REST_HOURS' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {t('settings:rules.minRestHours')}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={72}
+                        value={minRestHours}
+                        onChange={(e) => setMinRestHours(Number(e.target.value))}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  )}
+
+                  {type === 'CONSECUTIVE_DAYS_LIMIT' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {t('settings:rules.consecutiveDaysLimit')}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        value={consecutiveDaysLimit}
+                        onChange={(e) => setConsecutiveDaysLimit(Number(e.target.value))}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  )}
+
+                  {type === 'MAX_PEOPLE_PER_SHIFT' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        {t('settings:rules.maxPeoplePerShift')}
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={maxPeople}
+                        onChange={(e) => setMaxPeople(Number(e.target.value))}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  )}
+
+                  {type === 'DAILY_SHIFT_HOURS' && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            {t('settings:rules.targetDailyHours')}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={72}
+                            value={targetDailyHours}
+                            onChange={(e) => setTargetDailyHours(Number(e.target.value))}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            {t('settings:rules.dailyHoursComparison')}
+                          </label>
+                          <select
+                            value={dailyHoursComparison}
+                            onChange={(e) => setDailyHoursComparison(e.target.value as DailyHoursComparison)}
+                            className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                          >
+                            <option value="EXACT">{t('settings:rules.comparisons.EXACT')}</option>
+                            <option value="MAX">{t('settings:rules.comparisons.MAX')}</option>
+                            <option value="MIN">{t('settings:rules.comparisons.MIN')}</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                          {t('settings:rules.dailyHoursComparison')}
+                          {t('settings:rules.dayFilterType')}
                         </label>
                         <select
-                          value={dailyHoursComparison}
-                          onChange={(e) => setDailyHoursComparison(e.target.value as DailyHoursComparison)}
+                          value={dayFilterType}
+                          onChange={(e) => setDayFilterType(e.target.value as DayFilterType)}
                           className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                         >
-                          <option value="EXACT">{t('settings:rules.comparisons.EXACT')}</option>
-                          <option value="MAX">{t('settings:rules.comparisons.MAX')}</option>
-                          <option value="MIN">{t('settings:rules.comparisons.MIN')}</option>
+                          <option value="ALL">{t('settings:rules.dayFilters.ALL')}</option>
+                          <option value="WEEKDAYS">{t('settings:rules.dayFilters.WEEKDAYS')}</option>
+                          <option value="WEEKENDS">{t('settings:rules.dayFilters.WEEKENDS')}</option>
+                          <option value="SPECIFIC_DAYS">{t('settings:rules.dayFilters.SPECIFIC_DAYS')}</option>
                         </select>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                        {t('settings:rules.dayFilterType')}
-                      </label>
-                      <select
-                        value={dayFilterType}
-                        onChange={(e) => setDayFilterType(e.target.value as DayFilterType)}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                      >
-                        <option value="ALL">{t('settings:rules.dayFilters.ALL')}</option>
-                        <option value="WEEKDAYS">{t('settings:rules.dayFilters.WEEKDAYS')}</option>
-                        <option value="WEEKENDS">{t('settings:rules.dayFilters.WEEKENDS')}</option>
-                        <option value="SPECIFIC_DAYS">{t('settings:rules.dayFilters.SPECIFIC_DAYS')}</option>
-                      </select>
-                    </div>
-
-                    {dayFilterType === 'SPECIFIC_DAYS' && (
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                          {t('settings:rules.daysOfWeekTitle', { defaultValue: 'Selecione os dias aplicáveis:' })}
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            { idx: 0, label: t('settings:rules.daysOfWeek.0') },
-                            { idx: 1, label: t('settings:rules.daysOfWeek.1') },
-                            { idx: 2, label: t('settings:rules.daysOfWeek.2') },
-                            { idx: 3, label: t('settings:rules.daysOfWeek.3') },
-                            { idx: 4, label: t('settings:rules.daysOfWeek.4') },
-                            { idx: 5, label: t('settings:rules.daysOfWeek.5') },
-                            { idx: 6, label: t('settings:rules.daysOfWeek.6') },
-                          ].map(({ idx, label }) => {
-                            const isSelected = specificDaysOfWeek.includes(idx)
-                            return (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => {
-                                  setSpecificDaysOfWeek((prev) =>
-                                    prev.includes(idx)
-                                      ? prev.filter((d) => d !== idx)
-                                      : [...prev, idx]
-                                  )
-                                }}
-                                className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
-                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                }`}
-                              >
-                                {label}
-                              </button>
-                            )
-                          })}
+                      {dayFilterType === 'SPECIFIC_DAYS' && (
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                            {t('settings:rules.daysOfWeekTitle', { defaultValue: 'Selecione os dias aplicáveis:' })}
+                          </label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              { idx: 0, label: t('settings:rules.daysOfWeek.0') },
+                              { idx: 1, label: t('settings:rules.daysOfWeek.1') },
+                              { idx: 2, label: t('settings:rules.daysOfWeek.2') },
+                              { idx: 3, label: t('settings:rules.daysOfWeek.3') },
+                              { idx: 4, label: t('settings:rules.daysOfWeek.4') },
+                              { idx: 5, label: t('settings:rules.daysOfWeek.5') },
+                              { idx: 6, label: t('settings:rules.daysOfWeek.6') },
+                            ].map(({ idx, label }) => {
+                              const isSelected = specificDaysOfWeek.includes(idx)
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    setSpecificDaysOfWeek((prev) =>
+                                      prev.includes(idx)
+                                        ? prev.filter((d) => d !== idx)
+                                        : [...prev, idx]
+                                    )
+                                  }}
+                                  className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                  }`}
+                                >
+                                  {label}
+                                </button>
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
 
-                {/* Target Shifts Filter */}
-                <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    {t('settings:rules.targetShifts')}
-                  </label>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
-                    {t('settings:rules.allShiftsOption')}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {shiftDefinitions.map((shift) => {
-                      const isSelected = targetShiftIds.includes(shift.id)
-                      return (
-                        <button
-                          key={shift.id}
-                          type="button"
-                          onClick={() => handleToggleTargetShift(shift.id)}
-                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
-                            isSelected
-                              ? 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-700 shadow-2xs'
-                              : 'bg-white text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-50'
-                          }`}
-                        >
-                          <span
-                            style={{ backgroundColor: shift.color }}
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
-                          />
-                          <span>{shift.name} ({shift.code})</span>
-                          {isSelected && <Check className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />}
-                        </button>
-                      )
-                    })}
+                  {/* Target Shifts Filter */}
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      {t('settings:rules.targetShifts')}
+                    </label>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                      {t('settings:rules.allShiftsOption')}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {shiftDefinitions.map((shift) => {
+                        const isSelected = targetShiftIds.includes(shift.id)
+                        return (
+                          <button
+                            key={shift.id}
+                            type="button"
+                            onClick={() => handleToggleTargetShift(shift.id)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
+                              isSelected
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-700 shadow-2xs'
+                                : 'bg-white text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span
+                              style={{ backgroundColor: shift.color }}
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                            />
+                            <span>{shift.name} ({shift.code})</span>
+                            {isSelected && <Check className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />}
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Enabled By Default Toggle */}
-              <div className="flex items-start justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800">
-                <div className="space-y-0.5">
-                  <label
-                    htmlFor="ruleEnabledByDefault"
-                    className="text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
-                  >
-                    {t('settings:rules.enabledByDefault')}
-                  </label>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {t('settings:rules.enabledByDefaultDesc')}
-                  </p>
+                {/* Enabled By Default Toggle */}
+                <div className="flex items-start justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800">
+                  <div className="space-y-0.5">
+                    <label
+                      htmlFor="ruleEnabledByDefault"
+                      className="text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer"
+                    >
+                      {t('settings:rules.enabledByDefault')}
+                    </label>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {t('settings:rules.enabledByDefaultDesc')}
+                    </p>
+                  </div>
+                  <input
+                    id="ruleEnabledByDefault"
+                    type="checkbox"
+                    checked={enabledByDefault}
+                    onChange={(e) => setEnabledByDefault(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded-sm text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                  />
                 </div>
-                <input
-                  id="ruleEnabledByDefault"
-                  type="checkbox"
-                  checked={enabledByDefault}
-                  onChange={(e) => setEnabledByDefault(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded-sm text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-                />
+
               </div>
 
               {/* Modal Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="modal-footer flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

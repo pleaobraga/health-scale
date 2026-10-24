@@ -108,9 +108,9 @@ function AddressModal({
       aria-modal="true"
       className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col transition-colors">
+      <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
+        <div className="modal-header flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-2xs">
               <MapPin className="w-5 h-5 stroke-[2.2]" />
@@ -142,133 +142,135 @@ function AddressModal({
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="p-6 space-y-4"
+          className="modal-form"
         >
-          {error && (
-            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 font-medium">
-              {error}
-            </div>
-          )}
+          <div className="modal-body p-6 space-y-4">
+            {error && (
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 font-medium">
+                {error}
+              </div>
+            )}
 
-          <div>
-            <label
-              htmlFor="address-name"
-              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-            >
-              {t('addresses:name')}
-            </label>
-            <input
-              id="address-name"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                if (error) setError(null)
-              }}
-              placeholder={t('addresses:namePlaceholder')}
-              className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2">
+            <div>
               <label
-                htmlFor="address-street"
+                htmlFor="address-name"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                {t('addresses:street')}
+                {t('addresses:name')}
               </label>
               <input
-                id="address-street"
+                id="address-name"
                 type="text"
                 required
-                value={street}
+                value={name}
                 onChange={(e) => {
-                  setStreet(e.target.value)
+                  setName(e.target.value)
                   if (error) setError(null)
                 }}
-                placeholder={t('addresses:streetPlaceholder')}
+                placeholder={t('addresses:namePlaceholder')}
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <label
+                  htmlFor="address-street"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  {t('addresses:street')}
+                </label>
+                <input
+                  id="address-street"
+                  type="text"
+                  required
+                  value={street}
+                  onChange={(e) => {
+                    setStreet(e.target.value)
+                    if (error) setError(null)
+                  }}
+                  placeholder={t('addresses:streetPlaceholder')}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="address-number"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  {t('addresses:number')}
+                </label>
+                <input
+                  id="address-number"
+                  type="text"
+                  required
+                  value={number}
+                  onChange={(e) => {
+                    setNumber(e.target.value)
+                    if (error) setError(null)
+                  }}
+                  placeholder={t('addresses:numberPlaceholder')}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
             </div>
 
             <div>
               <label
-                htmlFor="address-number"
+                htmlFor="address-complement"
                 className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
               >
-                {t('addresses:number')}
+                {t('addresses:complement')}
               </label>
               <input
-                id="address-number"
+                id="address-complement"
                 type="text"
-                required
-                value={number}
-                onChange={(e) => {
-                  setNumber(e.target.value)
-                  if (error) setError(null)
-                }}
-                placeholder={t('addresses:numberPlaceholder')}
-                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="address-complement"
-              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-            >
-              {t('addresses:complement')}
-            </label>
-            <input
-              id="address-complement"
-              type="text"
-              value={complement}
-              onChange={(e) => setComplement(e.target.value)}
-              placeholder={t('addresses:complementPlaceholder')}
-              className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label
-                htmlFor="address-neighborhood"
-                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                {t('addresses:neighborhood')}
-              </label>
-              <input
-                id="address-neighborhood"
-                type="text"
-                value={neighborhood}
-                onChange={(e) => setNeighborhood(e.target.value)}
-                placeholder={t('addresses:neighborhoodPlaceholder')}
+                value={complement}
+                onChange={(e) => setComplement(e.target.value)}
+                placeholder={t('addresses:complementPlaceholder')}
                 className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="address-city"
-                className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-              >
-                {t('addresses:city')}
-              </label>
-              <input
-                id="address-city"
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder={t('addresses:cityPlaceholder')}
-                className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label
+                  htmlFor="address-neighborhood"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  {t('addresses:neighborhood')}
+                </label>
+                <input
+                  id="address-neighborhood"
+                  type="text"
+                  value={neighborhood}
+                  onChange={(e) => setNeighborhood(e.target.value)}
+                  placeholder={t('addresses:neighborhoodPlaceholder')}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="address-city"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  {t('addresses:city')}
+                </label>
+                <input
+                  id="address-city"
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder={t('addresses:cityPlaceholder')}
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="modal-footer px-6 py-4 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
@@ -325,8 +327,8 @@ function ConfirmDeleteAddressModal({
       aria-modal="true"
       className="modal-overlay fixed inset-0 z-130 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
+      <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden flex flex-col transition-colors">
+        <div className="modal-header flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-rose-50/60 dark:bg-rose-950/30">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-900/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0 shadow-2xs">
               <AlertTriangle className="w-5 h-5 stroke-[2.2]" />
@@ -352,13 +354,13 @@ function ConfirmDeleteAddressModal({
           </button>
         </div>
 
-        <div className="p-6 space-y-3">
+        <div className="modal-body p-6 space-y-3">
           <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             {address.name} ({address.street}, {address.number})
           </p>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+        <div className="modal-footer px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}

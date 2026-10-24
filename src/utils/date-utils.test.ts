@@ -21,6 +21,8 @@ describe('dateUtils - Utilitários de manipulação de data', () => {
   it('deve formatar mês e ano em português por extenso', () => {
     expect(formatMonthYear('2026-10')).toBe('Outubro de 2026')
     expect(formatMonthYear('2026-01')).toBe('Janeiro de 2026')
+    expect(formatMonthYear('2026-10', 'pt-BR', { compact: true })).toBe('Outubro 2026')
+    expect(formatMonthYear('2026-10', 'en-US', { compact: true })).toBe('October 2026')
   })
 
   it('deve calcular mês anterior e próximo mês corretamente', () => {

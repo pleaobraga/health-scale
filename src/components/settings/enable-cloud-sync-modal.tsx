@@ -60,7 +60,7 @@ export function EnableCloudSyncModal({
       aria-labelledby="enable-cloud-sync-title"
       className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200 print:hidden"
     >
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 text-slate-900 dark:text-slate-100 relative">
+      <div className="modal-panel bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full text-slate-900 dark:text-slate-100 relative">
         <button
           type="button"
           onClick={onClose}
@@ -71,7 +71,7 @@ export function EnableCloudSyncModal({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="space-y-2 pr-6">
+        <div className="modal-header space-y-2 px-6 pt-6 pr-12">
           <h3 id="enable-cloud-sync-title" className="text-lg font-bold leading-snug">
             {t('settings:enableSyncModal.title')}
           </h3>
@@ -80,7 +80,7 @@ export function EnableCloudSyncModal({
           </p>
         </div>
 
-        <div className="mt-5 space-y-3">
+        <div className="modal-body px-6 pt-5 pb-6 space-y-3">
           {options.map(({ choice, icon: Icon, title, description, className }) => (
             <button
               key={choice}
@@ -105,7 +105,7 @@ export function EnableCloudSyncModal({
           ))}
         </div>
 
-        <div className="mt-5 flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="modal-footer flex justify-end px-6 py-4 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={onClose}

@@ -61,6 +61,43 @@
   animation: fadeIn 0.15s ease-out forwards;
 }
 
+/*
+  Shared modal layout (same as MonthAvailabilityModal): the header and footer stay fixed and only
+  the body scrolls. Panel = .modal-panel > .modal-header + .modal-body + .modal-footer; a form that
+  wraps body + footer gets .modal-form.
+*/
+@layer components {
+  .modal-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: 92vh;
+    overflow: hidden;
+  }
+
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+  }
+
+  /* Keeps the footer at the bottom of a full-height panel even when there is no body */
+  .modal-footer {
+    margin-top: auto;
+  }
+
+  .modal-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
 /* Small screens (<= 640px): modals take the full viewport and lock background scroll */
 @media screen and (max-width: 640px) {
   html:has(.modal-overlay, [aria-modal='true']),
@@ -84,6 +121,15 @@
     border-width: 0;
     border-radius: 0;
     overflow-y: auto;
+  }
+
+  /* Shared layout: the body scrolls between the fixed header and the footer pinned to the bottom */
+  html .modal-overlay > .modal-panel {
+    overflow: hidden;
+  }
+
+  html .modal-footer {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 }
 

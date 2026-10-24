@@ -233,9 +233,9 @@ export function MonthShiftConfigModal({
       aria-labelledby="month-shift-config-title"
       className="modal-overlay fixed inset-0 z-120 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-fadeIn"
     >
-      <div className="bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
+      <div className="modal-panel bg-white dark:bg-slate-900 rounded-2xl md:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 shrink-0">
+        <div className="modal-header flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
               <CalendarDays className="w-5 h-5" />
@@ -264,7 +264,7 @@ export function MonthShiftConfigModal({
         </div>
 
         {/* Modal Body - Two Column Layout */}
-        <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
+        <div className="modal-body flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
           {/* Left Column: Shifts List & Management */}
           <div className="w-full md:w-80 p-4 flex flex-col min-h-0 bg-slate-50/40 dark:bg-slate-900/40 overflow-y-auto custom-scrollbar shrink-0 gap-3">
             <div className="flex items-center justify-between">
@@ -675,7 +675,7 @@ export function MonthShiftConfigModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 flex items-center justify-between gap-3 shrink-0">
+        <div className="modal-footer px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 flex items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}

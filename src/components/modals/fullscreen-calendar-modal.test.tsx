@@ -19,7 +19,7 @@ describe('FullScreenCalendarModal', () => {
 
   it('does not render when isFullScreenModalOpen is false', () => {
     render(<FullScreenCalendarModal />)
-    expect(screen.queryByText(/outubro de 2026/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/outubro 2026/i)).not.toBeInTheDocument()
   })
 
   it('renders correctly with month and year and assignments when open', () => {
@@ -28,7 +28,7 @@ describe('FullScreenCalendarModal', () => {
 
     // Title should show month and year
     expect(
-      screen.getByRole('heading', { level: 2, name: /outubro de 2026/i }),
+      screen.getByRole('heading', { level: 2, name: /^outubro 2026$/i }),
     ).toBeInTheDocument()
 
     // Should render assigned person name
@@ -345,10 +345,10 @@ describe('FullScreenCalendarModal', () => {
     useScheduleStore.setState({ isFullScreenModalOpen: true, isDarkMode: true })
     render(<FullScreenCalendarModal />)
 
-    const modalContent = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i }).closest('#fullscreen-calendar-modal-container')
+    const modalContent = screen.getByRole('heading', { level: 2, name: /^outubro 2026$/i }).closest('#fullscreen-calendar-modal-container')
     expect(modalContent).toBeInTheDocument()
 
-    const title = screen.getByRole('heading', { level: 2, name: /outubro de 2026/i })
+    const title = screen.getByRole('heading', { level: 2, name: /^outubro 2026$/i })
     expect(title).toHaveClass('dark:print:text-slate-950')
   })
 

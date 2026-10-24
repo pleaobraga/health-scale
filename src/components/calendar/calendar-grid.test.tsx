@@ -223,7 +223,7 @@ describe('CalendarGrid Component', () => {
     expect(screen.getByRole('button', { name: 'Edição' }).querySelector('span')).toHaveClass('mobile:hidden')
   })
 
-  it('no modo de edição, oculta o aviso longo em telas pequenas e exibe Salvar Alterações quando houver mudanças', () => {
+  it('no modo de edição, oculta o aviso longo em telas pequenas e exibe o botão Salvar quando houver mudanças', () => {
     const saveMock = vi.fn()
     useScheduleStore.setState({
       validateCurrentSchedule: () => [],
@@ -249,7 +249,7 @@ describe('CalendarGrid Component', () => {
     )
 
     const saveBtn = screen.getByTestId('edit-notice-save-button')
-    expect(screen.getByText('Salvar Alterações')).toHaveClass('hidden', 'mobile:inline')
+    expect(saveBtn).toHaveTextContent(/^salvar$/i)
     fireEvent.click(saveBtn)
     expect(saveMock).toHaveBeenCalledTimes(1)
   })
@@ -349,5 +349,23 @@ describe('CalendarGrid Component', () => {
     const label = editButton.querySelector('span')
     expect(label).toHaveClass('mobile:hidden')
     expect(label?.className).not.toMatch(/max-hd:hidden/)
+  })
+  it('deve exibir apenas o ícone e o número de violações em telas <= 640px', () => {
+    useScheduleStore.setState({
+      validationErrors: [
+        { id: 'v1', rule: 'empty_day', severity: 'error', message: 'Dia vazio', date: '2026-10-01' },
+        { id: 'v2', rule: 'empty_day', severity: 'error', message: 'Dia vazio', date: '2026-10-02' },
+      ],
+    })
+    render(
+      <AuthProvider value={mockAdminAuth}>
+        <CalendarGrid />
+      </AuthProvider>,
+    )
+
+    expect(screen.getByTestId('audit-button-label')).toHaveTextContent('2 Violações')
+    expect(screen.getByTestId('audit-button-label')).toHaveClass('mobile:hidden')
+    expect(screen.getByTestId('audit-button-count')).toHaveTextContent(/^2$/)
+    expect(screen.getByTestId('audit-button-count')).toHaveClass('hidden', 'mobile:inline')
   })
 })

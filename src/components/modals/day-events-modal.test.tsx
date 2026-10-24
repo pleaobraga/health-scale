@@ -465,6 +465,10 @@ describe('DayEventsModal', () => {
     useScheduleStore.setState({ selectedDateForEvents: '2026-10-15' })
     render(<DayEventsModal />)
 
-    expect(screen.getByTestId('day-events-modal-body')).toHaveClass('mobile:flex-1', 'mobile:min-h-0')
+    const body = screen.getByTestId('day-events-modal-body')
+    expect(body).toHaveClass('modal-body')
+    expect(body.parentElement).toHaveClass('modal-panel')
+    expect(body.previousElementSibling).toHaveClass('modal-header')
+    expect(body.nextElementSibling).toHaveClass('modal-footer')
   })
 })

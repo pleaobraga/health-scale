@@ -34,13 +34,18 @@ export function getCurrentMonth(date: Date = new Date()): string {
 }
 
 /**
- * Returns month formatted in Portuguese or English (e.g., "Outubro de 2026" or "October 2026")
+ * Returns month formatted in Portuguese or English (e.g., "Outubro de 2026" or "October 2026").
+ * `compact` drops the Portuguese "de" for titles (e.g., "Outubro 2026").
  */
-export function formatMonthYear(yearMonth?: string, lang = 'pt-BR'): string {
+export function formatMonthYear(
+  yearMonth?: string,
+  lang = 'pt-BR',
+  { compact = false }: { compact?: boolean } = {},
+): string {
   const ym = yearMonth && yearMonth.trim() ? yearMonth : getCurrentMonth()
   const date = parseISO(`${ym}-01`)
   const isEn = typeof lang === 'string' && (lang === 'en-US' || lang.startsWith('en'))
-  const pattern = isEn ? 'MMMM yyyy' : "MMMM 'de' yyyy"
+  const pattern = isEn || compact ? 'MMMM yyyy' : "MMMM 'de' yyyy"
   const locale = isEn ? enUS : ptBR
   const formatted = format(date, pattern, { locale })
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
