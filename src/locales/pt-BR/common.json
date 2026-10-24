@@ -40,10 +40,8 @@
     "pullCloud": "Puxar Dados da Nuvem",
     "pullCloudTooltip": "Buscar dados atualizados da nuvem (Firestore)",
     "pullingCloud": "Puxando...",
-    "pullSuccess": "Atualizado!",
     "forceCloud": "Forçar Dados na Nuvem",
     "forcingCloud": "Forçando...",
-    "forceSuccess": "Forçado!",
     "copy": "Copiar",
     "copied": "Copiado!",
     "clearLocal": "Limpar Todos os Dados Locais",
@@ -84,6 +82,18 @@
     "over": "{{name}} movido para a posição de {{target}}.",
     "end": "{{name}} solto na posição de {{target}}.",
     "cancel": "Reordenação de {{name}} cancelada."
+  },
+  "toast": {
+    "pullSuccess": "Dados da nuvem carregados neste dispositivo.",
+    "pullNoData": "Nenhum dado encontrado na nuvem.",
+    "pullOffline": "Sem conexão com a internet. Os dados locais não foram alterados.",
+    "pullUnauthorized": "Apenas administradores podem buscar dados da nuvem.",
+    "pullError": "Não foi possível buscar os dados da nuvem.",
+    "pushSuccess": "Dados deste dispositivo enviados para a nuvem.",
+    "pushOffline": "Sem conexão com a internet. Conecte-se para enviar os dados para a nuvem.",
+    "pushError": "Não foi possível enviar os dados para a nuvem. Verifique suas permissões.",
+    "saveLocal": "Escala salva neste dispositivo.",
+    "saveCloud": "Escala salva e sincronizada com a nuvem.",
+    "saveCloudError": "Escala salva neste dispositivo, mas não foi possível sincronizar com a nuvem."
   }
 }
-

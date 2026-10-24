@@ -1,10 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { SettingsView } from './settings-view'
 import { AuthProvider } from '../../context/auth-context'
+import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { useToastStore } from '../../store/use-toast-store'
 
 import type { AuthContextType } from '../../context/auth-context'
 import type { User } from 'firebase/auth'
@@ -21,6 +23,7 @@ const renderSettings = (authValue?: Partial<AuthContextType>) => {
 
 describe('SettingsView Component - Limpar Dados Locais', () => {
   beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
     localStorage.clear()
     useScheduleStore.setState({
       persons: [{ id: 'p1', name: 'Dr. Silva', color: '#10b981', active: true }],
@@ -168,5 +171,74 @@ describe('SettingsView Component - Limpar Dados Locais', () => {
     fireEvent.click(importButton)
 
     expect(screen.getByText(/Selecione o arquivo de backup/i)).toBeInTheDocument()
+  })
+})
+
+describe('SettingsView Component - Ativar Sincronização na Nuvem', () => {
+  const adminAuth: Partial<AuthContextType> = {
+    user: { uid: 'admin_1' } as User,
+    role: 'admin',
+    isAdmin: true,
+  }
+
+  const { pullCloudData, forcePushCloudData } = useScheduleStore.getState()
+
+  beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    useScheduleStore.setState({ pullCloudData, forcePushCloudData })
+    vi.restoreAllMocks()
+  })
+
+  const handleOpenEnableModal = () => {
+    fireEvent.click(screen.getByTestId('toggle-sync-button'))
+    return screen.getByRole('dialog', { name: /ativar sincronização na nuvem/i })
+  }
+
+  it('deve pedir a origem dos dados antes de ativar, sem enviar nada para a nuvem', () => {
+    const pushSpy = vi.fn()
+    useScheduleStore.setState({ forcePushCloudData: pushSpy })
+    renderSettings(adminAuth)
+
+    handleOpenEnableModal()
+
+    expect(pushSpy).not.toHaveBeenCalled()
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: /^cancelar$/i }))
+    expect(screen.queryByRole('dialog', { name: /ativar sincronização/i })).not.toBeInTheDocument()
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
+  })
+
+  it('deve ativar a sincronização após baixar os dados da nuvem com sucesso', async () => {
+    const pullSpy = vi.fn().mockResolvedValue({ success: true, code: 'success', message: '' })
+    useScheduleStore.setState({ pullCloudData: pullSpy })
+    renderSettings(adminAuth)
+
+    handleOpenEnableModal()
+    fireEvent.click(screen.getByTestId('enable-sync-pull'))
+
+    await waitFor(() => expect(CloudSyncService.isSyncEnabled()).toBe(true))
+    expect(pullSpy).toHaveBeenCalledWith(true)
+  })
+
+  it('não deve ativar a sincronização quando o envio falhar por falta de conexão', async () => {
+    const pushSpy = vi.fn().mockResolvedValue({ success: false, code: 'offline', message: '' })
+    useScheduleStore.setState({ forcePushCloudData: pushSpy })
+    renderSettings(adminAuth)
+
+    handleOpenEnableModal()
+    fireEvent.click(screen.getByTestId('enable-sync-push'))
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({ type: 'error', message: expect.stringMatching(/sem conexão/i) }),
+      ])
+    })
+    expect(pushSpy).toHaveBeenCalledWith(true)
+    expect(CloudSyncService.isSyncEnabled()).toBe(false)
   })
 })

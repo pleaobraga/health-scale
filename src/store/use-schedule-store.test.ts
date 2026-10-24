@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 import { useScheduleStore } from './use-schedule-store'
+import { useToastStore } from './use-toast-store'
 import { CloudSyncService } from '../services/cloud-sync-service'
 
 describe('useScheduleStore - Gerenciamento de Estado Global', () => {
@@ -411,7 +412,8 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
   it('deve executar pullCloudData com sucesso mesmo sem toggle de sincronização ativado', async () => {
     localStorage.setItem('scale_manager_cloud_sync_enabled', 'false')
     vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
-      monthData: { month: '2026-10', assignments: { '2026-10-01': ['p1'] } },
+      status: 'ok',
+      monthData: { assignments: { '2026-10-01': ['p1'] } },
       persons: [{ id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' }],
       addresses: [],
       shifts: null,
@@ -419,7 +421,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     })
     const store = useScheduleStore.getState()
 
-    const res = await store.pullCloudData('2026-10')
+    const res = await store.pullCloudData()
     expect(res.success).toBe(true)
     // O toggle de sincronização não pode ter sido alterado
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
@@ -433,7 +435,6 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     const res = await store.forcePushCloudData(true)
     expect(res.success).toBe(true)
     expect(pushSpy).toHaveBeenCalledWith(
-      '2026-10',
       expect.objectContaining({
         monthData: expect.any(Object),
         persons: expect.any(Array),
@@ -441,6 +442,7 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
       }),
       true,
       true,
+      expect.arrayContaining(['2026-10']),
     )
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })
@@ -626,33 +628,136 @@ describe('useScheduleStore - Gerenciamento de Estado Global', () => {
     )
   })
 
-  it('deve fazer fallback para buscar dados de outro mês na nuvem em pullCloudData quando o documento do mês alvo ainda não existir', async () => {
+  it('deve substituir todo o cronograma local pelos dados da nuvem em pullCloudData, inclusive dias removidos', async () => {
+    useScheduleStore.setState({
+      assignments: { '2026-10-01': ['p1'], '2026-10-02': ['p1'] },
+      savedAssignments: { '2026-10-01': ['p1'], '2026-10-02': ['p1'] },
+      dayShiftAssignments: { '2026-10-02': { shift_d12: 'p1' } },
+      savedDayShiftAssignments: { '2026-10-02': { shift_d12: 'p1' } },
+    })
     vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
-      monthData: null,
+      status: 'ok',
+      monthData: {
+        assignments: { '2026-10-01': ['p1'] },
+        monthParticipants: { '2026-11': ['p1'] },
+        availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [5, 15] }],
+        monthDailyShifts: { '2026-11': { shift_d12: [5, 15] } },
+      },
       persons: [{ id: 'p1', name: 'Dra. Helena', color: '#10b981' }],
       addresses: [],
       shifts: [],
       rules: [],
     })
-    const fetchFallbackSpy = vi.spyOn(CloudSyncService, 'fetchMonthFromCloud').mockResolvedValueOnce({
-      month: '2026-10',
-      assignments: {},
-      monthParticipants: { '2026-11': ['p1'] },
-      availabilities: [{ personId: 'p1', month: '2026-11', availableDays: [5, 15] }],
-      monthDailyShifts: { '2026-11': { shift_d12: [5, 15] } },
-    })
 
-    const store = useScheduleStore.getState()
-    const res = await store.pullCloudData('2026-11', true)
+    const res = await useScheduleStore.getState().pullCloudData(true)
 
     expect(res.success).toBe(true)
-    expect(fetchFallbackSpy).toHaveBeenCalled()
     const state = useScheduleStore.getState()
-    expect(state.monthParticipants['2026-11']).toEqual(['p1'])
+    expect(state.assignments).toEqual({ '2026-10-01': ['p1'] })
+    expect(state.savedAssignments).toEqual({ '2026-10-01': ['p1'] })
+    expect(state.dayShiftAssignments).toEqual({})
+    expect(state.monthParticipants).toEqual({ '2026-11': ['p1'] })
     expect(state.availabilities).toEqual([
       { personId: 'p1', month: '2026-11', availableDays: [5, 15] },
     ])
     expect(state.monthDailyShifts['2026-11']).toEqual({ shift_d12: [5, 15] })
+  })
+
+  it('não deve alterar os dados locais quando o pull falhar por falta de conexão', async () => {
+    vi.spyOn(CloudSyncService, 'pullAllFromCloud').mockResolvedValueOnce({
+      status: 'offline',
+      monthData: null,
+      persons: null,
+      addresses: null,
+      shifts: null,
+      rules: null,
+    })
+
+    const res = await useScheduleStore.getState().pullCloudData(true)
+
+    expect(res).toEqual(expect.objectContaining({ success: false, code: 'offline' }))
+    expect(useScheduleStore.getState().persons).toEqual([
+      { id: 'p1', name: 'Dr. Teste', color: '#1d4ed8' },
+    ])
+  })
+
+  it('não deve forçar envio para a nuvem quando estiver offline', async () => {
+    const pushSpy = vi.spyOn(CloudSyncService, 'pushAllToCloud')
+    pushSpy.mockClear()
+    vi.spyOn(CloudSyncService, 'isOnline').mockReturnValueOnce(false)
+
+    const res = await useScheduleStore.getState().forcePushCloudData(true)
+
+    expect(res).toEqual(expect.objectContaining({ success: false, code: 'offline' }))
+    expect(pushSpy).not.toHaveBeenCalled()
+  })
+
+  it('não deve enviar o rascunho do modo de edição para a nuvem ao sincronizar automaticamente', () => {
+    CloudSyncService.setSyncEnabled(true)
+    const saveMonthSpy = vi.spyOn(CloudSyncService, 'saveMonthToCloud').mockResolvedValue(true)
+    useScheduleStore.setState({
+      assignments: { '2026-10-01': ['p1'] },
+      savedAssignments: { '2026-10-01': ['p1'] },
+    })
+
+    const store = useScheduleStore.getState()
+    store.setEditMode(true)
+    store.addPersonToDay('2026-10-02', 'p1')
+    store.addEvent({ date: '2026-10-03', title: 'Reunião' })
+
+    expect(saveMonthSpy).toHaveBeenCalledWith(
+      '2026-10',
+      expect.objectContaining({ assignments: { '2026-10-01': ['p1'] } }),
+    )
+    expect(useScheduleStore.getState().assignments['2026-10-02']).toEqual(['p1'])
+  })
+
+  it('deve remover a pessoa do mês no rascunho e no cronograma salvo sem gravar o rascunho no localStorage', () => {
+    useScheduleStore.setState({
+      assignments: { '2026-10-01': ['p1'] },
+      savedAssignments: { '2026-10-01': ['p1'] },
+    })
+
+    const store = useScheduleStore.getState()
+    store.setEditMode(true)
+    store.addPersonToDay('2026-10-05', 'p2')
+    store.removePersonFromMonth('p1', '2026-10')
+
+    const state = useScheduleStore.getState()
+    expect(state.assignments).toEqual({ '2026-10-01': [], '2026-10-05': ['p2'] })
+    expect(state.savedAssignments).toEqual({ '2026-10-01': [] })
+    expect(JSON.parse(localStorage.getItem('scale_manager_assignments_v1') ?? '{}')).toEqual({
+      '2026-10-01': [],
+    })
+  })
+  it('deve exibir toast de sucesso ao salvar localmente, sem toast para as violações da escala', async () => {
+    useToastStore.setState({ toasts: [] })
+    // Dia sem ninguém escalado gera violações na validação
+    await useScheduleStore.getState().saveSchedule()
+
+    expect(useToastStore.getState().toasts).toEqual([
+      expect.objectContaining({ type: 'success', message: 'Escala salva neste dispositivo.' }),
+    ])
+    expect(useScheduleStore.getState().isSaving).toBe(false)
+  })
+
+  it('deve exibir toast de erro quando salvar localmente mas a nuvem falhar', async () => {
+    useToastStore.setState({ toasts: [] })
+    CloudSyncService.setSyncEnabled(true)
+    vi.spyOn(CloudSyncService, 'saveMonthsToCloud').mockResolvedValueOnce(false)
+    vi.spyOn(CloudSyncService, 'savePeopleToCloud').mockResolvedValueOnce(true)
+    vi.spyOn(CloudSyncService, 'saveAddressesToCloud').mockResolvedValueOnce(true)
+    vi.spyOn(CloudSyncService, 'saveShiftsToCloud').mockResolvedValueOnce(true)
+    vi.spyOn(CloudSyncService, 'saveRulesToCloud').mockResolvedValueOnce(true)
+
+    await useScheduleStore.getState().saveSchedule()
+
+    expect(useToastStore.getState().toasts).toEqual([
+      expect.objectContaining({
+        type: 'error',
+        message: 'Escala salva neste dispositivo, mas não foi possível sincronizar com a nuvem.',
+      }),
+    ])
   })
 })
 

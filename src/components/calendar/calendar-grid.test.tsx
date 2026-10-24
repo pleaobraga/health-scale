@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CalendarGrid } from './calendar-grid'
 import { AuthProvider } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { useToastStore } from '../../store/use-toast-store'
 
 import type { AuthContextType } from '../../context/auth-context'
 import type { User } from 'firebase/auth'
@@ -29,6 +30,7 @@ const mockAdminAuth: AuthContextType = {
 
 describe('CalendarGrid Component', () => {
   beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
     useScheduleStore.setState({
       currentMonth: '2026-10',
       isEditMode: false,
@@ -77,12 +79,12 @@ describe('CalendarGrid Component', () => {
 
     fireEvent.click(pullButton)
 
-    expect(pullCloudDataMock).toHaveBeenCalledWith('2026-10', true)
+    expect(pullCloudDataMock).toHaveBeenCalledWith(true)
 
-    // Reopen to verify feedback state
-    fireEvent.click(trigger)
     await waitFor(() => {
-      expect(screen.getByText(/atualizado!/i)).toBeInTheDocument()
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({ type: 'success', message: 'Dados da nuvem carregados neste dispositivo.' }),
+      ])
     })
   })
 

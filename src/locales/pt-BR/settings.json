@@ -21,7 +21,19 @@
     "pulling": "Sincronizando...",
     "pullSuccess": "Dados da nuvem sincronizados com sucesso!",
     "pullError": "Falha ao buscar dados na nuvem.",
-    "noCloudData": "Nenhum dado encontrado na nuvem para sincronizar."
+    "noCloudData": "Nenhum dado encontrado na nuvem para sincronizar.",
+    "pushSuccess": "Sincronização ativada: os dados deste dispositivo foram enviados para a nuvem.",
+    "pushError": "Falha ao enviar os dados para a nuvem. A sincronização não foi ativada.",
+    "enabledFromCloud": "Sincronização ativada com os dados da nuvem."
+  },
+  "enableSyncModal": {
+    "title": "Ativar sincronização na nuvem",
+    "description": "Escolha qual versão dos dados deve prevalecer. A outra será substituída.",
+    "pullTitle": "Baixar dados da nuvem",
+    "pullDesc": "Substitui os dados deste dispositivo pela versão salva no Firestore. Recomendado se outro dispositivo já sincroniza.",
+    "pushTitle": "Enviar dados deste dispositivo",
+    "pushDesc": "Substitui tudo o que está no Firestore pelos dados deste dispositivo.",
+    "cancel": "Cancelar"
   },
   "appearanceSection": {
     "title": "Aparência e Tema",
@@ -220,4 +232,3 @@
     "noSearchResults": "Nenhuma regra encontrada para a busca"
   }
 }
-

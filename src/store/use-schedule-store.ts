@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 
 import { i18n } from '../i18n'
-import { CloudSyncService } from '../services/cloud-sync-service'
+import { showErrorToast, showSuccessToast } from './use-toast-store'
+import { CloudSyncService, getMonthsInScheduleData } from '../services/cloud-sync-service'
 import { PersonService } from '../services/person-service'
 import { StorageService } from '../services/storage-service'
 import { formatAddress } from '../utils/address-utils'
@@ -25,21 +26,15 @@ import type {
   ShiftRule,
 } from '../types'
 
-export type SaveFeedbackData =
-  | { type: 'cloud' }
-  | { type: 'local' }
-  | { type: 'errors'; errorsCount: number; warningsCount: number }
-  | { type: 'warnings'; warningsCount: number };
-
 export interface CloudPullResult {
   success: boolean;
-  code?: 'success' | 'no_data' | 'error';
+  code?: 'success' | 'no_data' | 'offline' | 'unauthorized' | 'error';
   message: string;
 }
 
 export interface CloudPushResult {
   success: boolean;
-  code?: 'success' | 'error';
+  code?: 'success' | 'offline' | 'error';
   message: string;
 }
 
@@ -99,7 +94,6 @@ interface ScheduleStore {
   validationErrors: ValidationError[];
   hasValidated: boolean;
   isSaving: boolean;
-  saveFeedback: SaveFeedbackData | string | null;
   hasUnsavedChanges: boolean;
 
   // Actions
@@ -170,7 +164,7 @@ interface ScheduleStore {
   // Audit and Persistence
   validateCurrentSchedule: () => ValidationError[];
   saveSchedule: () => Promise<void>;
-  pullCloudData: (month?: string, isAdmin?: boolean) => Promise<CloudPullResult>;
+  pullCloudData: (isAdmin?: boolean) => Promise<CloudPullResult>;
   forcePushCloudData: (isAdmin?: boolean) => Promise<CloudPushResult>;
   dismissValidation: () => void;
   reloadFromStorage: () => void;
@@ -200,12 +194,18 @@ if (typeof document !== 'undefined' && initialDarkMode) {
   document.documentElement.classList.add('dark')
 }
 
+/**
+ * Month data sent to the cloud. While editing, `assignments` / `dayShiftAssignments` hold an
+ * unsaved draft, so the committed (`saved*`) copies are sent instead.
+ */
 const buildMonthCloudPayload = (state: ScheduleStore) => ({
-  assignments: state.assignments,
+  assignments: state.isEditMode ? state.savedAssignments : state.assignments,
   monthParticipants: state.monthParticipants,
   availabilities: state.availabilities,
   events: state.events,
-  dayShiftAssignments: state.dayShiftAssignments,
+  dayShiftAssignments: state.isEditMode
+    ? state.savedDayShiftAssignments
+    : state.dayShiftAssignments,
   monthDailyShifts: state.monthDailyShifts,
   monthActiveShifts: state.monthActiveShifts,
   monthActiveRules: state.monthActiveRules,
@@ -216,26 +216,54 @@ const getMonthsToSync = (state: ScheduleStore, targetMonth?: string): string[] =
     targetMonth || state.currentMonth,
     state.currentMonth,
     getCurrentMonth(),
+    ...getMonthsInScheduleData(buildMonthCloudPayload(state)),
   ])
-  Object.keys(state.monthParticipants).forEach((m) => months.add(m))
-  Object.keys(state.monthDailyShifts).forEach((m) => months.add(m))
-  Object.keys(state.monthActiveShifts).forEach((m) => months.add(m))
-  Object.keys(state.monthActiveRules).forEach((m) => months.add(m))
-  state.availabilities.forEach((a) => {
-    if (a.month) months.add(a.month)
-  })
   return Array.from(months).filter(Boolean)
 }
 
+/**
+ * Each cloud month doc holds only its own month, so an action only rewrites the month it touched.
+ */
 const syncMonthScheduleIfEnabled = (state: ScheduleStore, targetMonth?: string) => {
   if (!CloudSyncService.isSyncEnabled()) return
-  const payload = buildMonthCloudPayload(state)
-  const months = getMonthsToSync(state, targetMonth)
-  months.forEach((m) => {
-    CloudSyncService.saveMonthToCloud(m, payload).catch((err) => {
-      console.error(`Failed to sync month ${m} to cloud:`, err)
-    })
+  const month = targetMonth || state.currentMonth
+  CloudSyncService.saveMonthToCloud(month, buildMonthCloudPayload(state)).catch((err) => {
+    console.error(`Failed to sync month ${month} to cloud:`, err)
   })
+}
+
+/**
+ * Removes a person from every day (and day shift) of the given month, or of all months.
+ */
+const removePersonFromAssignments = (
+  assignments: Record<string, string[]>,
+  dayShiftAssignments: Record<string, Record<string, string>>,
+  personId: string,
+  month?: string,
+) => {
+  const isTargetDate = (dateStr: string) => !month || dateStr.startsWith(`${month}-`)
+  let changed = false
+
+  const nextAssignments = { ...assignments }
+  Object.keys(nextAssignments).forEach((dateStr) => {
+    if (isTargetDate(dateStr) && nextAssignments[dateStr].includes(personId)) {
+      nextAssignments[dateStr] = nextAssignments[dateStr].filter((id) => id !== personId)
+      changed = true
+    }
+  })
+
+  const nextDayShiftAssignments = { ...dayShiftAssignments }
+  Object.keys(nextDayShiftAssignments).forEach((dateStr) => {
+    const dayShifts = nextDayShiftAssignments[dateStr]
+    if (isTargetDate(dateStr) && Object.values(dayShifts).includes(personId)) {
+      nextDayShiftAssignments[dateStr] = Object.fromEntries(
+        Object.entries(dayShifts).filter(([, pId]) => pId !== personId),
+      )
+      changed = true
+    }
+  })
+
+  return { assignments: nextAssignments, dayShiftAssignments: nextDayShiftAssignments, changed }
 }
 
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
@@ -268,7 +296,6 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   validationErrors: [],
   hasValidated: false,
   isSaving: false,
-  saveFeedback: null,
   hasUnsavedChanges: false,
 
   setUnsavedModalOpen: (open) => set({ isUnsavedModalOpen: open }),
@@ -306,6 +333,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       set({
         isEditMode: true,
         savedAssignments: { ...get().assignments },
+        savedDayShiftAssignments: { ...get().dayShiftAssignments },
         hasUnsavedChanges: false,
       })
     } else {
@@ -327,6 +355,7 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       set({
         isEditMode: true,
         savedAssignments: { ...get().assignments },
+        savedDayShiftAssignments: { ...get().dayShiftAssignments },
         hasUnsavedChanges: false,
       })
     } else {
@@ -397,31 +426,41 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
 
   removePersonFromMonth: (personId, month) => {
     const current = get().monthParticipants[month] || []
-    const updatedForMonth = current.filter((id) => id !== personId)
     const updatedParticipants = {
       ...get().monthParticipants,
-      [month]: updatedForMonth,
+      [month]: current.filter((id) => id !== personId),
     }
 
-    // Also remove from assignments of this month
-    const currentAssignments = { ...get().assignments }
-    let hasAssignmentChanges = false
-    Object.keys(currentAssignments).forEach((dateStr) => {
-      if (dateStr.startsWith(month) && currentAssignments[dateStr].includes(personId)) {
-        currentAssignments[dateStr] = currentAssignments[dateStr].filter((id) => id !== personId)
-        hasAssignmentChanges = true
-      }
-    })
+    // Leaving the month is committed right away, so the person leaves both the draft
+    // and the saved schedule of this month (only the saved one is persisted)
+    const { isEditMode } = get()
+    const draft = removePersonFromAssignments(
+      get().assignments,
+      get().dayShiftAssignments,
+      personId,
+      month,
+    )
+    const committed = isEditMode
+      ? removePersonFromAssignments(
+          get().savedAssignments,
+          get().savedDayShiftAssignments,
+          personId,
+          month,
+        )
+      : draft
 
     StorageService.saveMonthParticipants(updatedParticipants)
-    if (hasAssignmentChanges) {
-      StorageService.saveAssignments(currentAssignments)
+    if (committed.changed) {
+      StorageService.saveAssignments(committed.assignments)
+      StorageService.saveDayShiftAssignments(committed.dayShiftAssignments)
     }
 
     set({
       monthParticipants: updatedParticipants,
-      assignments: currentAssignments,
-      hasUnsavedChanges: get().isEditMode && hasAssignmentChanges ? true : get().hasUnsavedChanges,
+      assignments: draft.assignments,
+      dayShiftAssignments: draft.dayShiftAssignments,
+      savedAssignments: { ...committed.assignments },
+      savedDayShiftAssignments: { ...committed.dayShiftAssignments },
       highlightedPersonId: get().highlightedPersonId === personId ? null : get().highlightedPersonId,
       highlightedScheduledPersonId:
         get().highlightedScheduledPersonId === personId ? null : get().highlightedScheduledPersonId,
@@ -517,22 +556,26 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       updatedMonthParticipants[m] = updatedMonthParticipants[m].filter((pId) => pId !== id)
     })
 
-    // Also remove person from assignments
-    const currentAssignments = { ...get().assignments }
-    Object.keys(currentAssignments).forEach((dateStr) => {
-      currentAssignments[dateStr] = currentAssignments[dateStr].filter((pId) => pId !== id)
-    })
+    // Also remove person from every day of the draft and of the saved schedule
+    const { isEditMode } = get()
+    const draft = removePersonFromAssignments(get().assignments, get().dayShiftAssignments, id)
+    const committed = isEditMode
+      ? removePersonFromAssignments(get().savedAssignments, get().savedDayShiftAssignments, id)
+      : draft
 
     StorageService.savePersons(updatedPersons)
     StorageService.saveAvailabilities(updatedAvails)
-    StorageService.saveAssignments(currentAssignments)
+    StorageService.saveAssignments(committed.assignments)
+    StorageService.saveDayShiftAssignments(committed.dayShiftAssignments)
     StorageService.saveMonthParticipants(updatedMonthParticipants)
 
     set({
       persons: updatedPersons,
       availabilities: updatedAvails,
-      assignments: currentAssignments,
-      savedAssignments: { ...currentAssignments },
+      assignments: draft.assignments,
+      dayShiftAssignments: draft.dayShiftAssignments,
+      savedAssignments: { ...committed.assignments },
+      savedDayShiftAssignments: { ...committed.dayShiftAssignments },
       monthParticipants: updatedMonthParticipants,
       highlightedPersonId: get().highlightedPersonId === id ? null : get().highlightedPersonId,
       highlightedScheduledPersonId:
@@ -540,8 +583,9 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     })
 
     if (CloudSyncService.isSyncEnabled()) {
+      const state = get()
       CloudSyncService.savePeopleToCloud(updatedPersons)
-      syncMonthScheduleIfEnabled(get(), get().currentMonth)
+      CloudSyncService.saveMonthsToCloud(getMonthsToSync(state), buildMonthCloudPayload(state))
     }
 
     return true
@@ -578,86 +622,99 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     }
     StorageService.saveAvailabilities(updated)
 
-    const currentAssignments = { ...get().assignments }
-    const currentDayShiftAssignments = { ...get().dayShiftAssignments }
-    let hasAssignmentChanges = false
-    let hasDayShiftChanges = false
-
     const hasShiftAvailMap =
       Boolean(finalShiftAvailability) && Object.keys(finalShiftAvailability!).length > 0
 
-    const allMonthDates = new Set([
-      ...Object.keys(currentAssignments).filter((d) => d.startsWith(`${month}-`)),
-      ...Object.keys(currentDayShiftAssignments).filter((d) => d.startsWith(`${month}-`)),
-    ])
+    // Drops the person from days (and day shifts) of this month they are no longer available for
+    const pruneUnavailable = (
+      sourceAssignments: Record<string, string[]>,
+      sourceDayShiftAssignments: Record<string, Record<string, string>>,
+    ) => {
+      const nextAssignments = { ...sourceAssignments }
+      const nextDayShiftAssignments = { ...sourceDayShiftAssignments }
+      let assignmentsChanged = false
+      let dayShiftsChanged = false
 
-    allMonthDates.forEach((dateStr) => {
-      const dayNum = Number.parseInt(dateStr.slice(8, 10), 10)
-      const existingDayShifts = currentDayShiftAssignments[dateStr]
-      const hadShiftOnDay = existingDayShifts
-        ? Object.values(existingDayShifts).includes(personId)
-        : false
-      let stillHasShiftOnDay = hadShiftOnDay
+      const allMonthDates = new Set([
+        ...Object.keys(nextAssignments).filter((d) => d.startsWith(`${month}-`)),
+        ...Object.keys(nextDayShiftAssignments).filter((d) => d.startsWith(`${month}-`)),
+      ])
 
-      if (existingDayShifts && hadShiftOnDay) {
-        const nextDayShifts = { ...existingDayShifts }
-        let dayChanged = false
-        Object.entries(nextDayShifts).forEach(([sId, pId]) => {
-          if (pId === personId) {
-            const isStillAvailableForShift = hasShiftAvailMap
-              ? Boolean(finalShiftAvailability![sId]?.includes(dayNum))
-              : availableDays.includes(dayNum)
-            if (!isStillAvailableForShift) {
-              delete nextDayShifts[sId]
-              dayChanged = true
-              hasDayShiftChanges = true
+      allMonthDates.forEach((dateStr) => {
+        const dayNum = Number.parseInt(dateStr.slice(8, 10), 10)
+        const existingDayShifts = nextDayShiftAssignments[dateStr]
+        const hadShiftOnDay = existingDayShifts
+          ? Object.values(existingDayShifts).includes(personId)
+          : false
+        let stillHasShiftOnDay = hadShiftOnDay
+
+        if (existingDayShifts && hadShiftOnDay) {
+          const nextDayShifts = { ...existingDayShifts }
+          let dayChanged = false
+          Object.entries(nextDayShifts).forEach(([sId, pId]) => {
+            if (pId === personId) {
+              const isStillAvailableForShift = hasShiftAvailMap
+                ? Boolean(finalShiftAvailability![sId]?.includes(dayNum))
+                : availableDays.includes(dayNum)
+              if (!isStillAvailableForShift) {
+                delete nextDayShifts[sId]
+                dayChanged = true
+                dayShiftsChanged = true
+              }
             }
+          })
+          if (dayChanged) {
+            nextDayShiftAssignments[dateStr] = nextDayShifts
           }
-        })
-        if (dayChanged) {
-          currentDayShiftAssignments[dateStr] = nextDayShifts
+          stillHasShiftOnDay = Object.values(nextDayShifts).includes(personId)
         }
-        stillHasShiftOnDay = Object.values(nextDayShifts).includes(personId)
-      }
 
-      if (currentAssignments[dateStr]?.includes(personId)) {
-        const shouldRemoveFromDay =
-          !availableDays.includes(dayNum) || (hadShiftOnDay && !stillHasShiftOnDay)
-        if (shouldRemoveFromDay) {
-          currentAssignments[dateStr] = currentAssignments[dateStr].filter(
-            (id) => id !== personId
-          )
-          hasAssignmentChanges = true
+        if (nextAssignments[dateStr]?.includes(personId)) {
+          const shouldRemoveFromDay =
+            !availableDays.includes(dayNum) || (hadShiftOnDay && !stillHasShiftOnDay)
+          if (shouldRemoveFromDay) {
+            nextAssignments[dateStr] = nextAssignments[dateStr].filter((id) => id !== personId)
+            assignmentsChanged = true
+          }
         }
-      }
-    })
+      })
 
-    if (hasAssignmentChanges) {
-      StorageService.saveAssignments(currentAssignments)
-    }
-    if (hasDayShiftChanges) {
-      StorageService.saveDayShiftAssignments(currentDayShiftAssignments)
+      return {
+        assignments: nextAssignments,
+        dayShiftAssignments: nextDayShiftAssignments,
+        assignmentsChanged,
+        dayShiftsChanged,
+      }
     }
 
+    // Availability is committed right away, so both the draft and the saved schedule are pruned
+    // (only the saved one is persisted)
     const isEditing = get().isEditMode
+    const draft = pruneUnavailable(get().assignments, get().dayShiftAssignments)
+    const committed = isEditing
+      ? pruneUnavailable(get().savedAssignments, get().savedDayShiftAssignments)
+      : draft
+
+    if (committed.assignmentsChanged) {
+      StorageService.saveAssignments(committed.assignments)
+    }
+    if (committed.dayShiftsChanged) {
+      StorageService.saveDayShiftAssignments(committed.dayShiftAssignments)
+    }
+
     set({
       availabilities: updated,
-      ...(hasAssignmentChanges
+      ...(draft.assignmentsChanged || committed.assignmentsChanged
         ? {
-            assignments: currentAssignments,
-            ...(!isEditing ? { savedAssignments: { ...currentAssignments } } : {}),
+            assignments: draft.assignments,
+            savedAssignments: { ...committed.assignments },
           }
         : {}),
-      ...(hasDayShiftChanges
+      ...(draft.dayShiftsChanged || committed.dayShiftsChanged
         ? {
-            dayShiftAssignments: currentDayShiftAssignments,
-            ...(!isEditing
-              ? { savedDayShiftAssignments: { ...currentDayShiftAssignments } }
-              : {}),
+            dayShiftAssignments: draft.dayShiftAssignments,
+            savedDayShiftAssignments: { ...committed.dayShiftAssignments },
           }
-        : {}),
-      ...(isEditing && (hasAssignmentChanges || hasDayShiftChanges)
-        ? { hasUnsavedChanges: true }
         : {}),
     })
 
@@ -1546,77 +1603,64 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
     })
 
     // If cloud sync is active, explicitly push to Firestore
+    const isSyncEnabled = CloudSyncService.isSyncEnabled()
     let cloudSaved = false
-    if (CloudSyncService.isSyncEnabled()) {
+    if (isSyncEnabled) {
       try {
         const monthPayload = buildMonthCloudPayload(get())
         const monthsToSync = getMonthsToSync(get(), get().currentMonth)
-        const [monthsSavedResults, peopleSaved, addressesSaved, shiftsSaved, rulesSaved] =
+        const [monthSaved, peopleSaved, addressesSaved, shiftsSaved, rulesSaved] =
           await Promise.all([
-            Promise.all(monthsToSync.map((m) => CloudSyncService.saveMonthToCloud(m, monthPayload))),
+            CloudSyncService.saveMonthsToCloud(monthsToSync, monthPayload),
             CloudSyncService.savePeopleToCloud(get().persons),
             CloudSyncService.saveAddressesToCloud(get().addresses),
             CloudSyncService.saveShiftsToCloud(get().shiftDefinitions),
             CloudSyncService.saveRulesToCloud(get().shiftRules),
           ])
-        const monthSaved = monthsSavedResults.every(Boolean)
         cloudSaved = monthSaved && peopleSaved && addressesSaved && shiftsSaved && rulesSaved
       } catch (err) {
         console.error('Failed to sync schedule to cloud:', err)
       }
     }
 
-    // Execute audit validation
-    const errors = get().validateCurrentSchedule()
+    // Execute audit validation (violations are shown by the calendar diagnostics, not by a toast)
+    get().validateCurrentSchedule()
 
-    const errorCount = errors.filter((e) => e.severity === 'error').length
-    const warningCount = errors.filter((e) => e.severity === 'warning').length
+    set({ isSaving: false })
 
-    let feedback: SaveFeedbackData = cloudSaved ? { type: 'cloud' } : { type: 'local' }
-    if (errorCount > 0) {
-      feedback = { type: 'errors', errorsCount: errorCount, warningsCount: warningCount }
-    } else if (warningCount > 0) {
-      feedback = { type: 'warnings', warningsCount: warningCount }
+    if (!isSyncEnabled) {
+      showSuccessToast(i18n.t('common:toast.saveLocal'))
+    } else if (cloudSaved) {
+      showSuccessToast(i18n.t('common:toast.saveCloud'))
+    } else {
+      showErrorToast(i18n.t('common:toast.saveCloudError'))
     }
-
-    set({
-      isSaving: false,
-      saveFeedback: feedback,
-    })
-
-    setTimeout(() => {
-      set({ saveFeedback: null })
-    }, 5000)
   },
 
-  pullCloudData: async (month?: string, isAdmin?: boolean) => {
-    const targetMonth = month || get().currentMonth
-
+  pullCloudData: async (isAdmin?: boolean) => {
     try {
-      const {
-        monthData: initialMonthData,
-        persons,
-        addresses,
-        shifts,
-        rules,
-      } = await CloudSyncService.pullAllFromCloud(targetMonth, isAdmin, true)
+      const { status, monthData, persons, addresses, shifts, rules } =
+        await CloudSyncService.pullAllFromCloud(isAdmin, true)
 
-      let monthData = initialMonthData
-      if (!monthData) {
-        const fallbackMonths = Array.from(
-          new Set([get().currentMonth, getCurrentMonth()]),
-        ).filter((m) => m && m !== targetMonth)
-
-        for (const fallbackMonth of fallbackMonths) {
-          const fallbackData = await CloudSyncService.fetchMonthFromCloud(
-            fallbackMonth,
-            isAdmin,
-            true,
-          )
-          if (fallbackData) {
-            monthData = fallbackData
-            break
-          }
+      if (status === 'offline') {
+        return {
+          success: false,
+          code: 'offline',
+          message: 'Sem conexão com a internet. Os dados locais não foram alterados.',
+        }
+      }
+      if (status === 'unauthorized') {
+        return {
+          success: false,
+          code: 'unauthorized',
+          message: 'Apenas administradores podem buscar dados da nuvem.',
+        }
+      }
+      if (status === 'error') {
+        return {
+          success: false,
+          code: 'error',
+          message: 'Erro ao tentar buscar dados na nuvem.',
         }
       }
 
@@ -1649,44 +1693,40 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
       }
 
       if (monthData) {
-        if (monthData.assignments) {
-          StorageService.saveAssignments(monthData.assignments)
-          set({
-            assignments: monthData.assignments,
-            savedAssignments: { ...monthData.assignments },
-          })
-        }
-        if (monthData.monthParticipants) {
-          StorageService.saveMonthParticipants(monthData.monthParticipants)
-          set({ monthParticipants: monthData.monthParticipants })
-        }
-        if (monthData.availabilities) {
-          StorageService.saveAvailabilities(monthData.availabilities)
-          set({ availabilities: monthData.availabilities })
-        }
-        if (monthData.events) {
-          StorageService.saveEvents(monthData.events)
-          set({ events: monthData.events })
-        }
-        if (monthData.dayShiftAssignments) {
-          StorageService.saveDayShiftAssignments(monthData.dayShiftAssignments)
-          set({
-            dayShiftAssignments: monthData.dayShiftAssignments,
-            savedDayShiftAssignments: { ...monthData.dayShiftAssignments },
-          })
-        }
-        if (monthData.monthDailyShifts) {
-          StorageService.saveMonthDailyShiftsMap(monthData.monthDailyShifts)
-          set({ monthDailyShifts: monthData.monthDailyShifts })
-        }
-        if (monthData.monthActiveShifts) {
-          StorageService.saveMonthActiveShiftsMap(monthData.monthActiveShifts)
-          set({ monthActiveShifts: monthData.monthActiveShifts })
-        }
-        if (monthData.monthActiveRules) {
-          StorageService.saveMonthActiveRulesMap(monthData.monthActiveRules)
-          set({ monthActiveRules: monthData.monthActiveRules })
-        }
+        // The cloud holds every month, so it replaces the whole local schedule (and any draft)
+        const assignments = monthData.assignments ?? {}
+        const dayShiftAssignments = monthData.dayShiftAssignments ?? {}
+        const monthParticipants = monthData.monthParticipants ?? {}
+        const availabilities = monthData.availabilities ?? []
+        const events = monthData.events ?? []
+        const monthDailyShifts = monthData.monthDailyShifts ?? {}
+        const monthActiveShifts = monthData.monthActiveShifts ?? {}
+        const monthActiveRules = monthData.monthActiveRules ?? {}
+
+        StorageService.saveAssignments(assignments)
+        StorageService.saveDayShiftAssignments(dayShiftAssignments)
+        StorageService.saveMonthParticipants(monthParticipants)
+        StorageService.saveAvailabilities(availabilities)
+        StorageService.saveEvents(events)
+        StorageService.saveMonthDailyShiftsMap(monthDailyShifts)
+        StorageService.saveMonthActiveShiftsMap(monthActiveShifts)
+        StorageService.saveMonthActiveRulesMap(monthActiveRules)
+
+        set({
+          assignments,
+          savedAssignments: { ...assignments },
+          dayShiftAssignments,
+          savedDayShiftAssignments: { ...dayShiftAssignments },
+          monthParticipants,
+          availabilities,
+          events,
+          monthDailyShifts,
+          monthActiveShifts,
+          monthActiveRules,
+          hasUnsavedChanges: false,
+          hasValidated: false,
+          validationErrors: [],
+        })
       }
 
       return {
@@ -1705,13 +1745,19 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   },
 
   forcePushCloudData: async (isAdmin?: boolean) => {
+    if (!CloudSyncService.isOnline()) {
+      return {
+        success: false,
+        code: 'offline',
+        message: 'Sem conexão com a internet. Conecte-se para enviar os dados para a nuvem.',
+      }
+    }
+
     set({ isSaving: true })
     try {
-      const monthPayload = buildMonthCloudPayload(get())
       const success = await CloudSyncService.pushAllToCloud(
-        get().currentMonth,
         {
-          monthData: monthPayload,
+          monthData: buildMonthCloudPayload(get()),
           persons: get().persons,
           addresses: get().addresses,
           shifts: get().shiftDefinitions,
@@ -1719,12 +1765,8 @@ export const useScheduleStore = create<ScheduleStore>((set, get) => ({
         },
         isAdmin,
         true,
+        [get().currentMonth, getCurrentMonth()],
       )
-
-      const todayMonth = getCurrentMonth()
-      if (success && todayMonth !== get().currentMonth) {
-        await CloudSyncService.saveMonthToCloud(todayMonth, monthPayload, isAdmin, true)
-      }
 
       set({ isSaving: false })
       return {

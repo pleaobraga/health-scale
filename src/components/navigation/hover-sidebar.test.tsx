@@ -6,6 +6,7 @@ import { HoverSidebar } from './hover-sidebar'
 import { AuthProvider } from '../../context/auth-context'
 import * as backupService from '../../services/backup-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { useToastStore } from '../../store/use-toast-store'
 
 import type { AuthContextType } from '../../context/auth-context'
 import type { User } from 'firebase/auth'
@@ -20,6 +21,7 @@ const renderWithRouter = (initialPath = '/') => {
 
 describe('HoverSidebar Component', () => {
   beforeEach(() => {
+    useToastStore.setState({ toasts: [] })
     useScheduleStore.setState({
       currentView: 'calendar',
       isDarkMode: false,
@@ -191,9 +193,31 @@ describe('HoverSidebar Component', () => {
 
     expect(pullCloudDataMock).toHaveBeenCalledTimes(1)
     await waitFor(() => {
-      expect(screen.getAllByText(/atualizado/i).length).toBeGreaterThan(0)
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({ type: 'success', message: 'Dados da nuvem carregados neste dispositivo.' }),
+      ])
     })
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
+  })
+
+  it('deve exibir um toast de erro quando o pull falhar por falta de conexão', async () => {
+    useToastStore.setState({ toasts: [] })
+    const pullCloudDataMock = vi
+      .fn()
+      .mockResolvedValue({ success: false, code: 'offline', message: '' })
+    useScheduleStore.setState({ pullCloudData: pullCloudDataMock })
+
+    renderWithRouter()
+    fireEvent.click(screen.getAllByRole('button', { name: /puxar dados da nuvem/i })[0])
+
+    await waitFor(() => {
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({
+          type: 'error',
+          message: 'Sem conexão com a internet. Os dados locais não foram alterados.',
+        }),
+      ])
+    })
   })
 
   it('NÃO deve exibir botão Forçar Dados na Nuvem quando não for prod ou não for admin', () => {
@@ -232,7 +256,9 @@ describe('HoverSidebar Component', () => {
     expect(forcePushMock).toHaveBeenCalledTimes(1)
     expect(forcePushMock).toHaveBeenCalledWith(true)
     await waitFor(() => {
-      expect(screen.getAllByText(/forçado/i).length).toBeGreaterThan(0)
+      expect(useToastStore.getState().toasts).toEqual([
+        expect.objectContaining({ type: 'success', message: 'Dados deste dispositivo enviados para a nuvem.' }),
+      ])
     })
     expect(localStorage.getItem('scale_manager_cloud_sync_enabled')).toBe('false')
   })

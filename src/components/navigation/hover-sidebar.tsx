@@ -28,6 +28,8 @@ import { AuthContext } from '../../context/auth-context'
 import { exportAppData } from '../../services/backup-service'
 import { CloudSyncService } from '../../services/cloud-sync-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { showErrorToast } from '../../store/use-toast-store'
+import { notifyPullResult, notifyPushResult } from '../../utils/cloud-feedback'
 import { LanguageSelector } from '../common/language-selector'
 
 
@@ -49,9 +51,7 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
   const [isPullingCloud, setIsPullingCloud] = useState(false)
-  const [pullSuccess, setPullSuccess] = useState(false)
   const [isForcingCloud, setIsForcingCloud] = useState(false)
-  const [forceSuccess, setForceSuccess] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { t } = useTranslation(['common', 'auth'])
   const inRouter = useInRouterContext()
@@ -143,13 +143,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const handlePullCloud = async () => {
     try {
       setIsPullingCloud(true)
-      const res = await pullCloudData(undefined, isAdmin)
-      if (res.success) {
-        setPullSuccess(true)
-        setTimeout(() => setPullSuccess(false), 2500)
-      }
+      notifyPullResult(await pullCloudData(isAdmin))
     } catch (err) {
       console.error('Erro ao puxar dados da nuvem:', err)
+      showErrorToast(t('common:toast.pullError'))
     } finally {
       setIsPullingCloud(false)
     }
@@ -158,13 +155,10 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
   const handleForceCloud = async () => {
     try {
       setIsForcingCloud(true)
-      const res = await forcePushCloudData(isAdmin)
-      if (res.success) {
-        setForceSuccess(true)
-        setTimeout(() => setForceSuccess(false), 2500)
-      }
+      notifyPushResult(await forcePushCloudData(isAdmin))
     } catch (err) {
       console.error('Erro ao forçar dados na nuvem:', err)
+      showErrorToast(t('common:toast.pushError'))
     } finally {
       setIsForcingCloud(false)
     }
@@ -426,20 +420,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 text-sm font-bold shadow-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
-                {pullSuccess ? (
-                  <Check className="w-5 h-5 text-emerald-500" />
-                ) : (
-                  <CloudDownload
-                    className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
-                  />
-                )}
+                <CloudDownload
+                  className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
+                />
               </div>
               <span>
-                {pullSuccess
-                  ? t('common:actions.pullSuccess')
-                  : isPullingCloud
-                    ? t('common:actions.pullingCloud')
-                    : t('common:actions.pullCloud')}
+                {isPullingCloud
+                  ? t('common:actions.pullingCloud')
+                  : t('common:actions.pullCloud')}
               </span>
             </button>
 
@@ -454,20 +442,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
                 className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 text-sm font-bold shadow-xs hover:bg-amber-100 dark:hover:bg-amber-900/50 transition disabled:opacity-50"
               >
                 <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
-                  {forceSuccess ? (
-                    <Check className="w-5 h-5 text-emerald-500" />
-                  ) : (
-                    <CloudUpload
-                      className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
-                    />
-                  )}
+                  <CloudUpload
+                    className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
+                  />
                 </div>
                 <span>
-                  {forceSuccess
-                    ? t('common:actions.forceSuccess')
-                    : isForcingCloud
-                      ? t('common:actions.forcingCloud')
-                      : t('common:actions.forceCloud')}
+                  {isForcingCloud
+                    ? t('common:actions.forcingCloud')
+                    : t('common:actions.forceCloud')}
                 </span>
               </button>
             )}
@@ -702,20 +684,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-indigo-200/80 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/30 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
           >
             <div className="w-5 h-5 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
-              {pullSuccess ? (
-                <Check className="w-5 h-5 text-emerald-500" />
-              ) : (
-                <CloudDownload
-                  className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
-                />
-              )}
+              <CloudDownload
+                className={`w-5 h-5 ${isPullingCloud ? 'animate-bounce' : ''}`}
+              />
             </div>
             <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-              {pullSuccess
-                ? t('common:actions.pullSuccess')
-                : isPullingCloud
-                  ? t('common:actions.pullingCloud')
-                  : t('common:actions.pullCloud')}
+              {isPullingCloud
+                ? t('common:actions.pullingCloud')
+                : t('common:actions.pullCloud')}
             </span>
           </button>
 
@@ -730,20 +706,14 @@ export function HoverSidebar({ isProdOverride }: HoverSidebarProps = {}) {
               className="w-full flex items-center gap-3 px-3 py-2 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-xs font-semibold shadow-2xs transition-colors disabled:opacity-50"
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0 text-amber-600 dark:text-amber-400">
-                {forceSuccess ? (
-                  <Check className="w-4 h-4 text-emerald-500" />
-                ) : (
-                  <CloudUpload
-                    className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
-                  />
-                )}
+                <CloudUpload
+                  className={`w-5 h-5 ${isForcingCloud ? 'animate-bounce' : ''}`}
+                />
               </div>
               <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-200 whitespace-nowrap overflow-hidden">
-                {forceSuccess
-                  ? t('common:actions.forceSuccess')
-                  : isForcingCloud
-                    ? t('common:actions.forcingCloud')
-                    : t('common:actions.forceCloud')}
+                {isForcingCloud
+                  ? t('common:actions.forcingCloud')
+                  : t('common:actions.forceCloud')}
               </span>
             </button>
           )}

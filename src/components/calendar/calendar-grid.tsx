@@ -1,6 +1,5 @@
 import {
   CalendarDays,
-  Check,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -26,6 +25,8 @@ import { CalendarHeader } from './calendar-header'
 import { DayCell } from './day-cell'
 import { AuthContext } from '../../context/auth-context'
 import { useScheduleStore } from '../../store/use-schedule-store'
+import { showErrorToast } from '../../store/use-toast-store'
+import { notifyPullResult } from '../../utils/cloud-feedback'
 import { formatMonthYear, getMonthCalendarGrid, getCurrentMonth } from '../../utils/date-utils'
 import { exportScheduleToExcel, getScheduleFileBaseName } from '../../utils/export-to-excel'
 import { computePopoverPosition } from '../../utils/popover-position'
@@ -38,7 +39,6 @@ export function CalendarGrid() {
   const isAdmin = auth?.isAdmin ?? false
 
   const [isPullingCloud, setIsPullingCloud] = useState(false)
-  const [pullSuccess, setPullSuccess] = useState(false)
   const [isActionsOpen, setIsActionsOpen] = useState(false)
   const [actionsMenuPosition, setActionsMenuPosition] = useState<{ top: number; left: number }>({
     top: 0,
@@ -74,6 +74,7 @@ export function CalendarGrid() {
     clearMonthAssignments,
     setFullScreenModalOpen,
     saveSchedule,
+    isSaving,
     discardChanges,
     hasUnsavedChanges,
     pullCloudData,
@@ -115,13 +116,10 @@ export function CalendarGrid() {
   const handlePullCloud = async () => {
     try {
       setIsPullingCloud(true)
-      const res = await pullCloudData(currentMonth, isAdmin)
-      if (res.success) {
-        setPullSuccess(true)
-        setTimeout(() => setPullSuccess(false), 2500)
-      }
+      notifyPullResult(await pullCloudData(isAdmin))
     } catch (err) {
       console.error('Erro ao puxar dados da nuvem:', err)
+      showErrorToast(t('common:toast.pullError'))
     } finally {
       setIsPullingCloud(false)
     }
@@ -442,21 +440,15 @@ export function CalendarGrid() {
                       className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-300 transition disabled:opacity-50"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        {pullSuccess ? (
-                          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                        ) : (
-                          <CloudDownload
-                            className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 ${
-                              isPullingCloud ? 'animate-bounce' : ''
-                            }`}
-                          />
-                        )}
+                        <CloudDownload
+                          className={`w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 ${
+                            isPullingCloud ? 'animate-bounce' : ''
+                          }`}
+                        />
                         <span className="truncate">
-                          {pullSuccess
-                            ? t('common:actions.pullSuccess')
-                            : isPullingCloud
-                              ? t('common:actions.pullingCloud')
-                              : t('common:actions.pullCloud')}
+                          {isPullingCloud
+                            ? t('common:actions.pullingCloud')
+                            : t('common:actions.pullCloud')}
                         </span>
                       </div>
                     </button>
@@ -557,11 +549,18 @@ export function CalendarGrid() {
               <button
                 type="button"
                 onClick={saveSchedule}
+                disabled={isSaving}
                 data-testid="edit-notice-save-button"
-                className="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition"
+                className="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition disabled:opacity-60"
               >
-                <span className="mobile:hidden">{t('calendar:saveNow')}</span>
-                <span className="hidden mobile:inline">{t('calendar:saveChanges')}</span>
+                {isSaving ? (
+                  <span>{t('common:actions.saving')}</span>
+                ) : (
+                  <>
+                    <span className="mobile:hidden">{t('calendar:saveNow')}</span>
+                    <span className="hidden mobile:inline">{t('calendar:saveChanges')}</span>
+                  </>
+                )}
               </button>
             </div>
           )}

@@ -6,6 +6,7 @@ import { hasExistingLocalData } from '../../services/backup-service'
 import { StorageService } from '../../services/storage-service'
 import { useScheduleStore } from '../../store/use-schedule-store'
 import { ErrorBoundary } from '../common/error-boundary'
+import { ToastViewport } from '../common/toast-viewport'
 import { DayEventsModal } from '../modals/day-events-modal'
 import { FullScreenCalendarModal } from '../modals/fullscreen-calendar-modal'
 import { UnsavedChangesModal } from '../modals/unsaved-changes-modal'
@@ -95,6 +96,9 @@ export function RootLayout() {
       <DayEventsModal />
       <FullScreenCalendarModal />
       <UnsavedChangesModal />
+
+      {/* 4. Global Notifications */}
+      <ToastViewport />
     </div>
   )
 }

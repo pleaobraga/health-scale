@@ -21,7 +21,19 @@
     "pulling": "Syncing...",
     "pullSuccess": "Data successfully synchronized from cloud!",
     "pullError": "Failed to fetch cloud data.",
-    "noCloudData": "No data found in cloud to synchronize."
+    "noCloudData": "No data found in cloud to synchronize.",
+    "pushSuccess": "Sync enabled: this device's data was sent to the cloud.",
+    "pushError": "Failed to send data to the cloud. Sync was not enabled.",
+    "enabledFromCloud": "Sync enabled with the cloud data."
+  },
+  "enableSyncModal": {
+    "title": "Enable cloud sync",
+    "description": "Choose which version of the data should win. The other one will be replaced.",
+    "pullTitle": "Download cloud data",
+    "pullDesc": "Replaces this device's data with the version saved in Firestore. Recommended if another device already syncs.",
+    "pushTitle": "Send this device's data",
+    "pushDesc": "Replaces everything in Firestore with this device's data.",
+    "cancel": "Cancel"
   },
   "appearanceSection": {
     "title": "Appearance & Theme",
@@ -220,4 +232,3 @@
     "noSearchResults": "No rules found for this search"
   }
 }
-
